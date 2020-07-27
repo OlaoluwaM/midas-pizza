@@ -1,3 +1,6 @@
 [submodule "server"]
 	path = server
 	url = https://github.com/OlaoluwaM/node-pizza-delivery-api
+[submodule "src/components/utils"]
+	path = src/components/utils
+	url = https://github.com/OlaoluwaM/yoshi-helpers.git

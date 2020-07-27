@@ -1,3 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Pacifico&display=swap');
+
+// Accent font will be Montserrat italics and light
+$primaryFont: 'Pacifico', cursive;
+$secondaryFont: 'Montserrat', sans-serif;
+
+$fontWeight: (
+  'light': 300,
+  'regular': 400,
+  'medium': 500,
+);
+
+:root {
+  --primaryFont: 'Pacifico', cursive;
+  --secondaryFont: 'Montserrat', sans-serif;
+  --light: 300;
+  --regular: 400;
+  --medium: 500;
+}
+
 * {
   box-sizing: border-box;
 }
