@@ -1,21 +1,46 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Pacifico&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700;0,800;1,300;1,400;1,500&family=Raleway:wght@100;200;400;500;700;900&display=swap');
 
-// Accent font will be Montserrat italics and light
-$primaryFont: 'Pacifico', cursive;
+// Accent font will be Raleway extra-light
+$primaryFont: 'Raleway', sans-serif;
 $secondaryFont: 'Montserrat', sans-serif;
 
-$fontWeight: (
+$cssSpring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+$fontWeights: (
+  'thin': 100,
+  'xLight': 200,
   'light': 300,
   'regular': 400,
   'medium': 500,
+  'bold': 700,
+  'xBold': 800,
+  'xXBold': 900,
+);
+
+$colorPalette: (
+  background: #eff0f3,
+  backgroundDarker: #dcdee5,
+  backgroundLighter: #fffffe,
+  baseColor: #ff8e3c,
+  accentColor: #d9376e,
+  black: #0d0d0d,
+  blackLighter: #2a2a2a,
+  gray: #bbbbbb,
+  grayDark: #b9bccb,
 );
 
 :root {
-  --primaryFont: 'Pacifico', cursive;
+  --primaryFont: 'Raleway', sans-serif;
   --secondaryFont: 'Montserrat', sans-serif;
+  --thin: 100;
+  --xLight: 200;
   --light: 300;
   --regular: 400;
   --medium: 500;
+  --bold: 700;
+  --xBold: 800;
+  --xXBold: 900;
+  --errorRed: #d9534f;
 }
 
 * {
@@ -24,13 +49,66 @@ $fontWeight: (
 
 html,
 body,
-#root {
+#root,
+.container {
   width: 100%;
   height: 100vh;
+  position: relative;
 }
 
 body {
   font-kerning: normal;
   margin: 0;
   padding: 0;
+  font-display: swap;
+  font-family: $secondaryFont;
+  font-weight: map-get($fontWeights, 'regular');
+}
+
+a.nav-link {
+  color: change-color($color: map-get($colorPalette, black), $alpha: 0.3);
+  transition: color 0.3s ease;
+}
+
+a.nav-link:hover,
+a.nav-link:active,
+a.current-page {
+  color: map-get($colorPalette, black);
+}
+
+a.current-page:after {
+  content: '';
+  width: 100%;
+  height: 0.4em;
+  background: change-color($color: map-get($map: $colorPalette, $key: baseColor), $alpha: 0.5);
+  position: absolute;
+  top: 37px;
+  left: 5px;
+  z-index: -2;
+  transition: transform 0.3s $cssSpring;
+  transform-origin: left;
+  animation: currentPage 0.3s 1s $cssSpring both;
+}
+
+.section-container {
+  background: map-get($map: $colorPalette, $key: background);
+  display: flex;
+  width: inherit;
+  height: 100vh;
+}
+
+input,
+form > button {
+  outline: rgba(0, 0, 0, 0.2);
+}
+
+@keyframes currentPage {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
 }
