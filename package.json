@@ -22,7 +22,7 @@
   "scripts": {
     "start": "npm-run-all --parallel serve dev",
     "dev": "set HTTPS=true&&react-scripts start",
-    "serve": "node -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env",
+    "serve": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env",
     "build": "react-scripts build",
     "test": "react-scripts test --testMatch=**/__tests__/**/*.test.[j]s?(x)",
     "eject": "react-scripts eject"

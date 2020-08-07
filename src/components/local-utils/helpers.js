@@ -1,6 +1,4 @@
 export function generateFetchOptions(method, body = {}, token = null) {
-  const { REACT_APP_API_ENDPOINT: ORIGIN } = process.env;
-
   const optionsObj = {
     method,
     headers: {
