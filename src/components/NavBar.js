@@ -2,10 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 
-import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
-
-// TODO add animations to nav
+import { m as motion } from 'framer-motion';
 
 const NavContainer = styled.nav`
   width: 100vw;

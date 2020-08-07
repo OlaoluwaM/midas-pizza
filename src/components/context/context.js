@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const themeObj = {
   background: '#eff0f3',
   backgroundDarker: '#DCDEE5',

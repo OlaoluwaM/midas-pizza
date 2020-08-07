@@ -2,8 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 
-import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
+import { m as motion } from 'framer-motion';
 import { PageWrapper } from './general-components/general';
 import { homeVariants } from './local-utils/framer-variants';
 import { ReactComponent as EatingPizzaSVG } from '../assets/undraw_staying_in_i80u.svg';
@@ -116,8 +116,7 @@ export default function Home() {
         <Content>
           <motion.div
             variants={contentVariants}
-            style={{ all: 'inherit', backgroundColor: 'transparent' }}
-          >
+            style={{ all: 'inherit', backgroundColor: 'transparent' }}>
             <h1>Pizza from the comfort of your home</h1>
 
             <p>
@@ -126,7 +125,7 @@ export default function Home() {
               <strong>new delivery platform</strong>
             </p>
 
-            <NavLink to="/authenticate">
+            <NavLink data-testid="link" to="/authenticate">
               <span>Sign Up</span>
               <span className="backdrop"></span>
             </NavLink>

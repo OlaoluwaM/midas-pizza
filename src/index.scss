@@ -102,6 +102,10 @@ form > button {
   outline: rgba(0, 0, 0, 0.2);
 }
 
+.Toastify__toast-body {
+  padding: 1em;
+}
+
 @keyframes currentPage {
   from {
     opacity: 0;

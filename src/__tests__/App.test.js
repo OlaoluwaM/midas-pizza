@@ -1,10 +1,10 @@
 import React from 'react';
 import Home from '../components/Home';
 
+import { render } from '@testing-library/react';
 import { themeObj } from '../components/context/context';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import { render, cleanup, fireEvent, screen } from '@testing-library/react';
 
 test('Home page test', () => {
   const { getByRole } = render(
