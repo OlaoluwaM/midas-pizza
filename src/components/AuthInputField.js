@@ -50,7 +50,7 @@ const InputContainer = styled(motion.div)`
 `;
 
 const ErrorDisplay = styled(motion.p)`
-  color: var(--errorRed);
+  color: var(--error);
   margin-bottom: 0px;
   margin-top: 10px;
   font-weight: var(--medium);

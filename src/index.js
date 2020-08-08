@@ -5,8 +5,8 @@ import * as serviceWorker from './serviceWorker';
 
 import { BrowserRouter as Router } from 'react-router-dom';
 
-import './index.scss';
 import 'react-toastify/dist/ReactToastify.min.css';
+import './index.scss';
 
 ReactDOM.render(
   <React.StrictMode>

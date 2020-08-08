@@ -14,7 +14,7 @@ export const pageVariants = new Variants(
     transition: { when: 'beforeChildren', delayChildren: 0.2, staggerChildren: 0.3 },
   },
   {
-    opacity: 0,
+    opacity: 1,
     transition: { when: 'afterChildren', staggerDirection: -1, staggerChildren: 0.3 },
   }
 );

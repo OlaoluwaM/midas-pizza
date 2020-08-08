@@ -1,5 +1,6 @@
 import React from 'react';
 import Input from './AuthInputField';
+import Loading from './Loading';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 
@@ -104,7 +105,8 @@ export default function Authenticate() {
 
   const passwordRef = React.useRef();
   const [formStateIndex, setFormStateIndex] = React.useState(1);
-  const { register, handleSubmit, watch, errors, clearErrors } = useForm({
+  const [isLoading, setIsLoading] = React.useState(false);
+  const { register, handleSubmit, watch, errors, clearErrors, reset } = useForm({
     reValidateMode: 'onBlur',
   });
 
@@ -128,7 +130,6 @@ export default function Authenticate() {
     [formStates[1]]: async formData => {
       delete formData.confirmPassword;
       const request = await fetch(`${URL}/users`, generateFetchOptions('POST', formData));
-      console.log(request);
       const response = await request.json();
       console.log(response);
       return request;
@@ -137,14 +138,17 @@ export default function Authenticate() {
 
   const submitHandler = async formData => {
     const currentFormState = formStates[formStateIndex];
+    setIsLoading(true);
     try {
       const responseData = await submitLogic[currentFormState](formData);
+      // TODO on completion add success toast
       console.log(responseData);
     } catch (err) {
       console.log(err);
-
+      reset({});
       toast('Something went wrong, Check your form and try again', { type: 'error' });
     } finally {
+      setIsLoading(false);
     }
   };
 
@@ -160,32 +164,36 @@ export default function Authenticate() {
             </motion.h2>
 
             <FormProvider register={register} errors={errors}>
-              <Form onSubmit={handleSubmit(submitHandler)} layout>
-                {!isLogin && <Input name="email" type="email" placeholder="Email" />}
+              {isLoading ? (
+                <Loading />
+              ) : (
+                <Form onSubmit={handleSubmit(submitHandler)} layout>
+                  {!isLogin && <Input name="email" type="email" placeholder="Email" />}
 
-                <Input name="name" placeholder="Username" validationsParam={isLogin} />
+                  <Input name="name" placeholder="Username" validationsParam={isLogin} />
 
-                <Input
-                  name="password"
-                  type="password"
-                  placeholder="Password"
-                  validationsParam={isLogin}
-                />
+                  <Input
+                    name="password"
+                    type="password"
+                    placeholder="Password"
+                    validationsParam={isLogin}
+                  />
 
-                {!isLogin && (
-                  <>
-                    <Input name="streetAddress" placeholder="Street Address" />
-                    <Input
-                      name="confirmPassword"
-                      type="password"
-                      placeholder="Confirm Password"
-                      validationsParam={passwordRef.current}
-                    />
-                  </>
-                )}
+                  {!isLogin && (
+                    <>
+                      <Input name="streetAddress" placeholder="Street Address" />
+                      <Input
+                        name="confirmPassword"
+                        type="password"
+                        placeholder="Confirm Password"
+                        validationsParam={passwordRef.current}
+                      />
+                    </>
+                  )}
 
-                <SubmitButton layout>{formStates[formStateIndex]}</SubmitButton>
-              </Form>
+                  <SubmitButton layout>{formStates[formStateIndex]}</SubmitButton>
+                </Form>
+              )}
             </FormProvider>
           </AnimateSharedLayout>
         </motion.div>

@@ -40,7 +40,10 @@ $colorPalette: (
   --bold: 700;
   --xBold: 800;
   --xXBold: 900;
-  --errorRed: #d9534f;
+  --error: #d9534f;
+  --success: #07bc0c;
+  --warning: #f1c40f;
+  --info: #3498db;
 }
 
 * {
@@ -102,8 +105,34 @@ form > button {
   outline: rgba(0, 0, 0, 0.2);
 }
 
+.Toastify__toast {
+  border-radius: 2.5px;
+}
+
 .Toastify__toast-body {
   padding: 1em;
+  text-transform: capitalize;
+}
+
+@each $type in (info, success, warning, error) {
+  .Toastify__toast--#{$type} {
+    background: map-get($map: $colorPalette, $key: background);
+    color: map-get($map: $colorPalette, $key: black);
+
+    &:after {
+      content: '';
+      position: absolute;
+      height: 100%;
+      left: 0;
+      top: 0;
+      background: var(--#{$type});
+      width: 0.3em;
+    }
+  }
+}
+
+.Toastify__close-button {
+  color: map-get($map: $colorPalette, $key: accentColor);
 }
 
 @keyframes currentPage {

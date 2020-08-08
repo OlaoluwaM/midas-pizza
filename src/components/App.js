@@ -1,6 +1,7 @@
 import React from 'react';
 import Home from './Home';
 import Nav from './NavBar';
+import Loading from './Loading';
 
 import { themeObj } from './context/context';
 import { ThemeProvider } from 'styled-components';
@@ -16,9 +17,6 @@ import {
 
 const Authenticate = React.lazy(() => import('./Auth'));
 
-// TODO get or create a loading component
-// TODO change notification animations
-
 function App() {
   const location = useLocation();
 
@@ -30,9 +28,7 @@ function App() {
           <ToastContainer hideProgressBar />
 
           <AnimatePresence exitBeforeEnter>
-            <React.Suspense
-              key={location.pathname}
-              fallback={<p style={{ position: 'absolute', top: 0 }}>Loading...</p>}>
+            <React.Suspense key={location.pathname} fallback={<Loading fullscreen={true} />}>
               <Switch location={location}>
                 <Route path="/authenticate">
                   <Authenticate />

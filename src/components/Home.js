@@ -27,6 +27,7 @@ const Content = styled(motion.div)`
   padding-left: 3.5em;
   z-index: 1;
   background: ${({ theme }) => hexToRgb(theme.baseColor, 0.2)};
+  transition: background 0.3s ease;
 
   h1 {
     font-family: var(--primaryFont);
@@ -113,7 +114,7 @@ export default function Home() {
   return (
     <PageWrapper>
       <HomeSection>
-        <Content>
+        <Content exit={{ background: 'transparent' }}>
           <motion.div
             variants={contentVariants}
             style={{ all: 'inherit', backgroundColor: 'transparent' }}>
