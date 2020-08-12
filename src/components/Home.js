@@ -6,6 +6,7 @@ import { NavLink } from 'react-router-dom';
 import { m as motion } from 'framer-motion';
 import { PageWrapper } from './general-components/general';
 import { homeVariants } from './local-utils/framer-variants';
+import { UserSessionContext } from './context/context';
 import { ReactComponent as EatingPizzaSVG } from '../assets/undraw_staying_in_i80u.svg';
 
 const { contentVariants, artVariants } = homeVariants;
@@ -111,6 +112,8 @@ const Art = styled(motion.div)`
 `;
 
 export default function Home() {
+  const { authenticated } = React.useContext(UserSessionContext);
+
   return (
     <PageWrapper>
       <HomeSection>
@@ -126,8 +129,8 @@ export default function Home() {
               <strong>new delivery platform</strong>
             </p>
 
-            <NavLink data-testid="link" to="/authenticate">
-              <span>Sign Up</span>
+            <NavLink data-testid="link" to={authenticated ? '/authenticate' : '/menu'}>
+              <span>{authenticated ? 'Order' : 'Sign Up'}</span>
               <span className="backdrop"></span>
             </NavLink>
           </motion.div>

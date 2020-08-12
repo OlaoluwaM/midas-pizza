@@ -22,7 +22,7 @@ const Overlay = styled(motion.div)`
   z-index: 400;
 `;
 
-const Spinner = styled(motion.div)`
+const Spinner = styled.div`
   width: 30px;
   height: 30px;
   border-radius: 100%;
@@ -32,9 +32,32 @@ const Spinner = styled(motion.div)`
   will-change: transform;
 `;
 
-export default function Loading({ fullscreen = false }) {
+export default function Loading({ fullscreen = false, layoutId }) {
+  const overlayPosition = { position: 'absolute' };
+  const variants = {
+    hide: {
+      opacity: 0,
+      transition: { when: 'beforeChildren' },
+    },
+    show: {
+      opacity: 1,
+      transition: { when: 'afterChildren' },
+    },
+    exit: {
+      opacity: 0,
+      transition: { when: 'beforeChildren' },
+    },
+  };
+
   return (
-    <Overlay style={{ position: fullscreen ? 'absolute' : 'relative' }} key="overlay" layout>
+    <Overlay
+      variants={variants}
+      initial="hide"
+      animate="show"
+      exit="exit"
+      key="overlay"
+      style={overlayPosition}
+      layoutId={layoutId}>
       <Spinner />
     </Overlay>
   );

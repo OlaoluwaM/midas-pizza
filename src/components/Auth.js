@@ -5,11 +5,14 @@ import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 
 import { toast } from 'react-toastify';
+import { Redirect } from 'react-router-dom';
 import { PageWrapper } from './general-components/general';
 import { authVariants } from './local-utils/framer-variants';
-import { generateFetchOptions } from './local-utils/helpers';
+import { UserSessionContext } from './context/context';
+import { handleInvalidInput } from './local-utils/authFunctions';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Blob2 as AuthPageBlob1 } from '../assets/Blobs';
+import { generateUrl, generateFetchOptions, fetchWrapper } from './local-utils/helpers';
 import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion';
 
 const { formVariants, generalAuthVariants } = authVariants;
@@ -58,8 +61,6 @@ const AuthSection = styled.section.attrs({
 const Form = styled(motion.form)`
   width: 100%;
   height: auto;
-  padding: 1em;
-  padding-left: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -99,61 +100,71 @@ const SwitchFormStateText = styled(motion.p)`
     color: ${({ theme }) => hexToRgb(theme.accentColor, 1)};
   }
 `;
+Authenticate.whyDidYouRender = true;
 
-export default function Authenticate() {
-  const formStates = ['Log in', 'Sign Up'];
-
+export default function Authenticate({ authUser }) {
   const passwordRef = React.useRef();
-  const [formStateIndex, setFormStateIndex] = React.useState(1);
+  const formStates = ['Log in', 'Sign Up'];
+  const { authenticated } = React.useContext(UserSessionContext);
+
   const [isLoading, setIsLoading] = React.useState(false);
-  const { register, handleSubmit, watch, errors, clearErrors, reset } = useForm({
-    reValidateMode: 'onBlur',
-  });
+  const [formStateIndex, setFormStateIndex] = React.useState(1);
 
-  passwordRef.current = watch('password', '');
+  const formObj = useForm({ reValidateMode: 'onBlur' });
+  const { register, handleSubmit, errors } = formObj;
+  const { clearErrors, reset, unregister, setError, formState } = formObj;
+
   const isLogin = formStateIndex === 0;
-  const { REACT_APP_API_ENDPOINT: URL } = process.env;
 
+  const formStateEndpoints = ['tokens', 'users'];
   const switchFormState = () => {
+    if (Object.keys(errors).length > 0) clearErrors();
     setFormStateIndex(prev => (prev === 1 ? 0 : prev + 1));
-    clearErrors();
-  };
-
-  const submitLogic = {
-    [formStates[0]]: async formData => {
-      const request = await fetch(`${URL}/tokens`, generateFetchOptions('POST', formData));
-      const response = await request.json();
-      console.log(response);
-      return response;
-    },
-
-    [formStates[1]]: async formData => {
-      delete formData.confirmPassword;
-      const request = await fetch(`${URL}/users`, generateFetchOptions('POST', formData));
-      const response = await request.json();
-      console.log(response);
-      return request;
-    },
+    if (!isLogin) unregister(['password', 'name', 'confirmPassword', 'streetAddress']);
   };
 
   const submitHandler = async formData => {
-    const currentFormState = formStates[formStateIndex];
-    setIsLoading(true);
+    const url = generateUrl(formStateEndpoints[formStateIndex]);
     try {
-      const responseData = await submitLogic[currentFormState](formData);
-      // TODO on completion add success toast
-      console.log(responseData);
-    } catch (err) {
-      console.log(err);
-      reset({});
-      toast('Something went wrong, Check your form and try again', { type: 'error' });
+      if (!isLogin) {
+        const { password, confirmPassword } = formData;
+        if (password !== confirmPassword) throw 'confirmPassword field does not match';
+        delete formData.confirmPassword;
+      }
+      setIsLoading(true);
+
+      const userToken = await fetchWrapper(url, generateFetchOptions('POST', formData));
+      localStorage.setItem('currentAccessToken', JSON.stringify(userToken));
+
+      authUser(prev => ({ ...prev, authenticated: true }));
+      const toastOptions = { type: 'success', autoClose: 3000 };
+
+      isLogin ? toast('Welcome back', toastOptions) : toast('Thanks for joining', toastOptions);
+    } catch (error) {
+      if (error?.search(/confirmPassword/) > -1) {
+        clearErrors('confirmPassword');
+      } else reset({});
+
+      console.error(error);
+
+      if (error.status === 500 || typeof error === 'object') {
+        toast('Something went wrong in the authentication process', { type: 'error' });
+      } else {
+        const { field, message } = handleInvalidInput(error);
+        setError(field, { type: 'manual', message });
+        toast('Please check that you have entered your information correctly', { type: 'error' });
+      }
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
     }
   };
+  console.log(isLoading);
 
   return (
     <PageWrapper>
+      {authenticated && !isLoading && <Redirect to="/" />}
       <AuthSection>
         <AuthPageBlob1 />
 
@@ -163,37 +174,34 @@ export default function Authenticate() {
               {formStates[formStateIndex]}
             </motion.h2>
 
-            <FormProvider register={register} errors={errors}>
-              {isLoading ? (
-                <Loading />
-              ) : (
-                <Form onSubmit={handleSubmit(submitHandler)} layout>
-                  {!isLogin && <Input name="email" type="email" placeholder="Email" />}
+            <FormProvider register={register} errors={errors} formState={formState}>
+              <AnimatePresence>{isLoading && <Loading layoutId="auth" />}</AnimatePresence>
 
-                  <Input name="name" placeholder="Username" validationsParam={isLogin} />
+              <Form
+                layoutId="auth"
+                variants={formVariants}
+                onSubmit={handleSubmit(submitHandler)}
+                key="form">
+                {!isLogin && <Input name="name" placeholder="Username" />}
 
-                  <Input
-                    name="password"
-                    type="password"
-                    placeholder="Password"
-                    validationsParam={isLogin}
-                  />
+                <Input name="email" type="email" placeholder="Email" />
 
-                  {!isLogin && (
-                    <>
-                      <Input name="streetAddress" placeholder="Street Address" />
-                      <Input
-                        name="confirmPassword"
-                        type="password"
-                        placeholder="Confirm Password"
-                        validationsParam={passwordRef.current}
-                      />
-                    </>
-                  )}
+                <Input
+                  name="password"
+                  type="password"
+                  placeholder="Password"
+                  validationsParam={isLogin}
+                />
 
-                  <SubmitButton layout>{formStates[formStateIndex]}</SubmitButton>
-                </Form>
-              )}
+                {!isLogin && (
+                  <>
+                    <Input name="streetAddress" placeholder="Street Address" />
+                    <Input name="confirmPassword" type="password" placeholder="Confirm Password" />
+                  </>
+                )}
+
+                <SubmitButton layout>{formStates[formStateIndex]}</SubmitButton>
+              </Form>
             </FormProvider>
           </AnimateSharedLayout>
         </motion.div>

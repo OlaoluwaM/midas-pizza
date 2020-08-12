@@ -70,22 +70,26 @@ body {
 
 a.nav-link {
   color: change-color($color: map-get($colorPalette, black), $alpha: 0.3);
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, fill 0.3s ease, stroke 0.3s ease;
 }
 
 a.nav-link:hover,
 a.nav-link:active,
 a.current-page {
   color: map-get($colorPalette, black);
+  svg {
+    fill: map-get($colorPalette, black);
+    stroke: map-get($colorPalette, black);
+  }
 }
 
 a.current-page:after {
   content: '';
   width: 100%;
   height: 0.4em;
-  background: change-color($color: map-get($map: $colorPalette, $key: baseColor), $alpha: 0.5);
+  background: change-color($color: map-get($map: $colorPalette, $key: baseColor), $alpha: 0.7);
   position: absolute;
-  top: 37px;
+  bottom: 8px;
   left: 5px;
   z-index: -2;
   transition: transform 0.3s $cssSpring;
@@ -106,12 +110,12 @@ form > button {
 }
 
 .Toastify__toast {
+  padding: 0.7em;
   border-radius: 2.5px;
 }
 
 .Toastify__toast-body {
   padding: 1em;
-  text-transform: capitalize;
 }
 
 @each $type in (info, success, warning, error) {

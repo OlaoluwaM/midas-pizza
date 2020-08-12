@@ -3,7 +3,10 @@ import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 
 import { NavLink } from 'react-router-dom';
+import { Settings } from '@styled-icons/ionicons-solid/Settings';
 import { m as motion } from 'framer-motion';
+import { Cart3 as Cart } from '@styled-icons/bootstrap/Cart3';
+import { UserSessionContext } from './context/context';
 
 const NavContainer = styled.nav`
   width: 100vw;
@@ -17,25 +20,32 @@ const NavContainer = styled.nav`
   ul {
     height: 100%;
     margin: 0;
-    padding: 0 0 0 4em;
-    display: flex;
-    align-items: center;
+    padding: 0 4em;
     list-style: none;
 
     li {
       font-weight: var(--medium);
-      float: left;
       height: 100%;
       margin: 15px;
-      padding-bottom: 0.9em;
+      display: inline-block;
+      padding-bottom: 1.5em;
       margin-right: 3em;
+
+      svg {
+        stroke-width: 0.3px;
+        width: 1.4em;
+      }
+
+      &.pos-right {
+        float: right;
+      }
 
       a {
         text-decoration: none;
         font-size: 1.2em;
         display: flex;
         justify-content: center;
-        align-items: flex-end;
+        align-items: center;
         height: 100%;
         position: relative;
       }
@@ -48,6 +58,8 @@ const NavContainer = styled.nav`
 `;
 
 export default function Nav() {
+  const { authenticated } = React.useContext(UserSessionContext);
+
   return (
     <NavContainer>
       <ul>
@@ -57,11 +69,35 @@ export default function Nav() {
           </NavLink>
         </motion.li>
 
-        <motion.li>
-          <NavLink className="nav-link" activeClassName="current-page" to="/authenticate">
-            Sign Up
-          </NavLink>
-        </motion.li>
+        {!authenticated && (
+          <motion.li>
+            <NavLink className="nav-link" activeClassName="current-page" to="/authenticate">
+              Sign Up
+            </NavLink>
+          </motion.li>
+        )}
+
+        {authenticated && (
+          <>
+            <motion.li>
+              <NavLink className="nav-link" activeClassName="current-page" to="/menu">
+                Order
+              </NavLink>
+            </motion.li>
+
+            <motion.li className="pos-right">
+              <NavLink className="nav-link" activeClassName="current-page" to="/menu">
+                <Settings title="Settings" />
+              </NavLink>
+            </motion.li>
+
+            <motion.li className="pos-right">
+              <NavLink className="nav-link" activeClassName="current-page" to="/cart">
+                <Cart title="Cart" />
+              </NavLink>
+            </motion.li>
+          </>
+        )}
       </ul>
     </NavContainer>
   );

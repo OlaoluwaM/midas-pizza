@@ -83,3 +83,5 @@ export const authVariants = {
     { opacity: 0 }
   ),
 };
+
+// export const loadingVariants = new Variants({ opacity: 0, transition: {}});
