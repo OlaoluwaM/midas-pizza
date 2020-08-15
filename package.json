@@ -26,7 +26,7 @@
     "postbuild": "npm run serve:prod",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "build": "react-scripts build && npm run analyze",
-    "test": "react-scripts test --testMatch=**/__tests__/**/*.test.[j]s?(x)",
+    "test": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test.[j]s?(x)",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -47,6 +47,8 @@
   "devDependencies": {
     "@welldone-software/why-did-you-render": "^4.3.0",
     "dotenv": "^8.2.0",
+    "jest-environment-jsdom-sixteen": "^1.0.3",
+    "jest-fetch-mock": "^3.0.3",
     "node-sass": "^4.14.1",
     "npm-run-all": "^4.1.5",
     "prop-types": "^15.7.2"

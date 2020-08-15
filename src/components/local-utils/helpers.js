@@ -39,7 +39,7 @@ export async function fetchWrapper(url, options) {
 
     return response;
   } catch (error) {
-    const errorText = await error.text();
+    const errorText = typeof error === 'string' ? error : await error.text();
     console.error(errorText);
     throw errorText;
   }

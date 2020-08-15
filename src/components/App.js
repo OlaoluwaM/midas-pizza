@@ -25,48 +25,8 @@ whyDidYouRender(React, {
   diffNameColor: 'red',
 });
 
-// async function renewToken(currentUserToken) {
-//   const { Id, expirationDate } = currentUserToken;
-
-//   if (expirationDate < Date.now()) {
-//     localStorage.removeItem('currentAccessToken');
-//     return;
-//   }
-
-//   try {
-//     await fetch(generateUrl('tokens'), generateFetchOptions('PUT', {}, Id));
-//   } catch (error) {
-//     console.error(error);
-//     throw new Error('An error occurred renewing token on the server');
-//   }
-
-//   currentUserToken.expirationDate += 1000 * 3600;
-//   console.log('updated token');
-//   localStorage.setItem('currentAccessToken', JSON.stringify(currentUserToken));
-
-//   toast('Welcome Back', { type: 'success' });
-// }
-
-// async function getCurrentUser({ Id, email }) {
-//   try {
-//     const req = await fetch(
-//       generateUrl(`users?email=${email}`),
-//       generateFetchOptions('GET', null, Id)
-//     );
-
-//     if (!req.ok) {
-//       throw new Error(`Request failed with status of ${req.status} and ${req.statusText}`);
-//     }
-//     return await req.json();
-//   } catch (error) {
-//     console.error(error);
-//     throw new Error('An error occurred retrieving current user');
-//   }
-// }
-
 function App() {
   const currentUserToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
-  console.log(currentUserToken);
 
   const [activeUser, setActiveUser] = React.useState({
     userData: null,
@@ -86,14 +46,17 @@ function App() {
           generateFetchOptions('GET', null, currentUserToken.Id)
         );
 
+        if (!activeUser.authenticated) {
+          toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
+        }
+
         setActiveUser({ userData: ownerOfCurrentToken, authenticated: true });
       } catch (error) {
-        toast(error.message, { type: 'error' });
+        if (error.search(/Refresh token/i) > -1) error = 'Your session has expired, please log in';
+        toast(error, { type: 'error' });
       }
     })();
   }, [activeUser.authenticated]);
-
-  console.log(activeUser);
 
   return (
     <UserSessionContext.Provider value={activeUser}>

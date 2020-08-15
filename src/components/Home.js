@@ -113,6 +113,8 @@ const Art = styled(motion.div)`
 
 export default function Home() {
   const { authenticated } = React.useContext(UserSessionContext);
+  console.log(authenticated);
+  const linkLocation = authenticated ? '/menu' : '/authenticate';
 
   return (
     <PageWrapper>
@@ -129,7 +131,7 @@ export default function Home() {
               <strong>new delivery platform</strong>
             </p>
 
-            <NavLink data-testid="link" to={authenticated ? '/authenticate' : '/menu'}>
+            <NavLink data-testid="link" to={linkLocation}>
               <span>{authenticated ? 'Order' : 'Sign Up'}</span>
               <span className="backdrop"></span>
             </NavLink>

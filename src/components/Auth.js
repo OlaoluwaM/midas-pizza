@@ -17,6 +17,7 @@ import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion
 
 const { formVariants, generalAuthVariants } = authVariants;
 
+// TODO Animate Blob
 const AuthSection = styled.section.attrs({
   className: 'section-container',
 })`
@@ -58,7 +59,11 @@ const AuthSection = styled.section.attrs({
   }
 `;
 
-const Form = styled(motion.form)`
+const Form = styled(motion.form).attrs({
+  variants: formVariants,
+  layoutId: 'auth',
+  key: 'form',
+})`
   width: 100%;
   height: auto;
   display: flex;
@@ -87,7 +92,9 @@ const SubmitButton = styled(motion.button)`
   }
 `;
 
-const SwitchFormStateText = styled(motion.p)`
+const SwitchFormStateText = styled(motion.p).attrs({
+  variants: generalAuthVariants,
+})`
   position: fixed;
   bottom: 0;
   font-weight: var(--bold);
@@ -141,6 +148,7 @@ export default function Authenticate({ authUser }) {
 
       isLogin ? toast('Welcome back', toastOptions) : toast('Thanks for joining', toastOptions);
     } catch (error) {
+      console.log(error);
       if (error?.search(/confirmPassword/) > -1) {
         clearErrors('confirmPassword');
       } else reset({});
@@ -177,11 +185,7 @@ export default function Authenticate({ authUser }) {
             <FormProvider register={register} errors={errors} formState={formState}>
               <AnimatePresence>{isLoading && <Loading layoutId="auth" />}</AnimatePresence>
 
-              <Form
-                layoutId="auth"
-                variants={formVariants}
-                onSubmit={handleSubmit(submitHandler)}
-                key="form">
+              <Form onSubmit={handleSubmit(submitHandler)}>
                 {!isLogin && <Input name="name" placeholder="Username" />}
 
                 <Input name="email" type="email" placeholder="Email" />
@@ -206,14 +210,9 @@ export default function Authenticate({ authUser }) {
           </AnimateSharedLayout>
         </motion.div>
 
-        <AnimatePresence exitBeforeEnter>
-          <SwitchFormStateText
-            key={isLogin}
-            variants={generalAuthVariants}
-            onClick={switchFormState}>
-            {isLogin ? 'Not a member? ' : 'Already a member? '}Click here
-          </SwitchFormStateText>
-        </AnimatePresence>
+        <SwitchFormStateText key={isLogin} layoutId={isLogin} onClick={switchFormState}>
+          {isLogin ? 'Not a member? ' : 'Already a member? '}Click here
+        </SwitchFormStateText>
       </AuthSection>
     </PageWrapper>
   );

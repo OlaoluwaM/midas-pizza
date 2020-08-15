@@ -51,6 +51,7 @@ export default function Loading({ fullscreen = false, layoutId }) {
 
   return (
     <Overlay
+      data-testid="loader"
       variants={variants}
       initial="hide"
       animate="show"

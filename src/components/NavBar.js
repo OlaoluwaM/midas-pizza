@@ -79,20 +79,14 @@ export default function Nav() {
 
         {authenticated && (
           <>
-            <motion.li>
-              <NavLink className="nav-link" activeClassName="current-page" to="/menu">
-                Order
-              </NavLink>
-            </motion.li>
-
             <motion.li className="pos-right">
-              <NavLink className="nav-link" activeClassName="current-page" to="/menu">
+              <NavLink className="nav-link" activeClassName="current-page" to="/settings">
                 <Settings title="Settings" />
               </NavLink>
             </motion.li>
 
             <motion.li className="pos-right">
-              <NavLink className="nav-link" activeClassName="current-page" to="/cart">
+              <NavLink className="nav-link" activeClassName="current-page" to="/menu/cart">
                 <Cart title="Cart" />
               </NavLink>
             </motion.li>

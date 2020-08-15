@@ -75,6 +75,7 @@ const Input = props => {
           render={({ message }) => (
             <AnimatePresence exitBeforeEnter>
               <ErrorDisplay
+                data-testid="invalid-input-error"
                 variants={errorMessageVariants}
                 initial="hide"
                 animate="show"
