@@ -1,20 +1,11 @@
-import React from 'react';
 import Authenticate from '../components/Auth';
 
-import { ThemeProvider } from 'styled-components';
-import { themeObj, UserSessionContext } from '../components/context/context';
 import { render, cleanup, fireEvent, act, screen } from '@testing-library/react';
 
 afterAll(cleanup);
 
 function renderWithContext(value = { authenticated: false }) {
-  return render(
-    <ThemeProvider theme={themeObj}>
-      <UserSessionContext.Provider value={value}>
-        <Authenticate />
-      </UserSessionContext.Provider>
-    </ThemeProvider>
-  );
+  return render(contextWrapper(Authenticate, value));
 }
 
 test('Sign up tests', async () => {
@@ -22,7 +13,8 @@ test('Sign up tests', async () => {
 
   // Arrange
   const { findAllByText, findAllByTestId, getByPlaceholderText } = utils;
-  const { findByPlaceholderText, findByRole, findAllByRole, findByText } = utils;
+  const { findByPlaceholderText, findByRole, findByText } = utils;
+
   const submitButton = await findByRole('button');
   const passwordField = await findByPlaceholderText('Password');
 
@@ -39,7 +31,7 @@ test('Sign up tests', async () => {
     fireEvent.blur(passwordField);
   });
 
-  // Field revalidates on blur and successful input
+  // Field re-validates on blur and successful input
   expect(await findAllByTestId('invalid-input-error')).toHaveLength(4);
   const dataToPass = {
     Username: 'britt',
@@ -48,8 +40,6 @@ test('Sign up tests', async () => {
     'Street Address': '545 W. Ann St.Matthews, NC 28104',
     'Confirm Password': '123',
   };
-
-  const inputs = await findAllByRole('textbox');
 
   await act(async () => {
     fireEvent.input(passwordField, { target: { value: '' } });
@@ -84,7 +74,7 @@ describe('Invalid input tests', () => {
 
   test('Log in', async () => {
     fetch.mockResponses(
-      ['User may not exist', { status: 500 }],
+      ['User may not exist', { status: 400 }],
       ['Invalid password', { status: 400 }]
     );
     const utils = renderWithContext();
@@ -135,7 +125,7 @@ describe('Invalid input tests', () => {
   });
 
   test('Sign Up', async () => {
-    fetch.mockRejectOnce('User may already exist', { status: 500 });
+    fetch.mockRejectOnce('User may already exist', { status: 400 });
     const utils = renderWithContext();
 
     const { findByRole, findAllByTestId, getByPlaceholderText, findByText } = utils;

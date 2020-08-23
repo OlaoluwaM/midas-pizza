@@ -57,6 +57,7 @@ body,
   width: 100%;
   height: 100vh;
   position: relative;
+  background-color: map-get($map: $colorPalette, $key: background);
 }
 
 body {
@@ -86,10 +87,10 @@ a.current-page {
 a.current-page:after {
   content: '';
   width: 100%;
-  height: 0.4em;
-  background: change-color($color: map-get($map: $colorPalette, $key: baseColor), $alpha: 0.7);
+  height: 0.5em;
+  background: change-color($color: map-get($map: $colorPalette, $key: baseColor), $alpha: 0.4);
   position: absolute;
-  bottom: 8px;
+  bottom: 12%;
   left: 5px;
   z-index: -2;
   transition: transform 0.3s $cssSpring;
@@ -118,6 +119,15 @@ form > button {
   padding: 1em;
 }
 
+.blob {
+  position: fixed;
+  height: auto;
+
+  path {
+    transform: translate(-100, -100);
+  }
+}
+
 @each $type in (info, success, warning, error) {
   .Toastify__toast--#{$type} {
     background: map-get($map: $colorPalette, $key: background);
@@ -137,6 +147,10 @@ form > button {
 
 .Toastify__close-button {
   color: map-get($map: $colorPalette, $key: accentColor);
+}
+
+button.active-filter {
+  cursor: default;
 }
 
 @keyframes currentPage {

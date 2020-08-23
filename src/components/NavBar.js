@@ -10,9 +10,9 @@ import { UserSessionContext } from './context/context';
 
 const NavContainer = styled.nav`
   width: 100vw;
-  height: 8%;
-  background: transparent;
-  position: absolute;
+  height: 7%;
+  background: ${({ theme }) => theme.background};
+  position: fixed;
   z-index: 2;
   color: ${({ theme }) => hexToRgb(theme.black, 0.5)};
   font-family: var(--secondaryFont);
@@ -79,6 +79,12 @@ export default function Nav() {
 
         {authenticated && (
           <>
+            <motion.li>
+              <NavLink className="nav-link" activeClassName="current-page" to="/menu">
+                Menu
+              </NavLink>
+            </motion.li>
+
             <motion.li className="pos-right">
               <NavLink className="nav-link" activeClassName="current-page" to="/settings">
                 <Settings title="Settings" />

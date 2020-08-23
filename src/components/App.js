@@ -15,9 +15,11 @@ import {
   AnimateLayoutFeature,
   AnimationFeature,
   ExitFeature,
+  m as motion,
 } from 'framer-motion';
 
 const Authenticate = React.lazy(() => import('./Auth'));
+const Menu = React.lazy(() => import('./Menu'));
 
 whyDidYouRender(React, {
   onlyLogs: true,
@@ -27,17 +29,20 @@ whyDidYouRender(React, {
 
 function App() {
   const currentUserToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
+  // TODO uncomment later
 
   const [activeUser, setActiveUser] = React.useState({
     userData: null,
     authenticated: false,
   });
+  const { userData, authenticated } = activeUser;
+  const protectedRoutes = [['/menu', Menu]];
 
   const location = useLocation();
 
   React.useEffect(() => {
     if (!currentUserToken) return;
-    if (activeUser.userData !== null) return;
+    if (userData !== null) return;
 
     (async () => {
       try {
@@ -46,17 +51,31 @@ function App() {
           generateFetchOptions('GET', null, currentUserToken.Id)
         );
 
-        if (!activeUser.authenticated) {
+        if (!authenticated) {
           toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
         }
 
         setActiveUser({ userData: ownerOfCurrentToken, authenticated: true });
       } catch (error) {
-        if (error.search(/Refresh token/i) > -1) error = 'Your session has expired, please log in';
-        toast(error, { type: 'error' });
+        console.error(error);
+        const { name } = error;
+
+        if (name === 'ServerConnectionError') {
+          console.error('Redirect required');
+          // TODO Redirect to Error page
+        } else {
+          const { status } = error;
+          let errorText = 'An error occurred. Please refresh and try again';
+          if (status === 401) {
+            errorText = 'Your session has expired. Please log back in';
+            localStorage.removeItem('currentAccessToken');
+          }
+
+          toast(errorText, { type: 'error' });
+        }
       }
     })();
-  }, [activeUser.authenticated]);
+  }, [authenticated]);
 
   return (
     <UserSessionContext.Provider value={activeUser}>
@@ -64,21 +83,37 @@ function App() {
         <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
           <div>
             <Nav />
+
             <ToastContainer hideProgressBar />
 
-            <AnimatePresence exitBeforeEnter>
-              <React.Suspense key={location.pathname} fallback={<Loading fullscreen={true} />}>
-                <Switch location={location}>
+            <React.Suspense fallback={<Loading fullscreen={true} />}>
+              <AnimatePresence exitBeforeEnter initial={false}>
+                <Switch location={location} key={location.pathname}>
+                  <Route exact path="/">
+                    <Home />
+                  </Route>
+
                   <Route path="/authenticate">
                     <Authenticate authUser={setActiveUser} />
                   </Route>
 
-                  <Route exact path="/">
-                    <Home />
+                  {authenticated &&
+                    protectedRoutes.map(([path, Component]) => (
+                      <Route path={path} key={path}>
+                        <Component />
+                      </Route>
+                    ))}
+
+                  <Route>
+                    <motion.div
+                      exit={{ opacity: 0 }}
+                      style={{ position: 'fixed', bottom: '50%', left: '50%' }}>
+                      404
+                    </motion.div>
                   </Route>
                 </Switch>
-              </React.Suspense>
-            </AnimatePresence>
+              </AnimatePresence>
+            </React.Suspense>
           </div>
         </MotionConfig>
       </ThemeProvider>

@@ -7,15 +7,11 @@ import { render, cleanup, act, screen } from '@testing-library/react';
 
 afterAll(cleanup);
 
-// function renderApp() {
-//   return
-// }
-
-// beforeEach(() => );
 afterEach(() => jest.clearAllTimers());
 
 window.localStorage.getItem = jest.fn(() => JSON.stringify(testAccessToken));
 jest.useFakeTimers();
+
 test('Should automatically authenticate user', async () => {
   fetch.once(
     JSON.stringify({
@@ -46,7 +42,7 @@ test('Should automatically authenticate user', async () => {
 });
 
 test('User should not be auto authenticated if refresh token has expired', async () => {
-  fetch.mockRejectOnce({ text: async () => 'Refresh token has expired' }, { status: 500 });
+  fetch.mockRejectOnce({ text: async () => 'Refresh token has expired', status: 401 });
 
   let utils;
   await act(async () => {
@@ -61,6 +57,7 @@ test('User should not be auto authenticated if refresh token has expired', async
   const link = getByTestId('link');
   const alert = getByRole('alert');
 
+  expect(window.localStorage.removeItem).toHaveBeenCalledWith('currentAccessToken');
   expect(alert).toHaveTextContent(/Your session has expired/i);
   expect(link).toHaveTextContent(/sign up/i);
 });

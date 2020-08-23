@@ -4,15 +4,18 @@ import hexToRgb from './utils/hexToRgb';
 
 import { NavLink } from 'react-router-dom';
 import { m as motion } from 'framer-motion';
-import { PageWrapper } from './general-components/general';
-import { homeVariants } from './local-utils/framer-variants';
 import { UserSessionContext } from './context/context';
 import { ReactComponent as EatingPizzaSVG } from '../assets/undraw_staying_in_i80u.svg';
+import { homeVariants, defaultPageTransitionVariants } from './local-utils/framer-variants';
 
 const { contentVariants, artVariants } = homeVariants;
 
-const HomeSection = styled.section.attrs({
+const HomeSection = styled(motion.section).attrs({
   className: 'section-container',
+  variants: defaultPageTransitionVariants,
+  animate: 'show',
+  initial: 'hide',
+  exit: 'exit',
 })`
   overflow: hidden;
 `;
@@ -27,7 +30,7 @@ const Content = styled(motion.div)`
   color: ${({ theme }) => theme.black};
   padding-left: 3.5em;
   z-index: 1;
-  background: ${({ theme }) => hexToRgb(theme.baseColor, 0.2)};
+  /* background: ${({ theme }) => hexToRgb(theme.baseColor, 0.2)}; */
   transition: background 0.3s ease;
 
   h1 {
@@ -117,31 +120,29 @@ export default function Home() {
   const linkLocation = authenticated ? '/menu' : '/authenticate';
 
   return (
-    <PageWrapper>
-      <HomeSection>
-        <Content exit={{ background: 'transparent' }}>
-          <motion.div
-            variants={contentVariants}
-            style={{ all: 'inherit', backgroundColor: 'transparent' }}>
-            <h1>Pizza from the comfort of your home</h1>
+    <HomeSection>
+      <Content exit={{ background: 'transparent' }}>
+        <motion.div
+          variants={contentVariants}
+          style={{ all: 'inherit', backgroundColor: 'transparent' }}>
+          <h1>Pizza from the comfort of your home</h1>
 
-            <p>
-              Quarantine's locked you up? Well, we are introducing a new way for our customers to
-              get the pizza's they love all while staying completely safe. with our{' '}
-              <strong>new delivery platform</strong>
-            </p>
+          <p>
+            Quarantine's locked you up? Well, we are introducing a new way for our customers to get
+            the pizza's they love all while staying completely safe. with our{' '}
+            <strong>new delivery platform</strong>
+          </p>
 
-            <NavLink data-testid="link" to={linkLocation}>
-              <span>{authenticated ? 'Order' : 'Sign Up'}</span>
-              <span className="backdrop"></span>
-            </NavLink>
-          </motion.div>
-        </Content>
+          <NavLink data-testid="link" to={linkLocation}>
+            <span>{authenticated ? 'Order' : 'Sign Up'}</span>
+            <span className="backdrop"></span>
+          </NavLink>
+        </motion.div>
+      </Content>
 
-        <Art variants={artVariants}>
-          <EatingPizzaSVG />
-        </Art>
-      </HomeSection>
-    </PageWrapper>
+      <Art variants={artVariants}>
+        <EatingPizzaSVG />
+      </Art>
+    </HomeSection>
   );
 }

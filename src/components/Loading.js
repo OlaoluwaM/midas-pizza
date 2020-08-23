@@ -12,7 +12,30 @@ const spin = keyframes`
   }
 `;
 
-const Overlay = styled(motion.div)`
+const variants = {
+  hide: {
+    opacity: 0,
+    transition: { when: 'beforeChildren' },
+  },
+  show: {
+    opacity: 1,
+    transition: { when: 'afterChildren' },
+  },
+  exit: {
+    opacity: 0,
+    transition: { when: 'beforeChildren' },
+  },
+};
+
+const Overlay = styled(motion.div).attrs({
+  'data-testid': 'loader',
+  variants: variants,
+  initial: 'hide',
+  animate: 'show',
+  exit: 'exit',
+  key: 'overlay',
+  className: 'loader',
+})`
   width: 100%;
   height: 100%;
   background: transparent;
@@ -20,6 +43,7 @@ const Overlay = styled(motion.div)`
   justify-content: center;
   align-items: center;
   z-index: 400;
+  position: ${({ isFullscreen }) => (isFullscreen ? 'fixed' : 'absolute')};
 `;
 
 const Spinner = styled.div`
@@ -32,33 +56,9 @@ const Spinner = styled.div`
   will-change: transform;
 `;
 
-export default function Loading({ fullscreen = false, layoutId }) {
-  const overlayPosition = { position: 'absolute' };
-  const variants = {
-    hide: {
-      opacity: 0,
-      transition: { when: 'beforeChildren' },
-    },
-    show: {
-      opacity: 1,
-      transition: { when: 'afterChildren' },
-    },
-    exit: {
-      opacity: 0,
-      transition: { when: 'beforeChildren' },
-    },
-  };
-
+export default function Loading({ fullscreen = false, layoutId, className }) {
   return (
-    <Overlay
-      data-testid="loader"
-      variants={variants}
-      initial="hide"
-      animate="show"
-      exit="exit"
-      key="overlay"
-      style={overlayPosition}
-      layoutId={layoutId}>
+    <Overlay isFullscreen={fullscreen} layoutId={layoutId}>
       <Spinner />
     </Overlay>
   );

@@ -1,3 +1,6 @@
+import hexToRgb from '../utils/hexToRgb';
+import { themeObj as theme } from '../context/context';
+
 class Variants {
   constructor(showVariants, hideVariants, exitVariants = null, exitInheritHide = true) {
     this.show = showVariants;
@@ -8,14 +11,19 @@ class Variants {
   }
 }
 
-export const pageVariants = new Variants(
+const generalOrchestrationTransition = {
+  animate: { when: 'beforeChildren', staggerChildren: 0.2 },
+  exit: { when: 'afterChildren', delayChildren: 0.2, staggerChildren: 0.3 },
+};
+
+export const defaultPageTransitionVariants = new Variants(
   {
     opacity: 1,
-    transition: { when: 'beforeChildren', delayChildren: 0.2, staggerChildren: 0.3 },
+    transition: { when: 'beforeChildren', staggerDirection: -1, staggerChildren: 0.3 },
   },
   {
-    opacity: 1,
-    transition: { when: 'afterChildren', staggerDirection: -1, staggerChildren: 0.3 },
+    opacity: 0,
+    transition: { when: 'afterChildren', delayChildren: 0.2, staggerChildren: 0.3 },
   }
 );
 
@@ -50,15 +58,13 @@ export const authVariants = {
   formVariants: new Variants(
     {
       opacity: 1,
-      transition: { when: 'beforeChildren', delayChildren: 0.2, staggerChildren: 0.1 },
+      transition: { when: 'beforeChildren', staggerChildren: 0.1 },
     },
     {
       opacity: 0,
       transition: {
         when: 'afterChildren',
-        delayChildren: 0.2,
         staggerChildren: 0.1,
-        staggerDirection: -1,
       },
     }
   ),
@@ -68,7 +74,8 @@ export const authVariants = {
       opacity: 1,
       y: 0,
     },
-    { opacity: 0, y: 40 }
+    { opacity: 0, y: 40 },
+    { opacity: 0 }
   ),
 
   errorMessageVariants: new Variants(
@@ -84,4 +91,84 @@ export const authVariants = {
   ),
 };
 
-// export const loadingVariants = new Variants({ opacity: 0, transition: {}});
+export const menuVariants = {
+  menuSectionVariants: {
+    visible: {
+      opacity: 1,
+      transition: { when: 'beforeChildren', staggerChildren: 0.2 },
+    },
+
+    hidden: {
+      opacity: 0,
+      transition: {
+        when: 'afterChildren',
+        staggerChildren: 0.1,
+        delayChildren: 0.4,
+      },
+    },
+  },
+
+  // menuContainerVariants: {
+  //   visible: {
+  //     opacity: 1,
+  //     transition: { when: 'beforeChildren', staggerChildren: 0.1 },
+  //   },
+  //   hidden: { opacity: 0 },
+  //   exit: {
+  //     opacity: 0,
+  //     transition: { when: 'afterChildren', delayChildren: 0.2 },
+  //   },
+  // },
+
+  headerVariants: {
+    visible: {
+      opacity: 1,
+      y: 0,
+    },
+    hidden: {
+      opacity: 0,
+      y: -30,
+    },
+  },
+
+  filterButtonVariants: {
+    hidden: {
+      opacity: 0,
+      fillOpacity: 0,
+      x: -10,
+      borderColor: hexToRgb(theme.gray),
+    },
+
+    visible: {
+      boxShadow: '0px 0px 0px rgba(0,0,0,0.2)',
+      color: theme.gray,
+      opacity: 0.5,
+      fillOpacity: 0.6,
+      borderColor: hexToRgb(theme.gray),
+      x: 0,
+    },
+
+    active: {
+      opacity: 1,
+      fillOpacity: 1,
+      boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.2)',
+      color: theme.black,
+      borderColor: hexToRgb(theme.backgroundLighter),
+      x: 0,
+    },
+  },
+
+  menuItemVariants: {
+    visible: i => ({
+      opacity: 1,
+      x: 0,
+      transition: { delay: i * 0.05 },
+    }),
+
+    hidden: {
+      opacity: 0,
+      x: -10,
+    },
+    exit: { opacity: 0 },
+  },
+};

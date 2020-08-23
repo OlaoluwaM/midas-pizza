@@ -3,28 +3,31 @@ import Input from './AuthInputField';
 import Loading from './Loading';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
+import CustomError from './local-utils/custom-error';
 
 import { toast } from 'react-toastify';
 import { Redirect } from 'react-router-dom';
-import { PageWrapper } from './general-components/general';
 import { authVariants } from './local-utils/framer-variants';
 import { UserSessionContext } from './context/context';
 import { handleInvalidInput } from './local-utils/authFunctions';
 import { useForm, FormProvider } from 'react-hook-form';
-import { Blob2 as AuthPageBlob1 } from '../assets/Blobs';
+import { ReactComponent as PizzaDeliverySVG } from '../assets/undraw_on_the_way_ldaq.svg';
 import { generateUrl, generateFetchOptions, fetchWrapper } from './local-utils/helpers';
 import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion';
 
 const { formVariants, generalAuthVariants } = authVariants;
 
-// TODO Animate Blob
-const AuthSection = styled.section.attrs({
+const AuthSection = styled(motion.section).attrs({
   className: 'section-container',
+  variants: formVariants,
+  animate: 'show',
+  initial: 'hide',
+  exit: 'exit',
 })`
   display: flex;
-  justify-content: center;
   align-items: center;
-  flex-direction: column;
+  justify-content: space-around;
+  flex-direction: row-reverse;
   z-index: 14;
 
   & > div,
@@ -40,22 +43,18 @@ const AuthSection = styled.section.attrs({
     position: relative;
   }
 
+  svg {
+    width: 40%;
+    height: auto;
+    transform: scaleX(-1);
+  }
+
   h2 {
     font-size: 3.5em;
     font-family: var(--primaryFont);
     font-weight: var(--xXBold);
-    margin: -0.4em 0.8em 0.15em 0;
+    margin: 0.3em 0.8em 0.3em 0;
     text-align: center;
-  }
-
-  & > svg.blob {
-    position: fixed;
-    transform: translate(330px, -200px);
-
-    &:nth-of-type(2) {
-      width: 0%;
-      transform: translate(-590px, 200px);
-    }
   }
 `;
 
@@ -94,12 +93,15 @@ const SubmitButton = styled(motion.button)`
 
 const SwitchFormStateText = styled(motion.p).attrs({
   variants: generalAuthVariants,
+  transition: { delay: 0.5 },
 })`
   position: fixed;
   bottom: 0;
+  align-self: center;
   font-weight: var(--bold);
   color: ${({ theme }) => hexToRgb(theme.accentColor, 0.5)};
   cursor: pointer;
+  margin-bottom: 0.7em;
   transition: color 0.3s ease;
 
   &:active,
@@ -107,10 +109,8 @@ const SwitchFormStateText = styled(motion.p).attrs({
     color: ${({ theme }) => hexToRgb(theme.accentColor, 1)};
   }
 `;
-Authenticate.whyDidYouRender = true;
 
 export default function Authenticate({ authUser }) {
-  const passwordRef = React.useRef();
   const formStates = ['Log in', 'Sign Up'];
   const { authenticated } = React.useContext(UserSessionContext);
 
@@ -122,8 +122,8 @@ export default function Authenticate({ authUser }) {
   const { clearErrors, reset, unregister, setError, formState } = formObj;
 
   const isLogin = formStateIndex === 0;
-
   const formStateEndpoints = ['tokens', 'users'];
+
   const switchFormState = () => {
     if (Object.keys(errors).length > 0) clearErrors();
     setFormStateIndex(prev => (prev === 1 ? 0 : prev + 1));
@@ -135,7 +135,9 @@ export default function Authenticate({ authUser }) {
     try {
       if (!isLogin) {
         const { password, confirmPassword } = formData;
-        if (password !== confirmPassword) throw 'confirmPassword field does not match';
+        if (password !== confirmPassword) {
+          throw new CustomError('confirmPassword field does not match', 'ValidationError');
+        }
         delete formData.confirmPassword;
       }
       setIsLoading(true);
@@ -148,19 +150,18 @@ export default function Authenticate({ authUser }) {
 
       isLogin ? toast('Welcome back', toastOptions) : toast('Thanks for joining', toastOptions);
     } catch (error) {
-      console.log(error);
-      if (error?.search(/confirmPassword/) > -1) {
-        clearErrors('confirmPassword');
-      } else reset({});
+      const { message: errorMessage, name } = error;
+      console.error(errorMessage);
 
-      console.error(error);
+      if (name === 'ValidationError' || error?.status === 400) {
+        errorMessage?.search(/confirmPassword/) > -1 ? clearErrors('confirmPassword') : reset({});
 
-      if (error.status === 500 || typeof error === 'object') {
-        toast('Something went wrong in the authentication process', { type: 'error' });
+        const { field, message } = handleInvalidInput(errorMessage);
+
+        if (field && message) setError(field, { type: 'manual', message });
       } else {
-        const { field, message } = handleInvalidInput(error);
-        setError(field, { type: 'manual', message });
-        toast('Please check that you have entered your information correctly', { type: 'error' });
+        toast('Something went wrong in the authentication process', { type: 'error' });
+        //TODO Redirect to Error Page
       }
     } finally {
       setTimeout(() => {
@@ -168,52 +169,51 @@ export default function Authenticate({ authUser }) {
       }, 2000);
     }
   };
-  console.log(isLoading);
 
   return (
-    <PageWrapper>
-      {authenticated && !isLoading && <Redirect to="/" />}
-      <AuthSection>
-        <AuthPageBlob1 />
+    <AuthSection>
+      {authenticated && !isLoading && <Redirect push to="/" />}
+      <PizzaDeliverySVG />
 
-        <motion.div variants={formVariants}>
-          <AnimateSharedLayout>
-            <motion.h2 variants={generalAuthVariants} layout>
-              {formStates[formStateIndex]}
-            </motion.h2>
+      <motion.div>
+        <AnimateSharedLayout>
+          <motion.h2 variants={generalAuthVariants} layout>
+            {formStates[formStateIndex]}
+          </motion.h2>
 
-            <FormProvider register={register} errors={errors} formState={formState}>
-              <AnimatePresence>{isLoading && <Loading layoutId="auth" />}</AnimatePresence>
+          <FormProvider register={register} errors={errors} formState={formState}>
+            <AnimatePresence>{isLoading && <Loading layoutId="auth" />}</AnimatePresence>
 
-              <Form onSubmit={handleSubmit(submitHandler)}>
-                {!isLogin && <Input name="name" placeholder="Username" />}
+            <Form onSubmit={handleSubmit(submitHandler)}>
+              {!isLogin && <Input name="name" placeholder="Username" />}
 
-                <Input name="email" type="email" placeholder="Email" />
+              <Input name="email" type="email" placeholder="Email" />
 
-                <Input
-                  name="password"
-                  type="password"
-                  placeholder="Password"
-                  validationsParam={isLogin}
-                />
+              <Input
+                name="password"
+                type="password"
+                placeholder="Password"
+                validationsParam={isLogin}
+              />
 
-                {!isLogin && (
-                  <>
-                    <Input name="streetAddress" placeholder="Street Address" />
-                    <Input name="confirmPassword" type="password" placeholder="Confirm Password" />
-                  </>
-                )}
+              {!isLogin && (
+                <>
+                  <Input name="streetAddress" placeholder="Street Address" />
+                  <Input name="confirmPassword" type="password" placeholder="Confirm Password" />
+                </>
+              )}
 
-                <SubmitButton layout>{formStates[formStateIndex]}</SubmitButton>
-              </Form>
-            </FormProvider>
-          </AnimateSharedLayout>
-        </motion.div>
+              <SubmitButton variants={generalAuthVariants} layout>
+                {formStates[formStateIndex]}
+              </SubmitButton>
+            </Form>
+          </FormProvider>
+        </AnimateSharedLayout>
 
         <SwitchFormStateText key={isLogin} layoutId={isLogin} onClick={switchFormState}>
           {isLogin ? 'Not a member? ' : 'Already a member? '}Click here
         </SwitchFormStateText>
-      </AuthSection>
-    </PageWrapper>
+      </motion.div>
+    </AuthSection>
   );
 }

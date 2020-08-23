@@ -1,4 +1,5 @@
 import rawDataType from '../utils/rawDataType';
+import CustomError from './custom-error';
 
 export function generateFetchOptions(method, body = {}, token = null) {
   const optionsObj = {
@@ -39,8 +40,14 @@ export async function fetchWrapper(url, options) {
 
     return response;
   } catch (error) {
+    console.error(error);
+
+    if (error?.message?.search(/Failed to/i) > -1) {
+      throw new CustomError('Server is down', 'ServerConnectionError', 500);
+    }
+
     const errorText = typeof error === 'string' ? error : await error.text();
     console.error(errorText);
-    throw errorText;
+    throw new CustomError(errorText, 'ServerResponseError', error?.status);
   }
 }
