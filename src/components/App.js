@@ -84,7 +84,7 @@ function App() {
           <div>
             <Nav />
 
-            <ToastContainer hideProgressBar />
+            <ToastContainer hideProgressBar position="bottom-right" />
 
             <React.Suspense fallback={<Loading fullscreen={true} />}>
               <AnimatePresence exitBeforeEnter initial={false}>

@@ -91,84 +91,71 @@ export const authVariants = {
   ),
 };
 
-export const menuVariants = {
-  menuSectionVariants: {
-    visible: {
-      opacity: 1,
-      transition: { when: 'beforeChildren', staggerChildren: 0.2 },
-    },
-
-    hidden: {
-      opacity: 0,
-      transition: {
-        when: 'afterChildren',
-        staggerChildren: 0.1,
-        delayChildren: 0.4,
-      },
-    },
+// ! MENU Variants
+export const menuSectionVariants = {
+  visible: {
+    opacity: 1,
+    transition: { when: 'beforeChildren', staggerChildren: 0.2 },
   },
 
-  // menuContainerVariants: {
-  //   visible: {
-  //     opacity: 1,
-  //     transition: { when: 'beforeChildren', staggerChildren: 0.1 },
-  //   },
-  //   hidden: { opacity: 0 },
-  //   exit: {
-  //     opacity: 0,
-  //     transition: { when: 'afterChildren', delayChildren: 0.2 },
-  //   },
-  // },
-
-  headerVariants: {
-    visible: {
-      opacity: 1,
-      y: 0,
-    },
-    hidden: {
-      opacity: 0,
-      y: -30,
+  hidden: {
+    opacity: 0,
+    transition: {
+      when: 'afterChildren',
+      staggerChildren: 0.1,
+      delayChildren: 0.4,
     },
   },
+};
 
-  filterButtonVariants: {
-    hidden: {
-      opacity: 0,
-      fillOpacity: 0,
-      x: -10,
-      borderColor: hexToRgb(theme.gray),
-    },
+export const headerVariants = {
+  visible: {
+    opacity: 1,
+    y: 0,
+  },
+  hidden: {
+    opacity: 0,
+    y: -30,
+  },
+};
 
-    visible: {
-      boxShadow: '0px 0px 0px rgba(0,0,0,0.2)',
-      color: theme.gray,
-      opacity: 0.5,
-      fillOpacity: 0.6,
-      borderColor: hexToRgb(theme.gray),
-      x: 0,
-    },
-
-    active: {
-      opacity: 1,
-      fillOpacity: 1,
-      boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.2)',
-      color: theme.black,
-      borderColor: hexToRgb(theme.backgroundLighter),
-      x: 0,
-    },
+export const filterButtonVariants = {
+  hidden: {
+    opacity: 0,
+    fillOpacity: 0,
+    x: -10,
+    borderColor: hexToRgb(theme.gray),
   },
 
-  menuItemVariants: {
-    visible: i => ({
-      opacity: 1,
-      x: 0,
-      transition: { delay: i * 0.05 },
-    }),
-
-    hidden: {
-      opacity: 0,
-      x: -10,
-    },
-    exit: { opacity: 0 },
+  visible: {
+    boxShadow: '0px 0px 0px rgba(0,0,0,0.2)',
+    color: theme.gray,
+    opacity: 0.5,
+    fillOpacity: 0.6,
+    borderColor: hexToRgb(theme.gray),
+    x: 0,
   },
+
+  active: {
+    opacity: 1,
+    fillOpacity: 1,
+    boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.2)',
+    color: theme.black,
+    borderColor: hexToRgb(theme.backgroundLighter),
+    x: 0,
+  },
+};
+
+export const menuItemVariants = {
+  visible: i => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: i * 0.05 },
+  }),
+
+  hidden: {
+    opacity: 0,
+    x: -10,
+  },
+  exit: { opacity: 0 },
 };

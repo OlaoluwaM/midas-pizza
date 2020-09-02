@@ -6,7 +6,9 @@ import { NavLink } from 'react-router-dom';
 import { Settings } from '@styled-icons/ionicons-solid/Settings';
 import { m as motion } from 'framer-motion';
 import { Cart3 as Cart } from '@styled-icons/bootstrap/Cart3';
+import { useRecoilValue } from 'recoil';
 import { UserSessionContext } from './context/context';
+import { cartCount as cartCountAtom } from './atoms';
 
 const NavContainer = styled.nav`
   width: 100vw;
@@ -54,8 +56,28 @@ const NavContainer = styled.nav`
         margin-right: 0;
       }
     }
+    .shopping-cart {
+      position: relative;
+
+      span {
+        margin-left: 5px;
+      }
+    }
   }
 `;
+
+function ShoppingCart() {
+  const cartCount = useRecoilValue(cartCountAtom);
+
+  return (
+    <motion.li className="pos-right shopping-cart">
+      <NavLink className="nav-link" activeClassName="current-page" to="/menu/cart">
+        <Cart title="Cart" />
+        <motion.span>{cartCount}</motion.span>
+      </NavLink>
+    </motion.li>
+  );
+}
 
 export default function Nav() {
   const { authenticated } = React.useContext(UserSessionContext);
@@ -91,11 +113,7 @@ export default function Nav() {
               </NavLink>
             </motion.li>
 
-            <motion.li className="pos-right">
-              <NavLink className="nav-link" activeClassName="current-page" to="/menu/cart">
-                <Cart title="Cart" />
-              </NavLink>
-            </motion.li>
+            <ShoppingCart />
           </>
         )}
       </ul>

@@ -8,8 +8,10 @@ require('jest-fetch-mock').enableMocks();
 import React from 'react';
 import CustomError from './components/local-utils/custom-error';
 
+import { RecoilRoot } from 'recoil';
 import { ThemeProvider } from 'styled-components';
 import { themeObj, UserSessionContext } from './components/context/context';
+import { MotionConfig, AnimateLayoutFeature, AnimationFeature, ExitFeature } from 'framer-motion';
 
 const fs = require('fs');
 const path = require('path');
@@ -41,10 +43,14 @@ global.CustomError = CustomError;
 
 global.contextWrapper = function (Component, contextValue = { authenticated: false }) {
   return (
-    <ThemeProvider theme={themeObj}>
-      <UserSessionContext.Provider value={contextValue}>
-        <Component />
-      </UserSessionContext.Provider>
-    </ThemeProvider>
+    <RecoilRoot>
+      <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
+        <ThemeProvider theme={themeObj}>
+          <UserSessionContext.Provider value={contextValue}>
+            <Component />
+          </UserSessionContext.Provider>
+        </ThemeProvider>
+      </MotionConfig>
+    </RecoilRoot>
   );
 };

@@ -1,9 +1,10 @@
 import React from 'react';
 import App from '../components/App';
 
-import { ToastContainer } from 'react-toastify';
+import { RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
-import { render, cleanup, act, screen } from '@testing-library/react';
+import { ToastContainer } from 'react-toastify';
+import { render, cleanup, act } from '@testing-library/react';
 
 afterAll(cleanup);
 
@@ -24,7 +25,12 @@ test('Should automatically authenticate user', async () => {
 
   let utils;
   await act(async () => {
-    utils = render(<App />, { wrapper: MemoryRouter });
+    utils = render(
+      <RecoilRoot>
+        <App />
+      </RecoilRoot>,
+      { wrapper: MemoryRouter }
+    );
   });
 
   const { getByTestId, getByRole } = utils;
@@ -46,7 +52,12 @@ test('User should not be auto authenticated if refresh token has expired', async
 
   let utils;
   await act(async () => {
-    utils = render(<App />, { wrapper: MemoryRouter });
+    utils = render(
+      <RecoilRoot>
+        <App />
+      </RecoilRoot>,
+      { wrapper: MemoryRouter }
+    );
   });
 
   const { getByTestId, getByRole } = utils;

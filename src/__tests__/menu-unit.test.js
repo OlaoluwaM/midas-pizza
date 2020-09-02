@@ -1,29 +1,21 @@
-import React from 'react';
 import Menu from '../components/Menu';
 
-import { ThemeProvider } from 'styled-components';
-import { themeObj, UserSessionContext } from '../components/context/context';
 import { render, cleanup, fireEvent, act, within } from '@testing-library/react';
 
 afterAll(cleanup);
 window.localStorage.getItem = jest.fn(() => JSON.stringify(testAccessToken));
 
 function renderWithContext() {
-  return render(
-    <ThemeProvider theme={themeObj}>
-      <UserSessionContext.Provider
-        value={{
-          userData: {
-            name: 'Joey Anderman',
-            streetAddress: '9165 Littleton Ave. Patchogue, NY 11772',
-            email: 'joey@gmail.com',
-          },
-          authenticated: true,
-        }}>
-        <Menu />
-      </UserSessionContext.Provider>
-    </ThemeProvider>
-  );
+  const context = {
+    userData: {
+      name: 'Joey Anderman',
+      streetAddress: '9165 Littleton Ave. Patchogue, NY 11772',
+      email: 'joey@gmail.com',
+    },
+    authenticated: true,
+  };
+
+  return render(contextWrapper(Menu, context));
 }
 
 test('Loads menu items', async () => {
