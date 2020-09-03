@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import hexToRgb from './utils/hexToRgb.js';
+import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
 import pizzaImage from '../assets/ivan-torres-MQUqbmszGGM-unsplash.jpg';
 
