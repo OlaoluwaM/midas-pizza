@@ -68,13 +68,12 @@ const NavContainer = styled.nav`
 
 function ShoppingCart() {
   const cartCountValue = useRecoilValue(cartCountSelector);
-  // console.trace();
 
   return (
     <motion.li className="pos-right shopping-cart">
       <NavLink className="nav-link" activeClassName="current-page" to="/menu/cart">
         <Cart title="Cart" />
-        <motion.span>{cartCountValue}</motion.span>
+        <motion.span data-testid="cart-count">{cartCountValue}</motion.span>
       </NavLink>
     </motion.li>
   );

@@ -4,14 +4,10 @@ import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
 import pizzaImage from '../assets/ivan-torres-MQUqbmszGGM-unsplash.jpg';
 
+import { m as motion } from 'framer-motion';
 import { menuItemVariants } from './local-utils/framer-variants';
-import { ArrowLeftSquareFill } from '@styled-icons/bootstrap/ArrowLeftSquareFill';
+import { useSetRecoilState } from 'recoil';
 import { cartState as cartStateAtom } from './atoms';
-import { cartCount as cartCountSelector } from './selectors';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import { m as motion, AnimateSharedLayout } from 'framer-motion';
-
-// TODO Add Counter functionality
 
 const MenuItemContainer = styled(motion.div).attrs({
   variants: menuItemVariants,
@@ -74,151 +70,143 @@ const MenuItemContainer = styled(motion.div).attrs({
       font-size: 1.2em;
     }
 
-    .add-to-cart-button {
-      color: ${({ theme }) => theme.background};
-      width: 17em;
+    .order-buttons {
+      width: 100%;
+      height: auto;
       display: flex;
-      align-items: center;
-      justify-content: space-around;
-      border: none;
-      box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.2);
-      background: ${({ theme }) => theme.accentColor};
-      border-radius: 7px;
-      padding: 1em 0;
-      align-self: center;
-      font-size: 1em;
-      cursor: pointer;
-      font-weight: var(--bold);
-      font-family: var(--primaryFont);
-      outline: rgba(0, 0, 0, 0.2);
-      transition: 0.1s ease box-shadow;
+      justify-content: space-between;
 
-      span {
-        transform: scale(1.2);
+      .quantity-field {
+        flex-basis: 40%;
+        width: 40%;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        opacity: 0.2;
+        transition: opacity 0.2s ease;
+
+        &:focus-within {
+          opacity: 1;
+        }
+
+        label {
+          margin-right: 12px;
+          font-size: 1em;
+          font-weight: var(--medium);
+        }
+
+        input {
+          text-indent: 0.5em;
+          height: 85%;
+          text-align: center;
+          border: none;
+          border-bottom: 3px solid ${({ theme }) => theme.blackLighter};
+          font-size: 1.3em;
+          font-family: var(--primaryFont);
+          font-weight: var(--bold);
+        }
       }
 
-      &.with-counter {
-        padding-bottom: 0.4em;
-        padding-top: 0.2em;
-        background: transparent;
-        box-shadow: none;
-        color: ${({ theme }) => theme.accentColor};
+      .add-to-cart-button {
+        color: ${({ theme }) => theme.background};
+        width: 45%;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        border: none;
+        box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.2);
+        background: ${({ theme }) => theme.accentColor};
+        border-radius: 7px;
+        padding: 1em 0;
+        align-self: center;
+        font-size: 1em;
+        cursor: pointer;
+        font-weight: var(--bold);
+        font-family: var(--primaryFont);
+        outline: rgba(0, 0, 0, 0.2);
+        transition: 0.1s ease box-shadow;
 
         span {
-          font-family: var(--primaryFont);
-          font-size: 1.8rem;
-          transform: scale(1.3);
-          margin-bottom: 7px;
+          transform: scale(1.2);
         }
 
-        svg {
-          width: 10%;
-          height: auto;
-          transform: scale(1.8);
-          background: transparent;
-          cursor: pointer;
-          box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.2);
-          transition: 0.1s ease box-shadow;
-
-          &:last-of-type {
-            transform: scale(-1) scale(1.8);
-          }
+        &:active {
+          box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
         }
-      }
-
-      &:active,
-      & > svg:active {
-        box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
-      }
-
-      &:disabled {
-        color: ${({ theme }) => hexToRgb(theme.gray, 0.4)};
       }
     }
   }
 `;
 
-function AddToCartButton({ itemName }) {
-  const { REACT_APP_CART_LIMIT: cartLimit } = process.env;
-
-  const [cartState, setCartState] = useRecoilState(cartStateAtom);
-  const cartCount = useRecoilValue(cartCountSelector);
-  const [localItemCount, setLocalItemCount] = React.useState(0);
-
-  const showCounter = localItemCount >= 1;
-  const counterClass = showCounter ? 'with-counter' : '';
-  const isDisabled = localItemCount === cartLimit || cartCount === cartLimit;
+function QuantityInput({ incrementQuantity }) {
+  const { REACT_APP_QUANTITY_LIMIT: quantityLimit } = process.env;
+  const [localItemQuantity, setLocalItemQuantity] = React.useState(1);
 
   React.useEffect(() => {
-    const itemCount = cartState[itemName];
-    if (itemCount) setLocalItemCount(itemCount);
+    return () => setLocalItemQuantity(1);
   }, []);
 
-  const addToCartHandler = () => {
-    if (showCounter) return;
-    incrementCount();
-  };
+  const changeHandler = e => {
+    const {
+      target: { value },
+    } = e;
+    const valueAsNumber = parseInt(value);
 
-  const decrementCount = () => {
-    setLocalItemCount(prevValue =>
-      prevValue === 0 || cartCount === 0 ? prevValue : (prevValue -= 1)
-    );
-
-    setCartState(prevCartObject => {
-      const newCartObject = Object.assign({}, prevCartObject);
-
-      newCartObject[itemName] -= 1;
-      newCartObject[itemName] === 0 && delete newCartObject[itemName];
-      return newCartObject;
-    });
-  };
-
-  const incrementCount = () => {
-    setLocalItemCount(prevValue =>
-      prevValue === cartLimit || cartCount === cartLimit ? prevValue : (prevValue += 1)
-    );
-
-    setCartState(prevCartObject => {
-      console.log(prevCartObject);
-      const newCartObject = Object.assign({}, prevCartObject);
-      const itemIsAlreadyInCart = itemName in newCartObject;
-
-      itemIsAlreadyInCart ? (newCartObject[itemName] += 1) : (newCartObject[itemName] = 1);
-      return newCartObject;
-    });
+    setLocalItemQuantity(valueAsNumber);
+    incrementQuantity(valueAsNumber);
   };
 
   return (
+    <motion.div className="quantity-field">
+      <label htmlFor="quantity-input">Qty</label>
+      <motion.input
+        id="quantity-input"
+        data-testid="quantity-input"
+        type="number"
+        min="1"
+        max={quantityLimit}
+        value={localItemQuantity}
+        onChange={changeHandler}
+      />
+    </motion.div>
+  );
+}
+
+function AddToCartButton({ addToCart }) {
+  return (
     <motion.button
-      className={`add-to-cart-button ${counterClass}`}
-      onClick={addToCartHandler}
-      disabled={isDisabled}>
-      <AnimateSharedLayout>
-        {showCounter && (
-          <>
-            <ArrowLeftSquareFill onClick={decrementCount} />
-            <motion.span layoutId="text" animate={{ opacity: 1 }}>
-              {localItemCount}
-            </motion.span>
-            <ArrowLeftSquareFill onClick={incrementCount} />
-          </>
-        )}
-        {!showCounter && <motion.span layoutId="text">Add to cart</motion.span>}
-      </AnimateSharedLayout>
+      className={'add-to-cart-button'}
+      onClick={addToCart}
+      data-testid="add-to-cart-button">
+      <motion.span layoutId="text">Add to cart</motion.span>
     </motion.button>
   );
 }
 
 export default function MenuItem({ menuItemName, price, custom }) {
+  const quantityToAdd = React.useRef(1);
+  const updateCart = useSetRecoilState(cartStateAtom);
+
   const parenthesisRegex = new RegExp(/\((.*?)\)/, 'g');
   const foodType = menuItemName.match(parenthesisRegex)[0].replace(/\W/g, '');
 
-  // const initialOrder = () => {
-  //   const orderList = JSON.parse(localStorage.getItem('orderList')) || [];
-  //   orderList.push(menuItemName);
-  //   localStorage.setItem('orderList', JSON.stringify(orderList));
-  //   return orderList;
-  // };
+  const incrementQuantityToAddBy = quantity => {
+    quantityToAdd.current = quantity;
+  };
+
+  const addToCart = () => {
+    const { current: amountToAdd } = quantityToAdd;
+
+    updateCart(prevCartObject => {
+      const newCartObject = Object.assign({}, prevCartObject);
+
+      if (menuItemName in newCartObject) {
+        newCartObject[menuItemName] += amountToAdd;
+      } else newCartObject[menuItemName] = amountToAdd;
+
+      return newCartObject;
+    });
+  };
 
   return (
     <MenuItemContainer custom={custom} data-food-type={foodType}>
@@ -226,7 +214,10 @@ export default function MenuItem({ menuItemName, price, custom }) {
       <div className="item-info">
         <p>{menuItemName}</p>
         <h6>{price}</h6>
-        <AddToCartButton itemName={menuItemName} />
+        <div className="order-buttons">
+          <QuantityInput incrementQuantity={incrementQuantityToAddBy} />
+          <AddToCartButton addToCart={addToCart} />
+        </div>
       </div>
     </MenuItemContainer>
   );

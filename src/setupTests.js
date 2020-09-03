@@ -41,13 +41,14 @@ Object.defineProperty(window, 'localStorage', {
 });
 global.CustomError = CustomError;
 
-global.contextWrapper = function (Component, contextValue = { authenticated: false }) {
+global.contextWrapper = function (Components, contextValue = { authenticated: false }) {
   return (
     <RecoilRoot>
       <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
         <ThemeProvider theme={themeObj}>
           <UserSessionContext.Provider value={contextValue}>
-            <Component />
+            {Array.isArray(Components) && Components.map(Component => <Component />)}
+            {!Array.isArray(Components) && <Components />}
           </UserSessionContext.Provider>
         </ThemeProvider>
       </MotionConfig>

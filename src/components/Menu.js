@@ -41,7 +41,6 @@ const MenuSection = styled(motion.section).attrs({
     align-self: flex-start;
     position: relative;
 
-    /* // FIX this color thing */
     background: ${() => hexToRgb('#FFDBC2', 0.9)};
     line-height: 1.35;
 
@@ -77,7 +76,7 @@ const MenuSection = styled(motion.section).attrs({
 
 const MenuContainer = styled.menu`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 1em 2em;
   flex-grow: 1;
   width: 100%;
