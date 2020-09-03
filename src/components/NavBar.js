@@ -8,7 +8,7 @@ import { m as motion } from 'framer-motion';
 import { Cart3 as Cart } from '@styled-icons/bootstrap/Cart3';
 import { useRecoilValue } from 'recoil';
 import { UserSessionContext } from './context/context';
-import { cartCount as cartCountAtom } from './atoms';
+import { cartCount as cartCountSelector } from './selectors';
 
 const NavContainer = styled.nav`
   width: 100vw;
@@ -67,13 +67,14 @@ const NavContainer = styled.nav`
 `;
 
 function ShoppingCart() {
-  const cartCount = useRecoilValue(cartCountAtom);
+  const cartCountValue = useRecoilValue(cartCountSelector);
+  // console.trace();
 
   return (
     <motion.li className="pos-right shopping-cart">
       <NavLink className="nav-link" activeClassName="current-page" to="/menu/cart">
         <Cart title="Cart" />
-        <motion.span>{cartCount}</motion.span>
+        <motion.span>{cartCountValue}</motion.span>
       </NavLink>
     </motion.li>
   );

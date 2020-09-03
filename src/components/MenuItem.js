@@ -4,10 +4,11 @@ import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
 import pizzaImage from '../assets/ivan-torres-MQUqbmszGGM-unsplash.jpg';
 
-import { useRecoilState } from 'recoil';
 import { menuItemVariants } from './local-utils/framer-variants';
 import { ArrowLeftSquareFill } from '@styled-icons/bootstrap/ArrowLeftSquareFill';
-import { cartCount as cartCountAtom } from './atoms';
+import { cartState as cartStateAtom } from './atoms';
+import { cartCount as cartCountSelector } from './selectors';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { m as motion, AnimateSharedLayout } from 'framer-motion';
 
 // TODO Add Counter functionality
@@ -137,15 +138,21 @@ const MenuItemContainer = styled(motion.div).attrs({
   }
 `;
 
-function AddToCartButton({ initialOrderFunction }) {
-  const [cartCount, setCartCount] = useRecoilState(cartCountAtom);
-  const [localCartCount, setLocalCartCount] = React.useState(0);
+function AddToCartButton({ itemName }) {
+  const { REACT_APP_CART_LIMIT: cartLimit } = process.env;
 
-  const showCounter = localCartCount >= 1;
+  const [cartState, setCartState] = useRecoilState(cartStateAtom);
+  const cartCount = useRecoilValue(cartCountSelector);
+  const [localItemCount, setLocalItemCount] = React.useState(0);
+
+  const showCounter = localItemCount >= 1;
   const counterClass = showCounter ? 'with-counter' : '';
-  const isDisabled = cartCount === 10 || localCartCount === 10;
+  const isDisabled = localItemCount === cartLimit || cartCount === cartLimit;
 
-  console.log({ cartCount });
+  React.useEffect(() => {
+    const itemCount = cartState[itemName];
+    if (itemCount) setLocalItemCount(itemCount);
+  }, []);
 
   const addToCartHandler = () => {
     if (showCounter) return;
@@ -153,15 +160,32 @@ function AddToCartButton({ initialOrderFunction }) {
   };
 
   const decrementCount = () => {
-    setLocalCartCount(prevValue => (prevValue === 0 ? prevValue : (prevValue -= 1)));
-    setCartCount(prevValue => (prevValue === 0 ? prevValue : (prevValue -= 1)));
+    setLocalItemCount(prevValue =>
+      prevValue === 0 || cartCount === 0 ? prevValue : (prevValue -= 1)
+    );
+
+    setCartState(prevCartObject => {
+      const newCartObject = Object.assign({}, prevCartObject);
+
+      newCartObject[itemName] -= 1;
+      newCartObject[itemName] === 0 && delete newCartObject[itemName];
+      return newCartObject;
+    });
   };
 
   const incrementCount = () => {
-    setLocalCartCount(prevValue =>
-      prevValue === 10 || cartCount === 10 ? prevValue : (prevValue += 1)
+    setLocalItemCount(prevValue =>
+      prevValue === cartLimit || cartCount === cartLimit ? prevValue : (prevValue += 1)
     );
-    setCartCount(prevValue => (prevValue === 10 ? prevValue : (prevValue += 1)));
+
+    setCartState(prevCartObject => {
+      console.log(prevCartObject);
+      const newCartObject = Object.assign({}, prevCartObject);
+      const itemIsAlreadyInCart = itemName in newCartObject;
+
+      itemIsAlreadyInCart ? (newCartObject[itemName] += 1) : (newCartObject[itemName] = 1);
+      return newCartObject;
+    });
   };
 
   return (
@@ -174,7 +198,7 @@ function AddToCartButton({ initialOrderFunction }) {
           <>
             <ArrowLeftSquareFill onClick={decrementCount} />
             <motion.span layoutId="text" animate={{ opacity: 1 }}>
-              {localCartCount}
+              {localItemCount}
             </motion.span>
             <ArrowLeftSquareFill onClick={incrementCount} />
           </>
@@ -202,7 +226,7 @@ export default function MenuItem({ menuItemName, price, custom }) {
       <div className="item-info">
         <p>{menuItemName}</p>
         <h6>{price}</h6>
-        <AddToCartButton />
+        <AddToCartButton itemName={menuItemName} />
       </div>
     </MenuItemContainer>
   );
