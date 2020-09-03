@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import Loading from './Loading';
 import MenuItem from './MenuItem';
-import hexToRgb from './utils/hexToRgb';
+import hexToRgb from './utils/hexToRgb.js';
 import FilterPanel from './FilterPanel';
 
 import { GooeySVGBackground } from './Reusables';
