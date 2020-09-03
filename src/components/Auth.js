@@ -2,7 +2,7 @@ import React from 'react';
 import Input from './AuthInputField';
 import Loading from './Loading';
 import styled from 'styled-components';
-import hexToRgb from './utils/HexToRgb';
+import hexToRgb from './utils/hexToRgb';
 import CustomError from './local-utils/custom-error';
 
 import { toast } from 'react-toastify';

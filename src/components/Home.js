@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import hexToRgb from './utils/HexToRgb';
+import hexToRgb from './utils/hexToRgb';
 
 import { NavLink } from 'react-router-dom';
 import { m as motion } from 'framer-motion';

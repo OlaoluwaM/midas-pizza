@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import hexToRgb from './utils/HexToRgb';
+import hexToRgb from './utils/hexToRgb';
 
 import { ErrorMessage } from '@hookform/error-message';
 import { authVariants } from './local-utils/framer-variants';
