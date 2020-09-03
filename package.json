@@ -2,6 +2,9 @@
   "name": "pizza-delivery-app",
   "version": "0.1.0",
   "private": false,
+  "engines": {
+    "node": "12.x"
+  },
   "dependencies": {
     "@hookform/error-message": "0.0.3",
     "@testing-library/jest-dom": "^4.2.4",
