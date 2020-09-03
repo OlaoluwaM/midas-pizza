@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import hexToRgb from './utils/hexToRgb';
+import hexToRgb from './utils/HexToRgb';
 
 const GooeySVG = styled.svg.attrs({
   width: '0',
