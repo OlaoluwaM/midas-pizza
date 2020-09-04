@@ -18,10 +18,16 @@ function renderWithContext() {
 
   return render(contextWrapper([NavBar, Menu], context), { wrapper: MemoryRouter });
 }
-window.localStorage.getItem = jest.fn(() => JSON.stringify(testAccessToken));
+
+const store = {
+  currentAccessToken: JSON.stringify(testAccessToken),
+  orderList: JSON.stringify({ 'Pepperoni Pizza Small (Pizza)': 2 }),
+};
+window.localStorage.getItem = jest.fn(key => store[key]);
 
 test('Should make sure shopping cart changes appropriately with counter interactions', async () => {
   fetch.once(JSON.stringify(menu), { status: 200 });
+
   let utils;
 
   await act(async () => {
@@ -38,10 +44,13 @@ test('Should make sure shopping cart changes appropriately with counter interact
   const quantityInput = quantityInputs[0];
 
   fireEvent.click(addToCartButton);
-  expect(shoppingCartQuantity).toHaveTextContent('1');
+  expect(localStorage.getItem).toHaveBeenCalledTimes(2);
+  expect(localStorage.getItem).toHaveBeenCalledWith('orderList');
+
+  expect(shoppingCartQuantity).toHaveTextContent('3');
 
   fireEvent.input(quantityInput, { target: { value: 2 } });
   fireEvent.click(addToCartButton);
 
-  expect(shoppingCartQuantity).toHaveTextContent('3');
+  expect(shoppingCartQuantity).toHaveTextContent('5');
 });

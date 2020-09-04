@@ -5,9 +5,12 @@ import MenuItem from './MenuItem';
 import hexToRgb from './utils/hexToRgb';
 import FilterPanel from './FilterPanel';
 
+import { toast } from 'react-toastify';
+import { useSetRecoilState } from 'recoil';
 import { GooeySVGBackground } from './Reusables';
 import { UserSessionContext } from './context/context';
 import { MenuBlob, MenuBlob2 } from '../assets/Blobs';
+import { cartState as cartStateAtom } from './atoms';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { menuSectionVariants, headerVariants } from './local-utils/framer-variants';
 import { generateFetchOptions, generateUrl, fetchWrapper } from './local-utils/helpers';
@@ -91,6 +94,7 @@ export default function Menu() {
 
   const { userData } = React.useContext(UserSessionContext);
   const [menuItems, setMenuItems] = React.useState([]);
+  const updateCart = useSetRecoilState(cartStateAtom);
 
   const isLoading = menuItems.length === 0;
 
@@ -118,6 +122,13 @@ export default function Menu() {
 
       const menuObjAsArray = Object.entries(menuData);
       menuStore.current = menuObjAsArray;
+
+      const persistedOrder = localStorage.getItem('orderList');
+
+      if (persistedOrder) {
+        updateCart(JSON.parse(persistedOrder));
+        toast('We saved your order, no need to thank us 😊', { type: 'info' });
+      }
 
       filterHandler('Pizza', menuObjAsArray);
     })();

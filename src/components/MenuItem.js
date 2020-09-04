@@ -2,7 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
-import pizzaImage from '../assets/ivan-torres-MQUqbmszGGM-unsplash.jpg';
+import pizzaImage from '../assets/pizza-image-ivan-torres-unsplash.jpg';
+import drinkImage from '../assets/drink-image-maxime-renard-unsplash.jpg';
+import dessertImage from '../assets/dessert-image-emile-mbunzama-unsplash.jpg';
+import snacksImage from '../assets/snacks-image-fran-hogan-unsplash.jpg';
 
 import { m as motion } from 'framer-motion';
 import { menuItemVariants } from './local-utils/framer-variants';
@@ -27,17 +30,16 @@ const MenuItemContainer = styled(motion.div).attrs({
   align-self: center;
   background: ${({ theme }) => hexToRgb(theme.backgroundLighter, 1)};
   border-radius: 25px;
-  padding: 0.5em;
+  padding: 1em;
   border: 10px solid ${({ theme }) => theme.backgroundLighter};
 
   img {
     position: relative;
-    top: 0;
     max-width: 100%;
     object-fit: contain;
     border-radius: inherit;
+    align-self: center;
     box-shadow: 10px 10px rgba(0, 0, 0, 0.1);
-    transform: translateX(-10px);
   }
 
   .item-info {
@@ -64,7 +66,7 @@ const MenuItemContainer = styled(motion.div).attrs({
     }
 
     h6 {
-      margin: 1em 0 1em 0;
+      margin: 0.5em 0 0.8em 0;
       font-weight: var(--medium);
       color: ${({ theme }) => theme.gray};
       font-size: 1.2em;
@@ -77,6 +79,7 @@ const MenuItemContainer = styled(motion.div).attrs({
       justify-content: space-between;
 
       .quantity-field {
+        position: relative;
         flex-basis: 40%;
         width: 40%;
         display: flex;
@@ -108,8 +111,10 @@ const MenuItemContainer = styled(motion.div).attrs({
       }
 
       .add-to-cart-button {
+        position: relative;
         color: ${({ theme }) => theme.background};
-        width: 45%;
+        width: 55%;
+        flex-basis: 55%;
         display: flex;
         align-items: center;
         justify-content: space-around;
@@ -118,7 +123,7 @@ const MenuItemContainer = styled(motion.div).attrs({
         background: ${({ theme }) => theme.accentColor};
         border-radius: 7px;
         padding: 1em 0;
-        align-self: center;
+        align-self: flex-end;
         font-size: 1em;
         cursor: pointer;
         font-weight: var(--bold);
@@ -158,9 +163,9 @@ function QuantityInput({ incrementQuantity }) {
 
   return (
     <motion.div className="quantity-field">
-      <label htmlFor="quantity-input">Qty</label>
-      <motion.input
-        id="quantity-input"
+      <label htmlFor="quantity">Qty</label>
+      <input
+        id="quantity"
         data-testid="quantity-input"
         type="number"
         min="1"
@@ -189,6 +194,12 @@ export default function MenuItem({ menuItemName, price, custom }) {
 
   const parenthesisRegex = new RegExp(/\((.*?)\)/, 'g');
   const foodType = menuItemName.match(parenthesisRegex)[0].replace(/\W/g, '');
+  const imagePool = {
+    Pizza: pizzaImage,
+    Drink: drinkImage,
+    Dessert: dessertImage,
+    Snack: snacksImage,
+  };
 
   const incrementQuantityToAddBy = quantity => {
     quantityToAdd.current = quantity;
@@ -204,13 +215,14 @@ export default function MenuItem({ menuItemName, price, custom }) {
         newCartObject[menuItemName] += amountToAdd;
       } else newCartObject[menuItemName] = amountToAdd;
 
+      localStorage.setItem('orderList', JSON.stringify(newCartObject));
       return newCartObject;
     });
   };
 
   return (
     <MenuItemContainer custom={custom} data-food-type={foodType}>
-      <img src={pizzaImage} alt={`Image for ${menuItemName}`} />
+      <img src={imagePool[foodType]} alt={`Image for ${menuItemName}`} />
       <div className="item-info">
         <p>{menuItemName}</p>
         <h6>{price}</h6>
