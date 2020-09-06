@@ -7,6 +7,7 @@ import drinkImage from '../assets/drink-image-maxime-renard-unsplash.jpg';
 import dessertImage from '../assets/dessert-image-emile-mbunzama-unsplash.jpg';
 import snacksImage from '../assets/snacks-image-fran-hogan-unsplash.jpg';
 
+import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
 import { menuItemVariants } from './local-utils/framer-variants';
 import { useSetRecoilState } from 'recoil';
@@ -143,8 +144,9 @@ const MenuItemContainer = styled(motion.div).attrs({
   }
 `;
 
+const { REACT_APP_QUANTITY_LIMIT: quantityLimit } = process.env;
+
 function QuantityInput({ incrementQuantity }) {
-  const { REACT_APP_QUANTITY_LIMIT: quantityLimit } = process.env;
   const [localItemQuantity, setLocalItemQuantity] = React.useState(1);
 
   React.useEffect(() => {
@@ -189,6 +191,7 @@ function AddToCartButton({ addToCart }) {
 }
 
 export default function MenuItem({ menuItemName, price, custom }) {
+  // TODO Add skeleton or placeholder effect for image
   const quantityToAdd = React.useRef(1);
   const updateCart = useSetRecoilState(cartStateAtom);
 
@@ -206,17 +209,26 @@ export default function MenuItem({ menuItemName, price, custom }) {
   };
 
   const addToCart = () => {
-    const { current: amountToAdd } = quantityToAdd;
+    const { current: multiplier } = quantityToAdd;
 
-    updateCart(prevCartObject => {
-      const newCartObject = Object.assign({}, prevCartObject);
+    updateCart(prevCartStack => {
+      const newCartStack = [...prevCartStack];
 
-      if (menuItemName in newCartObject) {
-        newCartObject[menuItemName] += amountToAdd;
-      } else newCartObject[menuItemName] = amountToAdd;
+      if (multiplier === 1) {
+        newCartStack.push(menuItemName);
+      } else {
+        const itemsToAdd = `${menuItemName},`.repeat(multiplier).trim().split(',');
+        itemsToAdd.pop();
+        newCartStack.push(...itemsToAdd);
+      }
 
-      localStorage.setItem('orderList', JSON.stringify(newCartObject));
-      return newCartObject;
+      if (newCartStack.length > quantityLimit) {
+        toast(`Sorry but you cannot order more than ${quantityLimit} items`, { type: 'error' });
+        return prevCartStack;
+      }
+
+      localStorage.setItem('orderList', JSON.stringify(newCartStack));
+      return newCartStack;
     });
   };
 

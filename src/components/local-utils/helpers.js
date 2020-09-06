@@ -10,7 +10,9 @@ export function generateFetchOptions(method, body = {}, token = null) {
   };
 
   if (token) optionsObj.headers['token'] = token;
-  if (method !== 'GET' && body) optionsObj['body'] = JSON.stringify(body);
+  if (method !== 'GET' && body) {
+    optionsObj['body'] = rawDataType(body) === 'string' ? body : JSON.stringify(body);
+  }
 
   return optionsObj;
 }
@@ -32,13 +34,20 @@ export async function fetchWrapper(url, options) {
     const request = await fetch(url, options);
     if (!request.ok) throw request;
 
-    const response = await request.json();
-    if (response?.newToken) {
-      swapTokenWith(response.newToken);
-      delete response.newToken;
-    }
+    const serverResponse = await request.json();
 
-    return response;
+    if (serverResponse?.newToken) {
+      swapTokenWith(serverResponse.newToken);
+      delete serverResponse.newToken;
+    }
+    const { response } = serverResponse;
+
+    try {
+      const responseObject = JSON.parse(response);
+      return responseObject;
+    } catch {
+      return response;
+    }
   } catch (error) {
     console.error(error);
 
@@ -50,4 +59,14 @@ export async function fetchWrapper(url, options) {
     console.error(errorText);
     throw new CustomError(errorText, 'ServerResponseError', error?.status);
   }
+}
+
+export function convertDollarToFloat(dollar, wholeNum = false) {
+  const floatString = dollar.replace('$', '');
+  if (wholeNum) return convertToNumber(floatString);
+  return parseFloat(floatString);
+}
+
+function convertToNumber(floatString) {
+  return parseInt(floatString.toString().replace('.', ''));
 }

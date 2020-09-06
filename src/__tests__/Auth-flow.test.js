@@ -19,8 +19,11 @@ function renderAuthComp() {
   );
 }
 
+beforeAll(() => {
+  fetch.mockResponse(JSON.stringify(formatFetchResponse(testAccessToken)), { status: 200 });
+});
+
 test('Sign up flow', async () => {
-  fetch.once(JSON.stringify(testAccessToken), { status: 200 });
   const utils = renderAuthComp();
 
   const { findByTestId, getByPlaceholderText, findByRole } = utils;
@@ -53,7 +56,7 @@ test('Sign up flow', async () => {
 });
 
 test('Log in flow', async () => {
-  fetch.once(JSON.stringify(testAccessToken), { status: 200 });
+  // fetch.once(JSON.stringify(testAccessToken), { status: 200 });
   const utils = renderAuthComp();
 
   const { findByTestId, getByPlaceholderText, findByRole, findAllByText, findByText } = utils;

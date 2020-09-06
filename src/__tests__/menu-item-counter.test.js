@@ -2,6 +2,7 @@ import Menu from '../components/Menu';
 import NavBar from '../components/NavBar';
 
 import { MemoryRouter } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 import { render, cleanup, fireEvent, act } from '@testing-library/react';
 
 afterAll(cleanup);
@@ -16,17 +17,17 @@ function renderWithContext() {
     authenticated: true,
   };
 
-  return render(contextWrapper([NavBar, Menu], context), { wrapper: MemoryRouter });
+  return render(contextWrapper([ToastContainer, NavBar, Menu], context), { wrapper: MemoryRouter });
 }
-
-const store = {
-  currentAccessToken: JSON.stringify(testAccessToken),
-  orderList: JSON.stringify({ 'Pepperoni Pizza Small (Pizza)': 2 }),
-};
-window.localStorage.getItem = jest.fn(key => store[key]);
+afterEach(() => jest.clearAllTimers());
+window.localStorage.getItem = jest.fn(() => JSON.stringify(testAccessToken));
 
 test('Should make sure shopping cart changes appropriately with counter interactions', async () => {
-  fetch.once(JSON.stringify(menu), { status: 200 });
+  fetch
+    .once(JSON.stringify(formatFetchResponse(menu)), { status: 200 })
+    .once(JSON.stringify(formatFetchResponse('Order saved!')), { status: 200 });
+
+  jest.useFakeTimers();
 
   let utils;
 
@@ -34,7 +35,7 @@ test('Should make sure shopping cart changes appropriately with counter interact
     utils = renderWithContext();
   });
 
-  const { findByTestId, findAllByTestId } = utils;
+  const { findByTestId, findAllByTestId, findByRole } = utils;
 
   const shoppingCartQuantity = await findByTestId('cart-count');
   const addToCartButtons = await findAllByTestId('add-to-cart-button');
@@ -44,13 +45,25 @@ test('Should make sure shopping cart changes appropriately with counter interact
   const quantityInput = quantityInputs[0];
 
   fireEvent.click(addToCartButton);
-  expect(localStorage.getItem).toHaveBeenCalledTimes(2);
-  expect(localStorage.getItem).toHaveBeenCalledWith('orderList');
+  // Cart to increment when item is added
+  expect(shoppingCartQuantity).toHaveTextContent('1');
 
-  expect(shoppingCartQuantity).toHaveTextContent('3');
-
-  fireEvent.input(quantityInput, { target: { value: 2 } });
+  fireEvent.input(quantityInput, { target: { value: 9 } });
   fireEvent.click(addToCartButton);
 
-  expect(shoppingCartQuantity).toHaveTextContent('5');
+  expect(shoppingCartQuantity).toHaveTextContent('10');
+
+  fireEvent.input(quantityInput, { target: { value: 1 } });
+  fireEvent.click(addToCartButton);
+
+  act(() => {
+    jest.advanceTimersByTime(1000);
+  });
+
+  // Notification should be displayed when user tries to exceed order limit
+  const toast = await findByRole('alert');
+  expect(toast).toHaveTextContent(/cannot order more than/i);
+
+  // The order that would have exceeded the limit should not be added, previous cart state should be maintained
+  expect(shoppingCartQuantity).toHaveTextContent('10');
 });

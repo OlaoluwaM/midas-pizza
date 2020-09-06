@@ -3,7 +3,6 @@ import App from '../components/App';
 
 import { RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import { render, cleanup, act } from '@testing-library/react';
 
 afterAll(cleanup);
@@ -15,11 +14,13 @@ jest.useFakeTimers();
 
 test('Should automatically authenticate user', async () => {
   fetch.once(
-    JSON.stringify({
-      email: 'britt@gmail.com',
-      name: 'Brittany D Kenney',
-      streetAddress: '545 W. Ann St. Matthews, NC 28104',
-    }),
+    JSON.stringify(
+      formatFetchResponse({
+        email: 'britt@gmail.com',
+        name: 'Brittany D Kenney',
+        streetAddress: '545 W. Ann St. Matthews, NC 28104',
+      })
+    ),
     { status: 200 }
   );
 
@@ -33,15 +34,18 @@ test('Should automatically authenticate user', async () => {
     );
   });
 
-  const { getByTestId, getByRole } = utils;
+  const { getByTestId, getAllByRole } = utils;
   act(() => {
     jest.advanceTimersByTime(1000);
   });
 
   const link = getByTestId('link');
-  const toast = getByRole('alert');
+  const toastArray = getAllByRole('alert');
 
-  expect(toast).toHaveTextContent(/Welcome Back/i);
+  expect(toastArray).toHaveLength(2);
+  toastArray.forEach(toast => {
+    expect(toast).toHaveTextContent(/Welcome back|we saved your order/i);
+  });
   expect(window.localStorage.getItem).toHaveBeenCalledWith('currentAccessToken');
 
   expect(link).toHaveTextContent(/order/i);

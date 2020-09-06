@@ -5,7 +5,9 @@ import Loading from './Loading';
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 
 import { ThemeProvider } from 'styled-components';
+import { useSetRecoilState } from 'recoil';
 import { ToastContainer, toast } from 'react-toastify';
+import { cartState as cartStateAtom } from './atoms';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import { themeObj, UserSessionContext } from './context/context';
 import { generateFetchOptions, generateUrl, fetchWrapper } from './local-utils/helpers';
@@ -29,12 +31,13 @@ whyDidYouRender(React, {
 
 function App() {
   const currentUserToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
-  // TODO uncomment later
 
   const [activeUser, setActiveUser] = React.useState({
     userData: null,
     authenticated: false,
   });
+  const updateCart = useSetRecoilState(cartStateAtom);
+
   const { userData, authenticated } = activeUser;
   const protectedRoutes = [['/menu', Menu]];
 
@@ -53,6 +56,13 @@ function App() {
 
         if (!authenticated) {
           toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
+          const persistedOrder = localStorage.getItem('orderList');
+
+          if (persistedOrder) {
+            toast('We saved your order, no need to thank us 😊', { type: 'info' });
+
+            updateCart(JSON.parse(persistedOrder));
+          }
         }
 
         setActiveUser({ userData: ownerOfCurrentToken, authenticated: true });

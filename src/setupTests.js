@@ -31,6 +31,8 @@ global.menu = Object.fromEntries(
   JSON.parse(menuArrayJSON).map(arr => [`${arr[0]} (${arr[2]})`, `$${arr[1]}`])
 );
 
+global.formatFetchResponse = res => ({ response: res });
+
 Object.defineProperty(window, 'localStorage', {
   value: {
     getItem: jest.fn(() => null),

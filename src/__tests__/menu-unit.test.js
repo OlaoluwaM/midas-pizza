@@ -18,8 +18,11 @@ function renderWithContext() {
   return render(contextWrapper(Menu, context));
 }
 
+beforeAll(() => {
+  fetch.mockResponse(JSON.stringify(formatFetchResponse(menu)), { status: 200 });
+});
+
 test('Loads menu items', async () => {
-  fetch.once(JSON.stringify(menu), { status: 200 });
   let utils;
 
   await act(async () => {
@@ -34,9 +37,13 @@ test('Loads menu items', async () => {
 
 test('Filter Functionality', async () => {
   jest.useFakeTimers();
-  fetch.once(() => new Promise(res => setTimeout(() => res(JSON.stringify(menu)), 2000)), {
-    status: 200,
-  });
+  // fetch.once(
+  //   () =>
+  //     new PromiJSON.stringify(formatFetchResponse(menu))), 2000)),
+  //   {
+  //     status: 200,
+  //   }
+  // );
 
   let utils;
 

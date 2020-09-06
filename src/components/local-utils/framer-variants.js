@@ -159,3 +159,27 @@ export const menuItemVariants = {
   },
   exit: { opacity: 0 },
 };
+
+const gentleSpringAnimationConfig = {
+  type: 'spring',
+  damping: 10,
+  mass: 1,
+  stiffness: 85,
+};
+
+export const previewCartVariants = {
+  visible: {
+    x: 0,
+    transition: { when: 'beforeChildren', staggerChildren: 0.2, type: 'tween', ease: 'circOut' },
+  },
+
+  hidden: {
+    x: '100%',
+    transition: {
+      when: 'afterChildren',
+      staggerChildren: 0.1,
+      type: 'tween',
+      ease: 'easeIn',
+    },
+  },
+};

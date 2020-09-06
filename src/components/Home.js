@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import hexToRgb from './utils/hexToRgb.js';
+import hexToRgb from './utils/hexToRgb';
 
 import { NavLink } from 'react-router-dom';
 import { m as motion } from 'framer-motion';
@@ -116,7 +116,6 @@ const Art = styled(motion.div)`
 
 export default function Home() {
   const { authenticated } = React.useContext(UserSessionContext);
-  console.log(authenticated);
   const linkLocation = authenticated ? '/menu' : '/authenticate';
 
   return (

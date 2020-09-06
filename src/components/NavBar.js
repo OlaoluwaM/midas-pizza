@@ -1,14 +1,15 @@
 import React from 'react';
 import styled from 'styled-components';
-import hexToRgb from './utils/hexToRgb.js';
+import hexToRgb from './utils/hexToRgb';
 
 import { NavLink } from 'react-router-dom';
 import { Settings } from '@styled-icons/ionicons-solid/Settings';
 import { m as motion } from 'framer-motion';
 import { Cart3 as Cart } from '@styled-icons/bootstrap/Cart3';
-import { useRecoilValue } from 'recoil';
 import { UserSessionContext } from './context/context';
+import { showCart as showCartAtom } from './atoms';
 import { cartCount as cartCountSelector } from './selectors';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 const NavContainer = styled.nav`
   width: 100vw;
@@ -58,6 +59,7 @@ const NavContainer = styled.nav`
     }
     .shopping-cart {
       position: relative;
+      cursor: pointer;
 
       span {
         margin-left: 5px;
@@ -68,13 +70,21 @@ const NavContainer = styled.nav`
 
 function ShoppingCart() {
   const cartCountValue = useRecoilValue(cartCountSelector);
+  const toggleOrderPreview = useSetRecoilState(showCartAtom);
+  const toggleOrderPreviewRef = React.useRef(false);
+
+  const toggleCartPreview = () => {
+    const { current: prevToggleState } = toggleOrderPreviewRef;
+    toggleOrderPreview(!prevToggleState);
+    toggleOrderPreviewRef.current = prevToggleState === true ? false : true;
+  };
 
   return (
-    <motion.li className="pos-right shopping-cart">
-      <NavLink className="nav-link" activeClassName="current-page" to="/menu/cart">
+    <motion.li className="pos-right shopping-cart" onClick={toggleCartPreview}>
+      <a className="nav-link">
         <Cart title="Cart" />
         <motion.span data-testid="cart-count">{cartCountValue}</motion.span>
-      </NavLink>
+      </a>
     </motion.li>
   );
 }

@@ -2,15 +2,14 @@ import React from 'react';
 import styled from 'styled-components';
 import Loading from './Loading';
 import MenuItem from './MenuItem';
-import hexToRgb from './utils/hexToRgb.js';
+import hexToRgb from './utils/hexToRgb';
 import FilterPanel from './FilterPanel';
+import OrderPreview from './OrderPreview';
 
 import { toast } from 'react-toastify';
-import { useSetRecoilState } from 'recoil';
 import { GooeySVGBackground } from './Reusables';
 import { UserSessionContext } from './context/context';
 import { MenuBlob, MenuBlob2 } from '../assets/Blobs';
-import { cartState as cartStateAtom } from './atoms';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { menuSectionVariants, headerVariants } from './local-utils/framer-variants';
 import { generateFetchOptions, generateUrl, fetchWrapper } from './local-utils/helpers';
@@ -30,6 +29,7 @@ const MenuSection = styled(motion.section).attrs({
   justify-content: space-between;
   align-items: center;
   position: relative;
+  transition: filter 0.3s ease;
 
   .loader {
     position: relative;
@@ -56,8 +56,6 @@ const MenuSection = styled(motion.section).attrs({
       bottom: 0;
       left: 0;
       padding: inherit;
-      width: 103%;
-      border-radius: 10px;
     }
   }
 
@@ -94,7 +92,6 @@ export default function Menu() {
 
   const { userData } = React.useContext(UserSessionContext);
   const [menuItems, setMenuItems] = React.useState([]);
-  const updateCart = useSetRecoilState(cartStateAtom);
 
   const isLoading = menuItems.length === 0;
 
@@ -123,44 +120,57 @@ export default function Menu() {
       const menuObjAsArray = Object.entries(menuData);
       menuStore.current = menuObjAsArray;
 
-      const persistedOrder = localStorage.getItem('orderList');
-
-      if (persistedOrder) {
-        updateCart(JSON.parse(persistedOrder));
-        toast('We saved your order, no need to thank us 😊', { type: 'info' });
-      }
-
       filterHandler('Pizza', menuObjAsArray);
     })();
+
+    return () => {
+      const persistedOrder = localStorage.getItem('orderList');
+      if (!persistedOrder) return;
+
+      (async () => {
+        await fetchWrapper(
+          generateUrl(`order?email=${userData.email}`),
+          generateFetchOptions(
+            'POST',
+            { orders: JSON.parse(persistedOrder) },
+            currentAccessToken.Id
+          )
+        );
+
+        console.log('Order stored on server');
+      })();
+    };
   }, []);
 
-  console.assert(filterHandler === filterHandler);
-  console.log(isLoading);
   console.log(`Current filter is ${menuFilter.current}`);
 
   return (
-    <MenuSection>
-      <GooeySVGBackground id="goo" />
-      <motion.h1 className="goo" variants={headerVariants}>
-        Our Menu
-      </motion.h1>
+    <>
+      <OrderPreview menu={menuStore.current} />
 
-      <MenuBlob />
-      <MenuBlob2 />
+      <MenuSection>
+        <GooeySVGBackground id="goo" />
+        <motion.h1 className="goo" variants={headerVariants}>
+          Our Menu
+        </motion.h1>
 
-      <FilterPanel filterForType={filterHandler} activeFilter={menuFilter.current} />
+        <MenuBlob />
+        <MenuBlob2 />
 
-      <AnimatePresence exitBeforeEnter>
-        {isLoading && <Loading key="loader-component" />}
-        {!isLoading && (
-          <MenuContainer key="menu">
-            {menuItems.map(([itemName, price], ind) => (
-              <MenuItem key={itemName} menuItemName={itemName} price={price} custom={ind} />
-            ))}
-          </MenuContainer>
-        )}
-      </AnimatePresence>
-    </MenuSection>
+        <FilterPanel filterForType={filterHandler} activeFilter={menuFilter.current} />
+
+        <AnimatePresence exitBeforeEnter>
+          {isLoading && <Loading key="loader-component" />}
+          {!isLoading && (
+            <MenuContainer key="menu">
+              {menuItems.map(([itemName, price], ind) => (
+                <MenuItem key={itemName} menuItemName={itemName} price={price} custom={ind} />
+              ))}
+            </MenuContainer>
+          )}
+        </AnimatePresence>
+      </MenuSection>
+    </>
   );
 }
 

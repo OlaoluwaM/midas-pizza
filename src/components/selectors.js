@@ -4,10 +4,20 @@ import { cartState as cartStateAtom } from './atoms';
 export const cartCount = selector({
   key: 'cartCount',
   get: ({ get }) => {
-    const cartStateObject = get(cartStateAtom);
-    const valueArray = Object.values(cartStateObject);
-    const count = valueArray.reduce((total, curr) => (total += curr), 0);
+    const cartStateArray = get(cartStateAtom);
+    return cartStateArray.length;
+  },
+});
 
-    return count;
+export const cartObject = selector({
+  key: 'cartObject',
+  get: ({ get }) => {
+    const cartStateArray = get(cartStateAtom);
+
+    return cartStateArray.reduce((cartObj, cartItem) => {
+      const alreadyInObject = cartItem in cartObj;
+      cartObj[cartItem] = alreadyInObject ? (cartObj[cartItem] += 1) : 1;
+      return cartObj;
+    }, {});
   },
 });
