@@ -2,6 +2,7 @@ import React from 'react';
 import Home from './Home';
 import Nav from './NavBar';
 import Loading from './Loading';
+import CartPreview from './Cart';
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 
 import { ThemeProvider } from 'styled-components';
@@ -39,7 +40,10 @@ function App() {
   const updateCart = useSetRecoilState(cartStateAtom);
 
   const { userData, authenticated } = activeUser;
-  const protectedRoutes = [['/menu', Menu]];
+  const protectedRoutes = [
+    ['/menu', Menu, { exact: true }],
+    ['/menu/cart', CartPreview],
+  ];
 
   const location = useLocation();
 
@@ -56,11 +60,10 @@ function App() {
 
         if (!authenticated) {
           toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
-          const persistedOrder = localStorage.getItem('orderList');
+          const persistedOrder = localStorage.getItem('storedCart');
 
           if (persistedOrder) {
             toast('We saved your order, no need to thank us 😊', { type: 'info' });
-
             updateCart(JSON.parse(persistedOrder));
           }
         }
@@ -108,8 +111,8 @@ function App() {
                   </Route>
 
                   {authenticated &&
-                    protectedRoutes.map(([path, Component]) => (
-                      <Route path={path} key={path}>
+                    protectedRoutes.map(([path, Component, props]) => (
+                      <Route {...props} path={path} key={path}>
                         <Component />
                       </Route>
                     ))}

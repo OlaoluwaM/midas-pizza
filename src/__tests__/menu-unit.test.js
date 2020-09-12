@@ -3,7 +3,6 @@ import Menu from '../components/Menu';
 import { render, cleanup, fireEvent, act, within } from '@testing-library/react';
 
 afterAll(cleanup);
-window.localStorage.getItem = jest.fn(() => JSON.stringify(testAccessToken));
 
 function renderWithContext() {
   const context = {
@@ -22,28 +21,50 @@ beforeAll(() => {
   fetch.mockResponse(JSON.stringify(formatFetchResponse(menu)), { status: 200 });
 });
 
-test('Loads menu items', async () => {
-  let utils;
+window.localStorage.getItem = jest.fn(key => {
+  if (key === 'menu') return;
+  return JSON.stringify(testAccessToken);
+});
 
-  await act(async () => {
-    utils = renderWithContext();
+describe('Initial load of menu items', () => {
+  test('should load items from server if not yet stored in localStorage', async () => {
+    let utils;
+
+    await act(async () => {
+      utils = renderWithContext();
+    });
+
+    const { findAllByTestId } = utils;
+    const menuItems = await findAllByTestId('menu-item');
+
+    expect(localStorage.setItem).toHaveBeenCalled();
+    expect(menuItems.length).toBeGreaterThan(1);
   });
 
-  const { findAllByTestId } = utils;
-  const menuItems = await findAllByTestId('menu-item');
+  test('Should load items from localStorage if previously stored', async () => {
+    const store = {
+      currentAccessToken: testAccessToken,
+      menu: Object.entries(menu),
+    };
+    window.localStorage.getItem = jest.fn(key => JSON.stringify(store[key]));
 
-  expect(menuItems.length).toBeGreaterThan(1);
+    let utils;
+
+    await act(async () => {
+      utils = renderWithContext();
+    });
+
+    expect(localStorage.getItem).toHaveBeenCalledWith('menu');
+
+    const { findAllByTestId } = utils;
+    const menuItems = await findAllByTestId('menu-item');
+
+    expect(menuItems.length).toBeGreaterThan(1);
+  });
 });
 
 test('Filter Functionality', async () => {
   jest.useFakeTimers();
-  // fetch.once(
-  //   () =>
-  //     new PromiJSON.stringify(formatFetchResponse(menu))), 2000)),
-  //   {
-  //     status: 200,
-  //   }
-  // );
 
   let utils;
 

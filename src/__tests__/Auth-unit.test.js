@@ -68,7 +68,6 @@ test('Login tests', () => {
   expect(getAllByText(/log in/i)).toHaveLength(2);
 });
 
-// Finish up unit tests, use h=
 describe('Invalid input tests', () => {
   beforeEach(() => fetch.resetMocks());
 
@@ -94,7 +93,7 @@ describe('Invalid input tests', () => {
 
     const invalidDataToPass = {
       Email: 'dedede@gmail.com',
-      Password: 'IAmAwesome@2003300',
+      Password: '123',
     };
 
     for await (let i of [0, 1]) {

@@ -10,28 +10,27 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
-    "@types/jest": "^26.0.10",
-    "framer-motion": "^2.6.5",
+    "@types/jest": "^26.0.13",
+    "framer-motion": "^2.6.10",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-hook-form": "^6.7.0",
+    "react-hook-form": "^6.8.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^3.4.3",
     "react-toastify": "^6.0.8",
     "recoil": "0.0.10",
     "source-map-explorer": "^2.5.0",
-    "styled-components": "^5.1.1",
-    "styled-icons": "^10.18.0"
+    "styled-components": "^5.2.0",
+    "styled-icons": "^10.19.0"
   },
   "scripts": {
-    "start-client": "npm start",
-    "build": "react-scripts build && cd server && node entry.js",
     "start": "react-scripts start",
+    "build": "react-scripts build",
     "serve:dev": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env.dev",
-    "test": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test.[j]s?(x) --silent",
-    "eject": "react-scripts eject",
+    "test": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test.[j]s?(x)",
+    "test:silent": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test.[j]s?(x) --silent",
     "serve:prod": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env.prod",
-    "pbuild": "npm run serve:prod"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"

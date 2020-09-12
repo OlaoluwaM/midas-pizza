@@ -160,26 +160,30 @@ export const menuItemVariants = {
   exit: { opacity: 0 },
 };
 
-const gentleSpringAnimationConfig = {
-  type: 'spring',
-  damping: 10,
-  mass: 1,
-  stiffness: 85,
-};
-
-export const previewCartVariants = {
+export const cartVariants = {
   visible: {
-    x: 0,
-    transition: { when: 'beforeChildren', staggerChildren: 0.2, type: 'tween', ease: 'circOut' },
+    opacity: 1,
+    transition: { when: 'beforeChildren', staggerChildren: 0.2 },
   },
 
   hidden: {
-    x: '100%',
+    opacity: 0,
     transition: {
       when: 'afterChildren',
       staggerChildren: 0.1,
-      type: 'tween',
-      ease: 'easeIn',
+      delayChildren: 0.4,
     },
+  },
+};
+
+export const orderItemVariants = {
+  visible: {
+    opacity: 1,
+    y: 0,
+  },
+
+  hidden: {
+    opacity: 0,
+    y: 90,
   },
 };

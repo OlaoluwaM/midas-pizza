@@ -7,7 +7,6 @@ import { Settings } from '@styled-icons/ionicons-solid/Settings';
 import { m as motion } from 'framer-motion';
 import { Cart3 as Cart } from '@styled-icons/bootstrap/Cart3';
 import { UserSessionContext } from './context/context';
-import { showCart as showCartAtom } from './atoms';
 import { cartCount as cartCountSelector } from './selectors';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
@@ -70,21 +69,13 @@ const NavContainer = styled.nav`
 
 function ShoppingCart() {
   const cartCountValue = useRecoilValue(cartCountSelector);
-  const toggleOrderPreview = useSetRecoilState(showCartAtom);
-  const toggleOrderPreviewRef = React.useRef(false);
-
-  const toggleCartPreview = () => {
-    const { current: prevToggleState } = toggleOrderPreviewRef;
-    toggleOrderPreview(!prevToggleState);
-    toggleOrderPreviewRef.current = prevToggleState === true ? false : true;
-  };
 
   return (
-    <motion.li className="pos-right shopping-cart" onClick={toggleCartPreview}>
-      <a className="nav-link">
+    <motion.li className="pos-right shopping-cart">
+      <NavLink to="/menu/cart" className="nav-link" activeClassName="current-page-svg">
         <Cart title="Cart" />
         <motion.span data-testid="cart-count">{cartCountValue}</motion.span>
-      </a>
+      </NavLink>
     </motion.li>
   );
 }
@@ -112,13 +103,13 @@ export default function Nav() {
         {authenticated && (
           <>
             <motion.li>
-              <NavLink className="nav-link" activeClassName="current-page" to="/menu">
+              <NavLink className="nav-link" activeClassName="current-page" exact to="/menu">
                 Menu
               </NavLink>
             </motion.li>
 
             <motion.li className="pos-right">
-              <NavLink className="nav-link" activeClassName="current-page" to="/settings">
+              <NavLink className="nav-link" activeClassName="current-page-svg" to="/settings">
                 <Settings title="Settings" />
               </NavLink>
             </motion.li>

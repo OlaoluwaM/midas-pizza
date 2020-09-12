@@ -4,9 +4,7 @@ import Loading from './Loading';
 import MenuItem from './MenuItem';
 import hexToRgb from './utils/hexToRgb';
 import FilterPanel from './FilterPanel';
-import OrderPreview from './OrderPreview';
 
-import { toast } from 'react-toastify';
 import { GooeySVGBackground } from './Reusables';
 import { UserSessionContext } from './context/context';
 import { MenuBlob, MenuBlob2 } from '../assets/Blobs';
@@ -119,7 +117,6 @@ export default function Menu() {
 
       const menuObjAsArray = Object.entries(menuData);
       menuStore.current = menuObjAsArray;
-
       filterHandler('Pizza', menuObjAsArray);
     })();
 
@@ -146,8 +143,6 @@ export default function Menu() {
 
   return (
     <>
-      <OrderPreview menu={menuStore.current} />
-
       <MenuSection>
         <GooeySVGBackground id="goo" />
         <motion.h1 className="goo" variants={headerVariants}>
