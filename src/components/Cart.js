@@ -52,19 +52,19 @@ export default function CartPreview() {
     <CartPreviewContainer>
       <CartContainer>
         <motion.h3>Your Cart</motion.h3>
-        <Cart layout>
-          {cart.map(([orderName, { quantity, initialPrice, foodType }]) => (
-            <OrderItem
-              key={orderName}
-              orderName={orderName}
-              quantity={quantity}
-              foodType={foodType}
-              initialPrice={initialPrice}
-            />
-          ))}
-        </Cart>
-        {/* <AnimateSharedLayout>
-        </AnimateSharedLayout> */}
+        <AnimateSharedLayout>
+          <Cart layout>
+            {cart.map(([orderName, { quantity, initialPrice, type }]) => (
+              <OrderItem
+                key={orderName}
+                orderName={orderName}
+                quantity={quantity}
+                foodType={type}
+                initialPrice={initialPrice}
+              />
+            ))}
+          </Cart>
+        </AnimateSharedLayout>
       </CartContainer>
       {/* <CheckoutPoint></CheckoutPoint> */}
     </CartPreviewContainer>

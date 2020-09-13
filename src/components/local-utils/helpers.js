@@ -70,3 +70,23 @@ export function convertDollarToFloat(dollar, wholeNum = false) {
 function convertToNumber(floatString) {
   return parseInt(floatString.toString().replace('.', ''));
 }
+
+export function serializeOrderCart(cartObject) {
+  const cartArray = Object.entries(cartObject);
+  return cartArray
+    .map(([itemName, { quantity }]) => {
+      const itemsToAdd = `${itemName},`.repeat(quantity).trim().split(',');
+      itemsToAdd.pop();
+      return itemsToAdd;
+    })
+    .flat();
+}
+
+export function getCartCount(cart) {
+  return Object.entries(cart).reduce((total, cartItem) => {
+    const {
+      1: { quantity },
+    } = cartItem;
+    return (total += quantity);
+  }, 0);
+}

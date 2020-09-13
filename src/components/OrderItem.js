@@ -42,10 +42,9 @@ const OrderItemContainer = styled(motion.li).attrs({
   }
 
   & > h5 {
-    font-size: 1.1rem;
+    font-size: 1rem;
     margin: 0;
-    font-family: var(--primaryFont);
-    font-weight: var(--xXBold);
+    font-weight: var(--bold);
     flex-basis: 5em;
     text-align: center;
   }
@@ -83,7 +82,6 @@ const ContentGroup = styled.div`
       margin: 0.5em 0 0 0;
       font-family: var(--secondaryFont);
       font-weight: var(--medium);
-      font-variant: small-caps;
       color: ${({ theme }) => theme.gray};
     }
   }
@@ -159,20 +157,14 @@ function OrderItem({ orderName, initialPrice, quantity, foodType }) {
     Snack: snacksImage,
   };
 
-  const totalPrice = (quantity * convertDollarToFloat(initialPrice)).toFixed(2);
-  const formattedInitialPrice = convertDollarToFloat(initialPrice).toFixed(2);
+  const totalPrice = (quantity * initialPrice).toFixed(2);
+  const formattedInitialPrice = initialPrice.toFixed(2);
 
   const deleteItemHandler = () => {
-    const orderList = JSON.parse(localStorage.getItem('orderList'));
-
     updateCart(prevCart => {
-      const newCartObject = Object.assign({}, prevCart);
+      const newCartObject = { ...prevCart };
       delete newCartObject[orderName];
-
-      const newOrderList = orderList.filter(order => order !== orderName);
-
       localStorage.setItem('storedCart', JSON.stringify(newCartObject));
-      localStorage.setItem('orderList', JSON.stringify(newOrderList));
       return newCartObject;
     });
   };
@@ -201,7 +193,7 @@ function OrderItem({ orderName, initialPrice, quantity, foodType }) {
   );
 }
 
-OrderItem.PropTypes = {
+OrderItem.propTypes = {
   orderName: PropTypes.string.isRequired,
   initialPrice: PropTypes.number.isRequired,
   quantity: PropTypes.number.isRequired,

@@ -10,7 +10,12 @@ import { UserSessionContext } from './context/context';
 import { MenuBlob, MenuBlob2 } from '../assets/Blobs';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { menuSectionVariants, headerVariants } from './local-utils/framer-variants';
-import { generateFetchOptions, generateUrl, fetchWrapper } from './local-utils/helpers';
+import {
+  generateFetchOptions,
+  generateUrl,
+  fetchWrapper,
+  serializeOrderCart,
+} from './local-utils/helpers';
 
 const MenuSection = styled(motion.section).attrs({
   className: 'section-container',
@@ -121,17 +126,14 @@ export default function Menu() {
     })();
 
     return () => {
-      const persistedOrder = localStorage.getItem('orderList');
+      const persistedOrder = localStorage.getItem('storedCart');
       if (!persistedOrder) return;
+      const orders = serializeOrderCart(JSON.parse(persistedOrder));
 
       (async () => {
         await fetchWrapper(
           generateUrl(`order?email=${userData.email}`),
-          generateFetchOptions(
-            'POST',
-            { orders: JSON.parse(persistedOrder) },
-            currentAccessToken.Id
-          )
+          generateFetchOptions('POST', { orders }, currentAccessToken.Id)
         );
 
         console.log('Order stored on server');

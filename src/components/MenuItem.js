@@ -11,8 +11,8 @@ import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
 import { menuItemVariants } from './local-utils/framer-variants';
 import { useSetRecoilState } from 'recoil';
-import { convertDollarToFloat } from './local-utils/helpers';
 import { cartState as cartStateAtom } from './atoms';
+import { convertDollarToFloat, getCartCount } from './local-utils/helpers';
 
 const MenuItemContainer = styled(motion.div).attrs({
   variants: menuItemVariants,
@@ -210,36 +210,29 @@ export default function MenuItem({ menuItemName, price, custom }) {
   };
 
   const addToCart = () => {
-    const orderList = JSON.parse(localStorage.getItem('orderList')) || [];
     const { current: amountOrdered } = quantityToAdd;
 
     updateCart(prevCartObject => {
-      if (prevCartObject.totalCount > quantityLimit) {
+      if (getCartCount(prevCartObject) > quantityLimit) {
         toast(`Sorry but you cannot order more than ${quantityLimit} items`, { type: 'error' });
-        return prevCartStack;
+        return prevCartObject;
       }
 
-      const newCartObject = Object.assign({}, prevCartObject);
-      const alreadyInCart = menuItemName in newCartObject;
-      const cartItemObject = {};
+      let newCartItemObject = {};
+      const alreadyInCart = menuItemName in prevCartObject;
 
       if (!alreadyInCart) {
-        cartItemObject['type'] = foodType;
-        cartItemObject['quantity'] = 0;
-        cartItemObject['initialPrice'] = convertDollarToFloat(price);
-      } else cartItemObject = newCartObject[menuItemName];
+        newCartItemObject[menuItemName] = {
+          type: foodType,
+          quantity: 0,
+          initialPrice: convertDollarToFloat(price),
+        };
+      } else newCartItemObject[menuItemName] = { ...prevCartObject[menuItemName] };
 
-      cartItemObject.quantity += amountOrdered;
-      const itemsToAdd = `${menuItemName},`.repeat(amountOrdered).trim().split(',');
-      itemsToAdd.pop();
-      orderList.push(...itemsToAdd);
-
-      newCartObject.totalCount += amountOrdered;
-      newCartObject[itemName] = cartItemObject;
-
-      localStorage.setItem('orderList', JSON.stringify(orderList));
+      newCartItemObject[menuItemName]['quantity'] += amountOrdered;
+      const newCartObject = { ...prevCartObject, ...newCartItemObject };
       localStorage.setItem('storedCart', JSON.stringify(newCartObject));
-      
+
       return newCartObject;
     });
   };
