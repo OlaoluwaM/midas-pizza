@@ -2,7 +2,6 @@ import React from 'react';
 import Home from './Home';
 import Nav from './NavBar';
 import Loading from './Loading';
-import CartPreview from './Cart';
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 
 import { ThemeProvider } from 'styled-components';
@@ -11,6 +10,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { cartState as cartStateAtom } from './atoms';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import { themeObj, UserSessionContext } from './context/context';
+import { NotFoundPage, NotAuthorizedPage } from './ErrorPages';
 import { generateFetchOptions, generateUrl, fetchWrapper } from './local-utils/helpers';
 import {
   AnimatePresence,
@@ -18,11 +18,11 @@ import {
   AnimateLayoutFeature,
   AnimationFeature,
   ExitFeature,
-  m as motion,
 } from 'framer-motion';
 
 const Authenticate = React.lazy(() => import('./Auth'));
 const Menu = React.lazy(() => import('./Menu'));
+const CartPreview = React.lazy(() => import('./Cart'));
 
 whyDidYouRender(React, {
   onlyLogs: true,
@@ -32,6 +32,7 @@ whyDidYouRender(React, {
 
 function App() {
   const currentUserToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
+  // const [errorBoundary, setError] = React.useState(null);
 
   const [activeUser, setActiveUser] = React.useState({
     userData: null,
@@ -53,6 +54,7 @@ function App() {
 
     (async () => {
       try {
+        // if (errorBoundary) throw new Error(errorBoundary);
         const ownerOfCurrentToken = await fetchWrapper(
           generateUrl(`users?email=${currentUserToken.email}`),
           generateFetchOptions('GET', null, currentUserToken.Id)
@@ -71,11 +73,11 @@ function App() {
         setActiveUser({ userData: ownerOfCurrentToken, authenticated: true });
       } catch (error) {
         console.error(error);
-        const { name } = error;
+        const { name = null } = error;
 
-        if (name === 'ServerConnectionError') {
+        if (name === 'ServerConnectionError' || name === null) {
           console.error('Redirect required');
-          // TODO Redirect to Error page
+          // <Redirect to="/error-page" />
         } else {
           const { status } = error;
           let errorText = 'An error occurred. Please refresh and try again';
@@ -92,12 +94,13 @@ function App() {
 
   return (
     <UserSessionContext.Provider value={activeUser}>
+      {/* <ErrorBoundaryContext.Provider value={}></ErrorBoundaryContext.Provider> */}
       <ThemeProvider theme={themeObj}>
         <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
           <div>
             <Nav />
 
-            <ToastContainer hideProgressBar position="bottom-right" />
+            <ToastContainer hideProgressBar position="bottom-right" pauseOnFocusLoss={true} />
 
             <React.Suspense fallback={<Loading fullscreen={true} />}>
               <AnimatePresence exitBeforeEnter initial={false}>
@@ -110,19 +113,15 @@ function App() {
                     <Authenticate authUser={setActiveUser} />
                   </Route>
 
-                  {authenticated &&
-                    protectedRoutes.map(([path, Component, props]) => (
-                      <Route {...props} path={path} key={path}>
-                        <Component />
-                      </Route>
-                    ))}
+                  {protectedRoutes.map(([path, Component, props]) => (
+                    <Route {...props} path={path} key={path}>
+                      {authenticated && <Component />}
+                      {!authenticated && <NotAuthorizedPage />}
+                    </Route>
+                  ))}
 
                   <Route>
-                    <motion.div
-                      exit={{ opacity: 0 }}
-                      style={{ position: 'fixed', bottom: '50%', left: '50%' }}>
-                      404
-                    </motion.div>
+                    <NotFoundPage />
                   </Route>
                 </Switch>
               </AnimatePresence>

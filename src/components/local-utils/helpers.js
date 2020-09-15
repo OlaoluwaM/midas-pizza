@@ -90,3 +90,13 @@ export function getCartCount(cart) {
     return (total += quantity);
   }, 0);
 }
+
+export function getTotal(cart) {
+  return Object.entries(cart).reduce((total, cartItem) => {
+    const {
+      1: { quantity, initialPrice },
+    } = cartItem;
+    const totalValue = quantity * initialPrice;
+    return (total += totalValue);
+  }, 0);
+}

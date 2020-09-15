@@ -7,9 +7,9 @@ import FilterPanel from './FilterPanel';
 
 import { GooeySVGBackground } from './Reusables';
 import { UserSessionContext } from './context/context';
-import { MenuBlob, MenuBlob2 } from '../assets/Blobs';
 import { m as motion, AnimatePresence } from 'framer-motion';
-import { menuSectionVariants, headerVariants } from './local-utils/framer-variants';
+import { defaultPageTransitionVariants2, headerVariants } from './local-utils/framer-variants';
+import { Blob3 as MenuBlob, Blob4 as MenuBlob2 } from '../assets/Blobs';
 import {
   generateFetchOptions,
   generateUrl,
@@ -19,7 +19,7 @@ import {
 
 const MenuSection = styled(motion.section).attrs({
   className: 'section-container',
-  variants: menuSectionVariants,
+  variants: defaultPageTransitionVariants2,
   initial: 'hidden',
   animate: 'visible',
   exit: 'hidden',
@@ -151,8 +151,8 @@ export default function Menu() {
           Our Menu
         </motion.h1>
 
-        <MenuBlob />
-        <MenuBlob2 />
+        <MenuBlob className="blob" />
+        <MenuBlob2 className="blob" />
 
         <FilterPanel filterForType={filterHandler} activeFilter={menuFilter.current} />
 

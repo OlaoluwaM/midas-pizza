@@ -1,24 +1,12 @@
+import React from 'react';
 import Menu from '../components/Menu';
 import NavBar from '../components/NavBar';
 
-import { MemoryRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import { render, cleanup, fireEvent, act } from '@testing-library/react';
+import { cleanup, fireEvent, act } from '@testing-library/react';
 
 afterAll(cleanup);
 
-function renderWithContext() {
-  const context = {
-    userData: {
-      name: 'Joey Anderman',
-      streetAddress: '9165 Littleton Ave. Patchogue, NY 11772',
-      email: 'joey@gmail.com',
-    },
-    authenticated: true,
-  };
-
-  return render(contextWrapper([ToastContainer, NavBar, Menu], context), { wrapper: MemoryRouter });
-}
 afterEach(() => jest.clearAllTimers());
 window.localStorage.getItem = jest.fn(() => JSON.stringify(testAccessToken));
 
@@ -32,7 +20,14 @@ test('Should make sure shopping cart changes appropriately with counter interact
   let utils;
 
   await act(async () => {
-    utils = renderWithContext();
+    utils = renderWithProviders(
+      <>
+        <ToastContainer />
+        <NavBar />
+        <Menu />
+      </>,
+      { contextValue: menuContext }
+    );
   });
 
   const { findByTestId, findAllByTestId, findByRole } = utils;

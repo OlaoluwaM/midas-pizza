@@ -6,9 +6,9 @@ import { NavLink } from 'react-router-dom';
 import { Settings } from '@styled-icons/ionicons-solid/Settings';
 import { m as motion } from 'framer-motion';
 import { Cart3 as Cart } from '@styled-icons/bootstrap/Cart3';
+import { useRecoilValue } from 'recoil';
 import { UserSessionContext } from './context/context';
 import { cartCount as cartCountSelector } from './selectors';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 const NavContainer = styled.nav`
   width: 100vw;
@@ -72,7 +72,11 @@ function ShoppingCart() {
 
   return (
     <motion.li className="pos-right shopping-cart">
-      <NavLink to="/menu/cart" className="nav-link" activeClassName="current-page-svg">
+      <NavLink
+        to="/menu/cart"
+        className="nav-link"
+        data-testid="cart-link"
+        activeClassName="current-page-svg">
         <Cart title="Cart" />
         <motion.span data-testid="cart-count">{cartCountValue}</motion.span>
       </NavLink>

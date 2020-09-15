@@ -42,7 +42,7 @@ const Overlay = styled(motion.div).attrs({
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 400;
+  z-index: 1;
   position: ${({ isFullscreen }) => (isFullscreen ? 'fixed' : 'absolute')};
 `;
 

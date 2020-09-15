@@ -6,6 +6,12 @@ export const cartCount = selector({
   key: 'cartCount',
   get: ({ get }) => {
     const cartStateObject = get(cartStateAtom);
-    return getCartCount(cartStateObject);
+    const orderCount = getCartCount(cartStateObject);
+
+    if (orderCount > 0) {
+      localStorage.setItem('storedCart', JSON.stringify(cartStateObject));
+    } else localStorage.removeItem('storedCart');
+
+    return orderCount;
   },
 });

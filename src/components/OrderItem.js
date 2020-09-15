@@ -7,19 +7,17 @@ import drinkImage from '../assets/drink-image-maxime-renard-unsplash.jpg';
 import dessertImage from '../assets/dessert-image-emile-mbunzama-unsplash.jpg';
 import snacksImage from '../assets/snacks-image-fran-hogan-unsplash.jpg';
 
-import { Plus } from '@styled-icons/boxicons-regular/Plus';
+import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
-import { Dash as Minus } from '@styled-icons/bootstrap/Dash';
+import { getCartCount } from './local-utils/helpers';
 import { Close as Delete } from '@styled-icons/evaicons-solid/Close';
-import { orderItemVariants } from './local-utils/framer-variants';
 import { useSetRecoilState } from 'recoil';
-import { convertDollarToFloat } from './local-utils/helpers';
+import { orderItemVariants } from './local-utils/framer-variants';
 import { cartState as cartStateAtom } from './atoms';
 
 const OrderItemContainer = styled(motion.li).attrs({
-  // variants: orderItemVariants,
-  // initial: 'hidden',
-  // animate: 'visible',
+  variants: orderItemVariants,
+  'data-testid': 'order-item',
 })`
   display: flex;
   width: 100%;
@@ -89,9 +87,9 @@ const ContentGroup = styled.div`
 
 const CounterContainer = styled.div`
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  flex-basis: 9em;
+  /* flex-basis: 9em; */
   opacity: 0.5;
   transition: opacity 0.3s ease;
 
@@ -111,38 +109,40 @@ const CounterContainer = styled.div`
     flex-basis: 3.7em;
     text-align: center;
   }
-
-  svg {
-    width: 1.4em;
-    flex-basis: 1.4em;
-    cursor: pointer;
-    stroke-linejoin: round;
-
-    &:first-of-type {
-      margin-right: 12px;
-    }
-
-    &:last-of-type {
-      margin-left: 12px;
-    }
-  }
 `;
 
 function Counter({ itemName, initialQuantity }) {
+  const updateCart = useSetRecoilState(cartStateAtom);
   const [count, setCount] = React.useState(initialQuantity);
   const { REACT_APP_QUANTITY_LIMIT: quantityLimit } = process.env;
 
+  const updateItemQuantity = e => {
+    const amountToAdd = parseInt(e.target.value);
+
+    updateCart(prevCart => {
+      const cartTotal = getCartCount(prevCart);
+      if (cartTotal - count + amountToAdd > quantityLimit) {
+        toast('Sorry cannot order more than 10 items at a go 😄', { type: 'error' });
+        return prevCart;
+      }
+      const updatedItemObject = { [itemName]: { ...prevCart[itemName] } };
+      updatedItemObject[itemName].quantity = amountToAdd;
+      setCount(amountToAdd);
+
+      return { ...prevCart, ...updatedItemObject };
+    });
+  };
+
   return (
     <CounterContainer>
-      <Minus />
       <input
+        data-testid="order-count-input"
         type="number"
         min="1"
         max={quantityLimit}
         value={count}
-        onChange={e => setCount(e.target.value)}
+        onChange={updateItemQuantity}
       />
-      <Plus />
     </CounterContainer>
   );
 }
@@ -164,7 +164,6 @@ function OrderItem({ orderName, initialPrice, quantity, foodType }) {
     updateCart(prevCart => {
       const newCartObject = { ...prevCart };
       delete newCartObject[orderName];
-      localStorage.setItem('storedCart', JSON.stringify(newCartObject));
       return newCartObject;
     });
   };
@@ -173,22 +172,22 @@ function OrderItem({ orderName, initialPrice, quantity, foodType }) {
     <OrderItemContainer layout="position">
       <ContentGroup>
         <ImageContainer>
-          <img src={imagePool[foodType]} alt={`${foodType} image`} />
+          <img src={imagePool[foodType]} alt={`${orderName}`} />
         </ImageContainer>
-        <h4>
+        <h4 data-testid="order-item-name">
           {orderName}
-          <p>
+          <p data-testid="order-item-initial-price">
             <sup>$</sup>
             {formattedInitialPrice}
           </p>
         </h4>
       </ContentGroup>
       <Counter initialQuantity={quantity} itemName={orderName} />
-      <h5>
+      <h5 data-testid="order-item-total">
         <sup>$</sup>
         {totalPrice}
       </h5>
-      <Delete onClick={deleteItemHandler} />
+      <Delete onClick={deleteItemHandler} data-testid="order-item-delete-button" />
     </OrderItemContainer>
   );
 }
@@ -198,6 +197,10 @@ OrderItem.propTypes = {
   initialPrice: PropTypes.number.isRequired,
   quantity: PropTypes.number.isRequired,
   foodType: PropTypes.string.isRequired,
+};
+Counter.propTypes = {
+  itemName: PropTypes.string.isRequired,
+  initialQuantity: PropTypes.number.isRequired,
 };
 
 const MemoizedOrderItem = React.memo(OrderItem, (prevProps, nextProps) => {

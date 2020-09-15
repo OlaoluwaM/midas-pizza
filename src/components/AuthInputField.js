@@ -59,7 +59,7 @@ const ErrorDisplay = styled(motion.p)`
 
 const Input = props => {
   const { name, type = 'text', validationsParam = null, ...rest } = props;
-  const { register, errors, formState } = useFormContext();
+  const { register, errors } = useFormContext();
 
   const validationObj = !!validationOptions[name] ? validationOptions[name](validationsParam) : {};
 

@@ -11,11 +11,6 @@ class Variants {
   }
 }
 
-const generalOrchestrationTransition = {
-  animate: { when: 'beforeChildren', staggerChildren: 0.2 },
-  exit: { when: 'afterChildren', delayChildren: 0.2, staggerChildren: 0.3 },
-};
-
 export const defaultPageTransitionVariants = new Variants(
   {
     opacity: 1,
@@ -26,6 +21,22 @@ export const defaultPageTransitionVariants = new Variants(
     transition: { when: 'afterChildren', delayChildren: 0.2, staggerChildren: 0.3 },
   }
 );
+
+export const defaultPageTransitionVariants2 = {
+  visible: {
+    opacity: 1,
+    transition: { when: 'beforeChildren', staggerChildren: 0.2 },
+  },
+
+  hidden: {
+    opacity: 0,
+    transition: {
+      when: 'afterChildren',
+      staggerChildren: 0.1,
+      delayChildren: 0.4,
+    },
+  },
+};
 
 export const homeVariants = {
   contentVariants: new Variants(
@@ -92,21 +103,6 @@ export const authVariants = {
 };
 
 // ! MENU Variants
-export const menuSectionVariants = {
-  visible: {
-    opacity: 1,
-    transition: { when: 'beforeChildren', staggerChildren: 0.2 },
-  },
-
-  hidden: {
-    opacity: 0,
-    transition: {
-      when: 'afterChildren',
-      staggerChildren: 0.1,
-      delayChildren: 0.4,
-    },
-  },
-};
 
 export const headerVariants = {
   visible: {
@@ -160,19 +156,18 @@ export const menuItemVariants = {
   exit: { opacity: 0 },
 };
 
-export const cartVariants = {
+export const cartPreviewVariants = {
+  ...defaultPageTransitionVariants2,
   visible: {
-    opacity: 1,
-    transition: { when: 'beforeChildren', staggerChildren: 0.2 },
-  },
-
-  hidden: {
-    opacity: 0,
+    ...defaultPageTransitionVariants2.visible,
     transition: {
-      when: 'afterChildren',
+      ...defaultPageTransitionVariants2.visible.transition,
       staggerChildren: 0.1,
-      delayChildren: 0.4,
+      delay: 0.4,
     },
+  },
+  exit: {
+    opacity: 0,
   },
 };
 
@@ -184,6 +179,10 @@ export const orderItemVariants = {
 
   hidden: {
     opacity: 0,
-    y: 90,
+    y: 40,
+  },
+
+  exit: {
+    opacity: 0,
   },
 };

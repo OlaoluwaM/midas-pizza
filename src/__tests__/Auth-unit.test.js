@@ -1,15 +1,12 @@
+import React from 'react'
 import Authenticate from '../components/Auth';
 
-import { render, cleanup, fireEvent, act, screen } from '@testing-library/react';
+import { cleanup, fireEvent, act, screen } from '@testing-library/react';
 
 afterAll(cleanup);
 
-function renderWithContext(value = { authenticated: false }) {
-  return render(contextWrapper(Authenticate, value));
-}
-
 test('Sign up tests', async () => {
-  const utils = renderWithContext();
+  const utils = renderWithProviders(<Authenticate />);
 
   // Arrange
   const { findAllByText, findAllByTestId, getByPlaceholderText } = utils;
@@ -55,7 +52,7 @@ test('Sign up tests', async () => {
 });
 
 test('Login tests', () => {
-  const utils = renderWithContext();
+  const utils = renderWithProviders(<Authenticate />);
 
   // Arrange
   const { getAllByText, getByText } = utils;
@@ -76,7 +73,7 @@ describe('Invalid input tests', () => {
       ['User may not exist', { status: 400 }],
       ['Invalid password', { status: 400 }]
     );
-    const utils = renderWithContext();
+    const utils = renderWithProviders(<Authenticate />);
 
     // Change to login form state
     const switchText = await screen.findByText(/already a mem/i);
@@ -125,7 +122,7 @@ describe('Invalid input tests', () => {
 
   test('Sign Up', async () => {
     fetch.mockRejectOnce('User may already exist', { status: 400 });
-    const utils = renderWithContext();
+    const utils = renderWithProviders(<Authenticate />);
 
     const { findByRole, findAllByTestId, getByPlaceholderText, findByText } = utils;
     const { queryAllByTestId, findByTestId } = utils;

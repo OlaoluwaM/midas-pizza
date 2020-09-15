@@ -8,7 +8,9 @@ require('jest-fetch-mock').enableMocks();
 import React from 'react';
 import CustomError from './components/local-utils/custom-error';
 
+import { render } from '@testing-library/react';
 import { RecoilRoot } from 'recoil';
+import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { themeObj, UserSessionContext } from './components/context/context';
 import { MotionConfig, AnimateLayoutFeature, AnimationFeature, ExitFeature } from 'framer-motion';
@@ -27,6 +29,12 @@ const menuArrayJSON = fs.readFileSync(
   'utf-8'
 );
 
+global.initialCart = {
+  'Pepperoni Pizza Small': { type: 'Pizza', quantity: 1, initialPrice: 4.99 },
+  Water: { type: 'Drink', quantity: 1, initialPrice: 0.5 },
+  Sprite: { type: 'Drink', quantity: 1, initialPrice: 1.59 },
+};
+
 global.menu = Object.fromEntries(
   JSON.parse(menuArrayJSON).map(arr => [`${arr[0]} (${arr[2]})`, `$${arr[1]}`])
 );
@@ -43,17 +51,34 @@ Object.defineProperty(window, 'localStorage', {
 });
 global.CustomError = CustomError;
 
-global.contextWrapper = function (Components, contextValue = { authenticated: false }) {
-  return (
-    <RecoilRoot>
-      <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
-        <ThemeProvider theme={themeObj}>
-          <UserSessionContext.Provider value={contextValue}>
-            {Array.isArray(Components) && Components.map(Component => <Component />)}
-            {!Array.isArray(Components) && <Components />}
-          </UserSessionContext.Provider>
-        </ThemeProvider>
-      </MotionConfig>
-    </RecoilRoot>
+global.menuContext = {
+  userData: {
+    email: 'britt@gmail.com',
+    name: 'Brittany D Kenney',
+    streetAddress: '545 W. Ann St. Matthews, NC 28104',
+  },
+  authenticated: true,
+};
+
+global.renderWithProviders = function (
+  ui,
+  { contextValue = { authenticated: false }, routeProps = {} } = {}
+) {
+  const Wrapper = ({ children }) => (
+    <MemoryRouter {...routeProps}>
+      <RecoilRoot>
+        <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
+          <ThemeProvider theme={themeObj}>
+            <UserSessionContext.Provider value={contextValue}>
+              {children}
+            </UserSessionContext.Provider>
+          </ThemeProvider>
+        </MotionConfig>
+      </RecoilRoot>
+    </MemoryRouter>
   );
+
+  return {
+    ...render(ui, { wrapper: Wrapper }),
+  };
 };

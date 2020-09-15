@@ -197,6 +197,7 @@ export default function MenuItem({ menuItemName, price, custom }) {
   const updateCart = useSetRecoilState(cartStateAtom);
 
   const parenthesisRegex = new RegExp(/\((.*?)\)/, 'g');
+  const displayName = menuItemName.replace(parenthesisRegex, '');
   const foodType = menuItemName.match(parenthesisRegex)[0].replace(/\W/g, '');
   const imagePool = {
     Pizza: pizzaImage,
@@ -213,25 +214,26 @@ export default function MenuItem({ menuItemName, price, custom }) {
     const { current: amountOrdered } = quantityToAdd;
 
     updateCart(prevCartObject => {
-      if (getCartCount(prevCartObject) > quantityLimit) {
+      const cartCount = getCartCount(prevCartObject);
+
+      if (cartCount + amountOrdered > quantityLimit) {
         toast(`Sorry but you cannot order more than ${quantityLimit} items`, { type: 'error' });
         return prevCartObject;
       }
 
       let newCartItemObject = {};
-      const alreadyInCart = menuItemName in prevCartObject;
+      const alreadyInCart = displayName in prevCartObject;
 
       if (!alreadyInCart) {
-        newCartItemObject[menuItemName] = {
+        newCartItemObject[displayName] = {
           type: foodType,
           quantity: 0,
           initialPrice: convertDollarToFloat(price),
         };
-      } else newCartItemObject[menuItemName] = { ...prevCartObject[menuItemName] };
+      } else newCartItemObject[displayName] = { ...prevCartObject[displayName] };
 
-      newCartItemObject[menuItemName]['quantity'] += amountOrdered;
+      newCartItemObject[displayName]['quantity'] += amountOrdered;
       const newCartObject = { ...prevCartObject, ...newCartItemObject };
-      localStorage.setItem('storedCart', JSON.stringify(newCartObject));
 
       return newCartObject;
     });
@@ -239,10 +241,10 @@ export default function MenuItem({ menuItemName, price, custom }) {
 
   return (
     <MenuItemContainer custom={custom} data-food-type={foodType}>
-      <img src={imagePool[foodType]} alt={`Image for ${menuItemName}`} />
+      <img src={imagePool[foodType]} alt={`${displayName}`} />
       <div className="item-info">
-        <p>{menuItemName}</p>
-        <h6>{price}</h6>
+        <p>{displayName}</p>
+        <h6>{`$${convertDollarToFloat(price).toFixed(2)}`}</h6>
         <div className="order-buttons">
           <QuantityInput incrementQuantity={incrementQuantityToAddBy} />
           <AddToCartButton addToCart={addToCart} />

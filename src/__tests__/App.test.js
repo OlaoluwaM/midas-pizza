@@ -9,20 +9,16 @@ afterAll(cleanup);
 
 afterEach(() => jest.clearAllTimers());
 
-window.localStorage.getItem = jest.fn(() => JSON.stringify(testAccessToken));
+const store = {
+  storedCart: initialCart,
+  currentAccessToken: testAccessToken,
+};
+window.localStorage.getItem = jest.fn(key => JSON.stringify(store[key]));
+
 jest.useFakeTimers();
 
 test('Should automatically authenticate user', async () => {
-  fetch.once(
-    JSON.stringify(
-      formatFetchResponse({
-        email: 'britt@gmail.com',
-        name: 'Brittany D Kenney',
-        streetAddress: '545 W. Ann St. Matthews, NC 28104',
-      })
-    ),
-    { status: 200 }
-  );
+  fetch.once(JSON.stringify(formatFetchResponse(menuContext.userData)), { status: 200 });
 
   let utils;
   await act(async () => {
@@ -76,3 +72,6 @@ test('User should not be auto authenticated if refresh token has expired', async
   expect(alert).toHaveTextContent(/Your session has expired/i);
   expect(link).toHaveTextContent(/sign up/i);
 });
+
+// TODO write tests that handles app state when server is down
+// test()
