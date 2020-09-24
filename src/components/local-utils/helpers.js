@@ -36,10 +36,19 @@ export async function fetchWrapper(url, options) {
 
     const serverResponse = await request.json();
 
-    if (serverResponse?.newToken) {
-      swapTokenWith(serverResponse.newToken);
-      delete serverResponse.newToken;
+    const tokenInResponse = serverResponse?.newToken
+      ? serverResponse.newToken
+      : serverResponse.response.hasOwnProperty('Id')
+      ? serverResponse.response
+      : '';
+
+    console.log(tokenInResponse);
+
+    if (tokenInResponse) {
+      swapTokenWith(tokenInResponse);
+      serverResponse?.newToken && delete serverResponse.newToken;
     }
+
     const { response } = serverResponse;
 
     try {
@@ -80,6 +89,28 @@ export function serializeOrderCart(cartObject) {
       return itemsToAdd;
     })
     .flat();
+}
+
+export function formatCartFromServer(cart) {
+  const parenthesisRegex = new RegExp(/\((.*?)\)/, 'g');
+  const formattedCartObject = {};
+
+  for (const property in cart) {
+    if (property === 'orderCount' || property === 'totalPrice') continue;
+
+    const newPropertyName = property.replace(parenthesisRegex, '');
+    const type = property.match(parenthesisRegex)[0].replace(/\W/g, '');
+    const quantity = cart[property].match(parenthesisRegex)[0].match(/\d/)[0];
+    const initialPrice = convertDollarToFloat(cart[property].replace(parenthesisRegex, ''));
+
+    formattedCartObject[newPropertyName] = {
+      type,
+      quantity: parseInt(quantity),
+      initialPrice,
+    };
+  }
+
+  return formattedCartObject;
 }
 
 export function getCartCount(cart) {

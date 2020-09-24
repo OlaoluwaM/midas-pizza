@@ -10,6 +10,7 @@ import snacksImage from '../assets/snacks-image-fran-hogan-unsplash.jpg';
 import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
 import { menuItemVariants } from './local-utils/framer-variants';
+import { CartPlusFill as CartIcon } from '@styled-icons/bootstrap/CartPlusFill';
 import { useSetRecoilState } from 'recoil';
 import { cartState as cartStateAtom } from './atoms';
 import { convertDollarToFloat, getCartCount } from './local-utils/helpers';
@@ -115,8 +116,8 @@ const MenuItemContainer = styled(motion.div).attrs({
       .add-to-cart-button {
         position: relative;
         color: ${({ theme }) => theme.background};
-        width: 55%;
-        flex-basis: 55%;
+        width: 13em;
+        flex-basis: 13em;
         display: flex;
         align-items: center;
         justify-content: space-around;
@@ -133,6 +134,10 @@ const MenuItemContainer = styled(motion.div).attrs({
         outline: rgba(0, 0, 0, 0.2);
         transition: 0.1s ease box-shadow;
 
+        svg {
+          width: 15%;
+          margin-right: -30px;
+        }
         span {
           transform: scale(1.2);
         }
@@ -186,6 +191,7 @@ function AddToCartButton({ addToCart }) {
       className={'add-to-cart-button'}
       onClick={addToCart}
       data-testid="add-to-cart-button">
+      <CartIcon />
       <motion.span layoutId="text">Add to cart</motion.span>
     </motion.button>
   );

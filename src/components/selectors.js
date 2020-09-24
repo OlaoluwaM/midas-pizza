@@ -1,6 +1,6 @@
 import { selector } from 'recoil';
-import { cartState as cartStateAtom } from './atoms';
 import { getCartCount } from './local-utils/helpers';
+import { cartState as cartStateAtom } from './atoms';
 
 export const cartCount = selector({
   key: 'cartCount',
@@ -8,9 +8,11 @@ export const cartCount = selector({
     const cartStateObject = get(cartStateAtom);
     const orderCount = getCartCount(cartStateObject);
 
-    if (orderCount > 0) {
-      localStorage.setItem('storedCart', JSON.stringify(cartStateObject));
-    } else localStorage.removeItem('storedCart');
+    localStorage.setItem('storedCart', JSON.stringify(cartStateObject));
+    if (orderCount === 0) {
+      localStorage.removeItem('storedCart');
+      localStorage.removeItem('prevStoredCart');
+    }
 
     return orderCount;
   },

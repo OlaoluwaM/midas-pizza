@@ -132,6 +132,7 @@ export default function Authenticate({ authUser }) {
 
   const submitHandler = async formData => {
     const url = generateUrl(formStateEndpoints[formStateIndex]);
+
     try {
       if (!isLogin) {
         const { password, confirmPassword } = formData;
@@ -142,8 +143,7 @@ export default function Authenticate({ authUser }) {
       }
       setIsLoading(true);
 
-      const userToken = await fetchWrapper(url, generateFetchOptions('POST', formData));
-      localStorage.setItem('currentAccessToken', JSON.stringify(userToken));
+      await fetchWrapper(url, generateFetchOptions('POST', formData));
 
       authUser(prev => ({ ...prev, authenticated: true }));
       const toastOptions = { type: 'success', autoClose: 3000 };
@@ -164,9 +164,7 @@ export default function Authenticate({ authUser }) {
         //TODO Redirect to Error Page
       }
     } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 2000);
+      setIsLoading(false);
     }
   };
 

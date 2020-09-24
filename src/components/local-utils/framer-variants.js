@@ -186,3 +186,51 @@ export const orderItemVariants = {
     opacity: 0,
   },
 };
+
+export const emptyCartVectorVariants = {
+  visible: {
+    opacity: 0.8,
+  },
+  hidden: {
+    opacity: 0,
+  },
+};
+
+export const checkoutButtonVariants = {
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { delay: 1 },
+  },
+  hidden: {
+    opacity: 0,
+    y: 10,
+  },
+};
+
+export const modalBackgroundVariants = {
+  popOut: {
+    opacity: 1,
+    background: hexToRgb(theme.black, 0.8),
+    transition: { ...defaultPageTransitionVariants2.visible.transition },
+  },
+  close: {
+    opacity: 0,
+    background: hexToRgb(theme.black, 0),
+    transition: { ...defaultPageTransitionVariants2.hidden.transition },
+  },
+};
+
+export const modalVariants = {
+  popOut: {
+    y: 0,
+    opacity: 1,
+    transition: { ...defaultPageTransitionVariants2.visible.transition },
+  },
+
+  close: {
+    opacity: 0,
+    y: 50,
+    transition: { ...defaultPageTransitionVariants2.hidden.transition },
+  },
+};

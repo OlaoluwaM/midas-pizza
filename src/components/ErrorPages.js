@@ -7,6 +7,7 @@ import { m as motion } from 'framer-motion';
 import { ReactComponent as NotFoundSVG } from '../assets/undraw_page_not_found_su7k.svg';
 import { ReactComponent as NotAuthorizedSVG } from '../assets/undraw_secure_login_pdn4.svg';
 import { defaultPageTransitionVariants } from './local-utils/framer-variants';
+import { ReturnUpForward } from 'styled-icons/ionicons-sharp';
 
 const SectionContainer = styled(motion.section).attrs({
   className: 'section-container',
@@ -52,6 +53,14 @@ export function NotAuthorizedPage() {
   return (
     <SectionContainer>
       <NotAuthorizedSVG />
+    </SectionContainer>
+  );
+}
+
+export function GeneralErrorPage() {
+  return (
+    <SectionContainer>
+      <h1>Error</h1>
     </SectionContainer>
   );
 }

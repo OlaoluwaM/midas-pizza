@@ -1,8 +1,8 @@
 import React from 'react';
-import Authenticate from '../components/Auth';
+import Authenticate from '../../components/Auth';
 
 import { ThemeProvider } from 'styled-components';
-import { themeObj, UserSessionContext } from '../components/context/context';
+import { themeObj, UserSessionContext } from '../../components/context/context';
 import { render, cleanup, fireEvent, act, screen } from '@testing-library/react';
 
 afterAll(cleanup);

@@ -11,7 +11,12 @@ import { cartState as cartStateAtom } from './atoms';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import { themeObj, UserSessionContext } from './context/context';
 import { NotFoundPage, NotAuthorizedPage } from './ErrorPages';
-import { generateFetchOptions, generateUrl, fetchWrapper } from './local-utils/helpers';
+import {
+  generateFetchOptions,
+  generateUrl,
+  fetchWrapper,
+  formatCartFromServer,
+} from './local-utils/helpers';
 import {
   AnimatePresence,
   MotionConfig,
@@ -54,20 +59,20 @@ function App() {
 
     (async () => {
       try {
-        // if (errorBoundary) throw new Error(errorBoundary);
         const ownerOfCurrentToken = await fetchWrapper(
           generateUrl(`users?email=${currentUserToken.email}`),
           generateFetchOptions('GET', null, currentUserToken.Id)
         );
 
-        if (!authenticated) {
-          toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
-          const persistedOrder = localStorage.getItem('storedCart');
+        toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
+        const { cart: storedCart = {} } = ownerOfCurrentToken;
+        const persistedOrder = localStorage.getItem('storedCart');
 
-          if (persistedOrder) {
-            toast('We saved your order, no need to thank us 😊', { type: 'info' });
-            updateCart(JSON.parse(persistedOrder));
-          }
+        const cartToUpdateWith = JSON.parse(persistedOrder) ?? formatCartFromServer(storedCart);
+
+        if (cartToUpdateWith) {
+          updateCart(cartToUpdateWith);
+          toast('We saved your order, no need to thank us 😊', { type: 'info' });
         }
 
         setActiveUser({ userData: ownerOfCurrentToken, authenticated: true });
@@ -115,8 +120,13 @@ function App() {
 
                   {protectedRoutes.map(([path, Component, props]) => (
                     <Route {...props} path={path} key={path}>
-                      {authenticated && <Component />}
-                      {!authenticated && <NotAuthorizedPage />}
+                      {authenticated ? (
+                        <Component />
+                      ) : currentUserToken ? (
+                        <Loading fullscreen={true} />
+                      ) : (
+                        <NotAuthorizedPage />
+                      )}
                     </Route>
                   ))}
 

@@ -92,7 +92,6 @@ a.current-page-svg {
 
   svg {
     fill: $routeHighlightColor;
-    stroke-width: 1px;
     stroke: $routeHighlightColor;
   }
 }
@@ -141,6 +140,18 @@ form > button {
   }
 }
 
+@each $state in (complete, empty, invalid, focus) {
+  .StripeElement--#{$state} {
+    @if $state == 'complete' {
+      color: var(--success);
+    } @else if $state == empty or $state == focus {
+      color: white;
+    } @else {
+      color: var(--error);
+    }
+  }
+}
+
 @each $type in (info, success, warning, error) {
   .Toastify__toast--#{$type} {
     background: map-get($map: $colorPalette, $key: background);
@@ -164,6 +175,52 @@ form > button {
 
 button.active-filter {
   cursor: default;
+}
+
+@function get-color($color) {
+  @return map-get($map: $colorPalette, $key: $color);
+}
+
+.total {
+  width: 90%;
+  text-align: right;
+  margin: 3em 0 1.5em 0;
+  font-size: 1em;
+  font-weight: map-get($fontWeights, bold);
+  color: get-color(gray);
+
+  span {
+    margin-left: 0.6em;
+    color: get-color(black);
+    font-size: 1.3rem;
+  }
+}
+
+button.checkout-button {
+  background: get-color(background);
+  color: get-color(black);
+  fill: get-color(black);
+  width: 13em;
+  font-family: $primaryFont;
+  font-weight: map-get($fontWeights, xXBold);
+  border: 4px solid get-color(black);
+  position: relative;
+  align-self: center;
+  padding: 1em;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-bottom: 2em;
+  font-size: 1.2em;
+  cursor: pointer;
+  outline: rgba(0, 0, 0, 0.2);
+  margin: 0 auto 1em auto;
+  transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease;
+
+  &:active {
+    scale: 0.95;
+  }
 }
 
 @keyframes currentPage {

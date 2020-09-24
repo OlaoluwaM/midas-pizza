@@ -34,8 +34,9 @@ const OrderItemContainer = styled(motion.li).attrs({
     fill: ${({ theme }) => hexToRgb(theme.gray, 0.7)};
     transition: fill 0.4s ease;
 
-    &:hover {
-      fill: ${({ theme }) => theme.blackLighter};
+    &:hover,
+    &:active {
+      fill: ${({ theme }) => theme.accentColor};
     }
   }
 
@@ -89,7 +90,6 @@ const CounterContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  /* flex-basis: 9em; */
   opacity: 0.5;
   transition: opacity 0.3s ease;
 

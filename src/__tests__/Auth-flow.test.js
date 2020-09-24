@@ -19,11 +19,9 @@ function renderAuthComp() {
   );
 }
 
-beforeAll(() => {
-  fetch.mockResponse(JSON.stringify(formatFetchResponse(testAccessToken)), { status: 200 });
-});
+fetch.mockResponse(JSON.stringify(formatFetchResponse(testAccessToken)), { status: 200 });
 
-test('Sign up flow', async () => {
+test('Should allow user to sign up', async () => {
   const utils = renderAuthComp();
 
   const { findByTestId, getByPlaceholderText, findByRole } = utils;
@@ -47,16 +45,11 @@ test('Sign up flow', async () => {
 
   expect(await findByTestId('loader')).toBeInTheDocument();
   expect(authUserMock).toHaveBeenCalled();
-  expect(window.localStorage.setItem).toHaveBeenCalled();
-  expect(window.localStorage.setItem).toHaveBeenCalledWith(
-    'currentAccessToken',
-    JSON.stringify(testAccessToken)
-  );
+
   expect(location.pathname).toEqual('/');
 });
 
-test('Log in flow', async () => {
-
+test('Should allow user to log in', async () => {
   const utils = renderAuthComp();
 
   const { findByTestId, getByPlaceholderText, findByRole, findAllByText, findByText } = utils;
@@ -82,10 +75,6 @@ test('Log in flow', async () => {
   expect(await findByTestId('loader')).toBeInTheDocument();
 
   expect(authUserMock).toHaveBeenCalled();
-  expect(window.localStorage.setItem).toHaveBeenCalled();
-  expect(window.localStorage.setItem).toHaveBeenCalledWith(
-    'currentAccessToken',
-    JSON.stringify(testAccessToken)
-  );
+
   expect(location.pathname).toEqual('/');
 });

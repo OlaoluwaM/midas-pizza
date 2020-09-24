@@ -126,9 +126,13 @@ export default function Menu() {
     })();
 
     return () => {
-      const persistedOrder = localStorage.getItem('storedCart');
-      if (!persistedOrder) return;
-      const orders = serializeOrderCart(JSON.parse(persistedOrder));
+      const { currentCart, prevCart } = {
+        currentCart: localStorage.getItem('storedCart'),
+        prevCart: localStorage.getItem('prevStoredCart'),
+      };
+
+      if (!currentCart || prevCart === currentCart) return;
+      const orders = serializeOrderCart(JSON.parse(currentCart));
 
       (async () => {
         await fetchWrapper(
@@ -136,6 +140,7 @@ export default function Menu() {
           generateFetchOptions('POST', { orders }, currentAccessToken.Id)
         );
 
+        localStorage.setItem('prevStoredCart', currentCart);
         console.log('Order stored on server');
       })();
     };

@@ -14,9 +14,9 @@ const store = {
 };
 window.localStorage.getItem = jest.fn(key => JSON.stringify(store[key]));
 
-test('Should display order and total in cart', async () => {
-  fetch.once(JSON.stringify(formatFetchResponse(menuContext.userData)), { status: 200 });
+fetch.mockResponse(JSON.stringify(formatFetchResponse(menuContext.userData)), { status: 200 });
 
+test('Should check if user can see and update order in cart', async () => {
   let utils;
 
   // Render Cart
@@ -45,6 +45,7 @@ test('Should display order and total in cart', async () => {
   expect(cartTotal).toHaveTextContent(`$${prevCartTotal}`);
 
   let orderIndex = 0;
+
   for await (let order of orderItems) {
     const orderNameElem = within(order).getByTestId('order-item-name');
     const orderName = orderNameElem.textContent.split('$')[0];
@@ -104,6 +105,39 @@ test('Should display order and total in cart', async () => {
       // Item should not be visible
       expect(order).toHaveStyle(`opacity: 0`);
     }
+
     orderIndex++;
   }
+});
+
+test('Should check if user can empty their cart', async () => {
+  let utils;
+
+  // Render Cart
+  await act(async () => {
+    utils = render(
+      <MemoryRouter initialEntries={['/menu/cart']}>
+        <RecoilRoot>
+          <App />
+        </RecoilRoot>
+      </MemoryRouter>
+    );
+  });
+
+  const { findByTestId, findAllByTestId } = utils;
+  const cartCount = await findByTestId('cart-count');
+
+  const orderItems = await findAllByTestId('order-item');
+  const cartHeader = await findByTestId('cart-header');
+
+  for await (let order of orderItems) {
+    const deleteButton = within(order).getByTestId('order-item-delete-button');
+    fireEvent.click(deleteButton);
+  }
+
+  expect(cartCount).toHaveTextContent('0');
+  expect(cartHeader).toHaveTextContent(/empty/i);
+
+  const emptyCartSvg = await findByTestId('empty-cart-svg');
+  expect(emptyCartSvg).toBeInTheDocument();
 });
