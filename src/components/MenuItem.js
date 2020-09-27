@@ -40,6 +40,7 @@ const MenuItemContainer = styled(motion.div).attrs({
     position: relative;
     max-width: 100%;
     object-fit: contain;
+    content-visibility: auto;
     border-radius: inherit;
     align-self: center;
     box-shadow: 10px 10px rgba(0, 0, 0, 0.1);

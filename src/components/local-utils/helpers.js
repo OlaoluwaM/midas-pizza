@@ -18,7 +18,9 @@ export function generateFetchOptions(method, body = {}, token = null) {
 }
 
 export function generateUrl(resource) {
-  return `${process.env.REACT_APP_API_ENDPOINT}${resource}`;
+  const { REACT_APP_API_ENDPOINT: URL } = process.env;
+  const normalizedUrl = resource.startsWith('/') ? URL.replace('0/', '0') : URL;
+  return `${normalizedUrl}${resource}`;
 }
 
 function swapTokenWith(tokenObj) {
@@ -34,7 +36,14 @@ export async function fetchWrapper(url, options) {
     const request = await fetch(url, options);
     if (!request.ok) throw request;
 
-    const serverResponse = await request.json();
+    const serverData = await request.json();
+    let serverResponse;
+
+    try {
+      serverResponse = { ...serverData, response: JSON.parse(serverData.response) };
+    } catch {
+      serverResponse = { ...serverData };
+    }
 
     const tokenInResponse = serverResponse?.newToken
       ? serverResponse.newToken
@@ -42,21 +51,16 @@ export async function fetchWrapper(url, options) {
       ? serverResponse.response
       : '';
 
-    console.log(tokenInResponse);
-
     if (tokenInResponse) {
       swapTokenWith(tokenInResponse);
       serverResponse?.newToken && delete serverResponse.newToken;
     }
 
-    const { response } = serverResponse;
-
-    try {
-      const responseObject = JSON.parse(response);
-      return responseObject;
-    } catch {
-      return response;
+    if (url.includes('order') && localStorage.getItem('storedCart')) {
+      localStorage.setItem('prevStoredCart', localStorage.getItem('storedCart'));
     }
+
+    return serverResponse.response;
   } catch (error) {
     console.error(error);
 
@@ -88,7 +92,8 @@ export function serializeOrderCart(cartObject) {
       itemsToAdd.pop();
       return itemsToAdd;
     })
-    .flat();
+    .flat()
+    .map(order => order.trim());
 }
 
 export function formatCartFromServer(cart) {
@@ -101,12 +106,14 @@ export function formatCartFromServer(cart) {
     const newPropertyName = property.replace(parenthesisRegex, '');
     const type = property.match(parenthesisRegex)[0].replace(/\W/g, '');
     const quantity = cart[property].match(parenthesisRegex)[0].match(/\d/)[0];
-    const initialPrice = convertDollarToFloat(cart[property].replace(parenthesisRegex, ''));
+    const initialPrice = (
+      convertDollarToFloat(cart[property].replace(parenthesisRegex, '')) / quantity
+    ).toFixed(2);
 
     formattedCartObject[newPropertyName] = {
       type,
       quantity: parseInt(quantity),
-      initialPrice,
+      initialPrice: parseFloat(initialPrice),
     };
   }
 
@@ -130,4 +137,11 @@ export function getTotal(cart) {
     const totalValue = quantity * initialPrice;
     return (total += totalValue);
   }, 0);
+}
+
+export function normalize(input) {
+  if (input?.length === 0 || Object.keys(input).length === 0 || input === '') {
+    return null;
+  }
+  return input;
 }

@@ -140,8 +140,7 @@ export default function Menu() {
           generateFetchOptions('POST', { orders }, currentAccessToken.Id)
         );
 
-        localStorage.setItem('prevStoredCart', currentCart);
-        console.log('Order stored on server');
+        console.log('Order saved!');
       })();
     };
   }, []);

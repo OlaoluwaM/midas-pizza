@@ -219,6 +219,11 @@ export const modalBackgroundVariants = {
     background: hexToRgb(theme.black, 0),
     transition: { ...defaultPageTransitionVariants2.hidden.transition },
   },
+  exit: {
+    opacity: 0,
+    background: hexToRgb(theme.black, 0),
+    transition: { ...defaultPageTransitionVariants2.hidden.transition },
+  },
 };
 
 export const modalVariants = {
@@ -227,10 +232,13 @@ export const modalVariants = {
     opacity: 1,
     transition: { ...defaultPageTransitionVariants2.visible.transition },
   },
-
   close: {
     opacity: 0,
     y: 50,
+    transition: { ...defaultPageTransitionVariants2.hidden.transition },
+  },
+  exit: {
+    opacity: 0,
     transition: { ...defaultPageTransitionVariants2.hidden.transition },
   },
 };

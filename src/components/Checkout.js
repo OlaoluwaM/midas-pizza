@@ -12,7 +12,7 @@ const ModalBackground = styled(motion.div).attrs({
   variants: modalBackgroundVariants,
   initial: 'close',
   animate: 'popOut',
-  exit: 'close',
+  exit: 'exit',
 })`
   display: flex;
   justify-content: center;
@@ -41,6 +41,11 @@ const ModalContainer = styled(motion.div).attrs({
     right: -15px;
     fill: ${({ theme }) => theme.accentColor};
     width: 3em;
+    transition: transform 0.3s ease;
+
+    &:active {
+      transform: scale(0.9);
+    }
   }
 `;
 
@@ -48,6 +53,7 @@ const CheckoutFormModalWrapper = styled(motion.div).attrs({
   variants: {
     popOut: { opacity: 1 },
     close: { opacity: 0 },
+    exit: { opacity: 0 },
   },
 })`
   width: 100%;
@@ -62,7 +68,7 @@ const CheckoutFormModalWrapper = styled(motion.div).attrs({
 
     span {
       font-size: 1.3rem;
-      color: ${({ theme }) => theme.baseColor};
+      color: ${({ theme }) => theme.accentColor};
     }
   }
 `;
@@ -78,21 +84,25 @@ const CheckoutForm = styled(motion.form)`
     width: 25%;
     padding: 0.5em 1.5em;
     margin: 0;
-    background: ${({ theme }) => theme.black};
-    color: ${({ theme }) => theme.baseColor};
-    transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease, border-color 0.3 ease;
+    background: ${({ theme }) => theme.accentColor};
+    border-color: ${({ theme }) => theme.accentColor};
+    color: ${({ theme }) => theme.background};
+    filter: brightness(0.7);
+    transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease, filter 0.3s ease;
+
+    &:disabled {
+      filter: brightness(0.7);
+    }
 
     &:hover,
     &:active {
-      background: ${({ theme }) => theme.baseColor};
-      color: ${({ theme }) => theme.black};
-      border-color: ${({ theme }) => theme.baseColor};
+      filter: brightness(1);
     }
   }
 
   .StripeElement {
     display: block;
-    border-bottom: 5px solid ${({ theme }) => theme.black};
+    border-bottom: 5px solid ${({ theme }) => theme.accentColor};
     font-family: var(--primaryFont);
     padding: 1em;
     font-weight: var(--bold);

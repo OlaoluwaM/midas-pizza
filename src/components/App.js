@@ -16,6 +16,7 @@ import {
   generateUrl,
   fetchWrapper,
   formatCartFromServer,
+  normalize,
 } from './local-utils/helpers';
 import {
   AnimatePresence,
@@ -36,8 +37,8 @@ whyDidYouRender(React, {
 });
 
 function App() {
-  const currentUserToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
-  // const [errorBoundary, setError] = React.useState(null);
+  const userToken = React.useRef(!!localStorage.getItem('currentAccessToken'));
+  const { current: currentUserToken } = userToken;
 
   const [activeUser, setActiveUser] = React.useState({
     userData: null,
@@ -54,25 +55,29 @@ function App() {
   const location = useLocation();
 
   React.useEffect(() => {
-    if (!currentUserToken) return;
-    if (userData !== null) return;
+    const currentToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
+
+    if ((userData && authenticated) || !currentToken) return;
+    userToken.current = !!currentToken;
 
     (async () => {
       try {
         const ownerOfCurrentToken = await fetchWrapper(
-          generateUrl(`users?email=${currentUserToken.email}`),
-          generateFetchOptions('GET', null, currentUserToken.Id)
+          generateUrl(`users?email=${currentToken.email}`),
+          generateFetchOptions('GET', null, currentToken.Id)
         );
 
-        toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
-        const { cart: storedCart = {} } = ownerOfCurrentToken;
-        const persistedOrder = localStorage.getItem('storedCart');
+        !authenticated && toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
 
-        const cartToUpdateWith = JSON.parse(persistedOrder) ?? formatCartFromServer(storedCart);
+        const { cart: storedCart = {} } = ownerOfCurrentToken;
+        const persistedOrder = JSON.parse(localStorage.getItem('storedCart')) || {};
+        const cartToUpdateWith = normalize(persistedOrder) ?? formatCartFromServer(storedCart);
 
         if (cartToUpdateWith) {
           updateCart(cartToUpdateWith);
-          toast('We saved your order, no need to thank us 😊', { type: 'info' });
+
+          Object.keys(cartToUpdateWith).length > 0 &&
+            toast('We saved your order, no need to thank us 😊', { type: 'info' });
         }
 
         setActiveUser({ userData: ownerOfCurrentToken, authenticated: true });

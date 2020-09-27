@@ -1,17 +1,25 @@
 import React from 'react';
 import styled from 'styled-components';
 import OrderItem from './OrderItem';
+import useDebounce from './custom-hooks/useDebounce';
 
 import { Elements } from '@stripe/react-stripe-js';
 import { getTotal } from './local-utils/helpers';
 import { loadStripe } from '@stripe/stripe-js';
 import { useRecoilValue } from 'recoil';
+import { UserSessionContext } from './context/context';
 import { default as Checkout, Modal } from './Checkout';
 import { cartState as cartStateAtom } from './atoms';
 import { CartCheckFill as PaymentIcon } from '@styled-icons/bootstrap/CartCheckFill';
 import { ReactComponent as EmptyCartSVG } from '../assets/undraw_empty_xct9.svg';
 import { cartPreviewVariants, emptyCartVectorVariants } from './local-utils/framer-variants';
 import { m as motion, AnimatePresence, AnimateSharedLayout, useCycle } from 'framer-motion';
+import {
+  generateFetchOptions,
+  generateUrl,
+  fetchWrapper,
+  serializeOrderCart,
+} from './local-utils/helpers';
 
 const { REACT_APP_STRIPE_API_KEY: STRIPE_API_KEY } = process.env;
 const stripePromise = loadStripe(STRIPE_API_KEY);
@@ -76,14 +84,48 @@ const Cart = styled(motion.ul)`
 `;
 
 export default function CartPreview({ initialCart }) {
+  const cartObject = initialCart ?? useRecoilValue(cartStateAtom);
+  const { userData } = React.useContext(UserSessionContext);
   const [showModal, cycleModal] = useCycle(false, true);
 
-  const cartObject = initialCart ?? useRecoilValue(cartStateAtom);
   const cart = Object.entries(cartObject);
-  const cartIsEmpty = cart.length === 0;
   const cartTotal = getTotal(cartObject).toFixed(2);
+  const debouncedCart = useDebounce(JSON.stringify(cart), 800);
+  const initialSaveToServer = React.useRef(false);
+
+  const cartIsEmpty = cart.length === 0;
+  const currentAccessToken = JSON.parse(localStorage.getItem('currentAccessToken'));
 
   const showCheckoutModal = () => cycleModal();
+
+  React.useEffect(() => {
+    if (!initialSaveToServer.current) {
+      initialSaveToServer.current = true;
+      return;
+    }
+
+    (async () => {
+      if (!cartIsEmpty) {
+        await fetchWrapper(
+          generateUrl(`order?email=${userData.email}`),
+          generateFetchOptions(
+            'POST',
+            { orders: serializeOrderCart(cartObject) },
+            currentAccessToken.Id
+          )
+        );
+
+        console.log('Cart updated on server');
+      } else {
+        await fetchWrapper(
+          generateUrl(`/order?email=${userData.email}`),
+          generateFetchOptions('DELETE', null, currentAccessToken.Id)
+        );
+
+        console.log('Cart emptied');
+      }
+    })();
+  }, [debouncedCart]);
 
   return (
     <>

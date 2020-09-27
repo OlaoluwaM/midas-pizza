@@ -9,6 +9,7 @@ export const cartCount = selector({
     const orderCount = getCartCount(cartStateObject);
 
     localStorage.setItem('storedCart', JSON.stringify(cartStateObject));
+
     if (orderCount === 0) {
       localStorage.removeItem('storedCart');
       localStorage.removeItem('prevStoredCart');

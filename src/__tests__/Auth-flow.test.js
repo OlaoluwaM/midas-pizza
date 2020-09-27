@@ -31,8 +31,8 @@ test('Should allow user to sign up', async () => {
     Username: 'britt',
     Email: 'britt@gmail.com',
     Password: 'IAmBritt@20032020',
-    'Street Address': '545 W. Ann St.Matthews, NC 28104',
     'Confirm Password': 'IAmBritt@20032020',
+    'Street Address': '545 W. Ann St.Matthews, NC 28104',
   };
 
   await act(async () => {
