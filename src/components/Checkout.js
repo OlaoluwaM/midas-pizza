@@ -31,7 +31,7 @@ const ModalContainer = styled(motion.div).attrs({
   border-radius: 10px;
   padding: 2em;
   position: relative;
-  box-shadow: -12px 12px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: -12px 12px 0px ${({ theme }) => hexToRgb(theme.accentColor, 1)};
   z-index: 333;
 
   svg.close-circle {
@@ -87,16 +87,16 @@ const CheckoutForm = styled(motion.form)`
     background: ${({ theme }) => theme.accentColor};
     border-color: ${({ theme }) => theme.accentColor};
     color: ${({ theme }) => theme.background};
-    filter: brightness(0.7);
+    filter: brightness(0.7) opacity(0.5);
     transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease, filter 0.3s ease;
 
     &:disabled {
-      filter: brightness(0.7);
+      filter: brightness(0.7) opacity(0.5);
     }
 
     &:hover,
     &:active {
-      filter: brightness(1);
+      filter: brightness(1) opacity(1);
     }
   }
 

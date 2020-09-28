@@ -26,6 +26,7 @@
     "styled-icons": "^10.19.0"
   },
   "scripts": {
+    "postinstall": "git submodule init && git submodule update",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "serve:dev": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env.dev",
