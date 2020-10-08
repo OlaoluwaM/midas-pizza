@@ -1,12 +1,15 @@
 import React from 'react';
 import styled from 'styled-components';
+import Loading from './Loading';
 import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
 
 import { CloseCircle } from '@styled-icons/evaicons-solid/CloseCircle';
+import { UserSessionContext } from './context/context';
 import { m as motion, AnimateSharedLayout } from 'framer-motion';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { modalBackgroundVariants, modalVariants } from './local-utils/framer-variants';
+import { generateFetchOptions, generateUrl, fetchWrapper, removeCart } from './local-utils/helpers';
 
 const ModalBackground = styled(motion.div).attrs({
   variants: modalBackgroundVariants,
@@ -87,16 +90,10 @@ const CheckoutForm = styled(motion.form)`
     background: ${({ theme }) => theme.accentColor};
     border-color: ${({ theme }) => theme.accentColor};
     color: ${({ theme }) => theme.background};
-    filter: brightness(0.7) opacity(0.5);
     transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease, filter 0.3s ease;
 
     &:disabled {
       filter: brightness(0.7) opacity(0.5);
-    }
-
-    &:hover,
-    &:active {
-      filter: brightness(1) opacity(1);
     }
   }
 
@@ -125,34 +122,52 @@ export function Modal({ children, closeModal }) {
 export default function Checkout({ total = '0' }) {
   const stripe = useStripe();
   const elements = useElements();
+  const {
+    userData: { email },
+  } = React.useContext(UserSessionContext);
+
+  const [processingPayment, setProcessingPayment] = React.useState(false);
 
   const makePayment = async e => {
     e.preventDefault();
     if (!stripe || !elements) return;
+    const { Id: tokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
 
     const payload = await stripe.createPaymentMethod({
       type: 'card',
       card: elements.getElement(CardElement),
     });
+    setProcessingPayment(true);
 
     // TODO send requests to server to complete transaction
+    await fetchWrapper(
+      generateUrl(`checkout?email=${email}`),
+      generateFetchOptions('POST', null, tokenId)
+    );
+
+    removeCart();
+
     console.log(payload);
   };
 
   return (
-    <>
-      <CheckoutFormModalWrapper layout>
-        <CheckoutForm onSubmit={makePayment} layout>
-          <CardElement />
-          <motion.button className="checkout-button" type="submit" layout disabled={!stripe}>
-            Pay
-          </motion.button>
-        </CheckoutForm>
-        <motion.h2 className="total" layout>
-          Total: <span>${total}</span>
-        </motion.h2>
-      </CheckoutFormModalWrapper>
-    </>
+    <CheckoutFormModalWrapper layout>
+      {!processingPayment ? (
+        <>
+          <CheckoutForm onSubmit={makePayment} layout>
+            <CardElement />
+            <motion.button className="checkout-button" type="submit" layout disabled={!stripe}>
+              Pay
+            </motion.button>
+          </CheckoutForm>
+          <motion.h2 className="total" layout>
+            Total: <span>${total}</span>
+          </motion.h2>
+        </>
+      ) : (
+        <Loading />
+      )}
+    </CheckoutFormModalWrapper>
   );
 }
 

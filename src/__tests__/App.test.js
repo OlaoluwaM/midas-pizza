@@ -7,15 +7,17 @@ import { render, cleanup, act } from '@testing-library/react';
 
 afterAll(cleanup);
 
-afterEach(() => jest.clearAllTimers());
-
 const store = {
   storedCart: initialCart,
   currentAccessToken: testAccessToken,
 };
 window.localStorage.getItem = jest.fn(key => JSON.stringify(store[key]));
 
-jest.useFakeTimers();
+beforeEach(() => jest.useFakeTimers());
+afterEach(() => {
+  jest.runOnlyPendingTimers();
+  jest.useRealTimers();
+});
 
 test('Should automatically authenticate user', async () => {
   fetch.once(JSON.stringify(formatFetchResponse(menuContext.userData)), { status: 200 });

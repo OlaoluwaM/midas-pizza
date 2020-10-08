@@ -116,15 +116,15 @@ const MenuItemContainer = styled(motion.div).attrs({
 
       .add-to-cart-button {
         position: relative;
-        color: ${({ theme }) => theme.background};
         width: 13em;
         flex-basis: 13em;
         display: flex;
         align-items: center;
         justify-content: space-around;
-        border: none;
-        box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.2);
-        background: ${({ theme }) => theme.accentColor};
+        border: 4px solid ${({ theme }) => theme.accentColor};
+        /* box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.2); */
+        color: ${({ theme }) => theme.accentColor};
+        background: ${({ theme }) => theme.backgroundLighter};
         border-radius: 7px;
         padding: 1em 0;
         align-self: flex-end;
@@ -133,7 +133,7 @@ const MenuItemContainer = styled(motion.div).attrs({
         font-weight: var(--bold);
         font-family: var(--primaryFont);
         outline: rgba(0, 0, 0, 0.2);
-        transition: 0.1s ease box-shadow;
+        transition: 0.1s ease box-shadow, background 0.2s ease, color 0.3s ease;
 
         svg {
           width: 15%;
@@ -141,6 +141,13 @@ const MenuItemContainer = styled(motion.div).attrs({
         }
         span {
           transform: scale(1.2);
+        }
+
+        &:focus,
+        &:focus-within,
+        &:hover {
+          color: ${({ theme }) => theme.backgroundLighter};
+          background: ${({ theme }) => theme.accentColor};
         }
 
         &:active {
@@ -198,14 +205,11 @@ function AddToCartButton({ addToCart }) {
   );
 }
 
-export default function MenuItem({ menuItemName, price, custom }) {
+export default function MenuItem({ itemName, price, custom, foodType }) {
   // TODO Add skeleton or placeholder effect for image
   const quantityToAdd = React.useRef(1);
   const updateCart = useSetRecoilState(cartStateAtom);
 
-  const parenthesisRegex = new RegExp(/\((.*?)\)/, 'g');
-  const displayName = menuItemName.replace(parenthesisRegex, '');
-  const foodType = menuItemName.match(parenthesisRegex)[0].replace(/\W/g, '');
   const imagePool = {
     Pizza: pizzaImage,
     Drink: drinkImage,
@@ -229,17 +233,17 @@ export default function MenuItem({ menuItemName, price, custom }) {
       }
 
       let newCartItemObject = {};
-      const alreadyInCart = displayName in prevCartObject;
+      const alreadyInCart = itemName in prevCartObject;
 
       if (!alreadyInCart) {
-        newCartItemObject[displayName] = {
+        newCartItemObject[itemName] = {
           type: foodType,
           quantity: 0,
-          initialPrice: convertDollarToFloat(price),
+          initialPrice: price,
         };
-      } else newCartItemObject[displayName] = { ...prevCartObject[displayName] };
+      } else newCartItemObject[itemName] = { ...prevCartObject[itemName] };
 
-      newCartItemObject[displayName]['quantity'] += amountOrdered;
+      newCartItemObject[itemName]['quantity'] += amountOrdered;
       const newCartObject = { ...prevCartObject, ...newCartItemObject };
 
       return newCartObject;
@@ -248,10 +252,10 @@ export default function MenuItem({ menuItemName, price, custom }) {
 
   return (
     <MenuItemContainer custom={custom} data-food-type={foodType}>
-      <img src={imagePool[foodType]} alt={`${displayName}`} />
+      <img src={imagePool[foodType]} alt={`${itemName}`} />
       <div className="item-info">
-        <p>{displayName}</p>
-        <h6>{`$${convertDollarToFloat(price).toFixed(2)}`}</h6>
+        <p>{itemName}</p>
+        <h6>{`$${price.toFixed(2)}`}</h6>
         <div className="order-buttons">
           <QuantityInput incrementQuantity={incrementQuantityToAddBy} />
           <AddToCartButton addToCart={addToCart} />
@@ -262,9 +266,10 @@ export default function MenuItem({ menuItemName, price, custom }) {
 }
 
 MenuItem.propTypes = {
-  menuItemName: PropTypes.string.isRequired,
-  price: PropTypes.string.isRequired,
+  itemName: PropTypes.string.isRequired,
+  price: PropTypes.number.isRequired,
   custom: PropTypes.number.isRequired,
+  foodType: PropTypes.string.isRequired,
 };
 
 MenuItem.whyDidYouRender = true;

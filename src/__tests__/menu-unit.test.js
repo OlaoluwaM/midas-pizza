@@ -5,8 +5,12 @@ import { cleanup, fireEvent, act, within } from '@testing-library/react';
 
 afterAll(cleanup);
 
-beforeAll(() => {
-  fetch.mockResponse(JSON.stringify(formatFetchResponse(menu)), { status: 200 });
+fetch.mockResponse(JSON.stringify(formatFetchResponse(menu)), { status: 200 });
+
+beforeEach(() => jest.useFakeTimers());
+afterEach(() => {
+  jest.runOnlyPendingTimers();
+  jest.useRealTimers();
 });
 
 window.localStorage.getItem = jest.fn(key => {
@@ -51,8 +55,6 @@ describe('Initial load of menu items', () => {
 });
 
 test('Filter Functionality', async () => {
-  jest.useFakeTimers();
-
   let utils;
 
   await act(async () => {

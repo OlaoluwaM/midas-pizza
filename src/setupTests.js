@@ -35,8 +35,16 @@ global.initialCart = {
   Sprite: { type: 'Drink', quantity: 1, initialPrice: 1.59 },
 };
 
+global.initialUserCart = {
+  'Pepperoni Pizza Small': { type: 'Pizza', quantity: 1, total: 4.99 },
+  Water: { type: 'Drink', quantity: 1, total: 0.5 },
+  Sprite: { type: 'Drink', quantity: 1, total: 1.59 },
+  totalPrice: 7.08,
+  orderCount: 3,
+};
+
 global.menu = Object.fromEntries(
-  JSON.parse(menuArrayJSON).map(arr => [`${arr[0]} (${arr[2]})`, `$${arr[1]}`])
+  JSON.parse(menuArrayJSON).map(arr => [arr[0], { type: arr[2], initialPrice: arr[1] }])
 );
 
 global.formatFetchResponse = res => ({ response: res });

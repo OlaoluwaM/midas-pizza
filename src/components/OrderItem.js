@@ -35,7 +35,9 @@ const OrderItemContainer = styled(motion.li).attrs({
     transition: fill 0.4s ease;
 
     &:hover,
-    &:active {
+    &:active,
+    &:focus,
+    &:focus-within {
       fill: ${({ theme }) => theme.accentColor};
     }
   }

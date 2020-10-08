@@ -140,6 +140,15 @@ export const filterButtonVariants = {
     borderColor: hexToRgb(theme.backgroundLighter),
     x: 0,
   },
+
+  Infocus: {
+    boxShadow: '0px 0px 0px rgba(0,0,0,0.2)',
+    color: theme.blackLighter,
+    opacity: 0.8,
+    fillOpacity: 0.8,
+    borderColor: hexToRgb(theme.blackLighter),
+    x: 0,
+  },
 };
 
 export const menuItemVariants = {
@@ -240,5 +249,17 @@ export const modalVariants = {
   exit: {
     opacity: 0,
     transition: { ...defaultPageTransitionVariants2.hidden.transition },
+  },
+};
+
+export const settingsMenuTooltipVariants = {
+  popUp: {
+    opacity: 1,
+    boxShadow: `7px 7px 1px ${hexToRgb(theme.blackLighter, 0.4)}`,
+    transition: { type: 'spring' },
+  },
+  hide: {
+    opacity: 0,
+    boxShadow: `0px 0px 0px ${hexToRgb(theme.blackLighter, 0.4)}`,
   },
 };

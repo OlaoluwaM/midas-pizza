@@ -17,6 +17,8 @@ import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion
 
 const { formVariants, generalAuthVariants } = authVariants;
 
+// TODO check if correct input validation errors are displayed
+
 const AuthSection = styled(motion.section).attrs({
   className: 'section-container',
   variants: formVariants,
@@ -195,11 +197,9 @@ export default function Authenticate({ authUser }) {
               />
 
               {!isLogin && (
-                <>
-                  <Input name="streetAddress" placeholder="Street Address" />
-                  <Input name="confirmPassword" type="password" placeholder="Confirm Password" />
-                </>
+                <Input name="confirmPassword" type="password" placeholder="Confirm Password" />
               )}
+              {!isLogin && <Input name="streetAddress" placeholder="Street Address" />}
 
               <SubmitButton variants={generalAuthVariants} layout>
                 {formStates[formStateIndex]}

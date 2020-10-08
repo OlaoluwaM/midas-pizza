@@ -21,6 +21,7 @@ const FilterButtonContainer = styled(motion.button).attrs({
   variants: filterButtonVariants,
   initial: 'hidden',
   exit: 'hidden',
+  whileHover: 'InFocus',
 })`
   background: ${({ theme }) => theme.backgroundLighter};
   border-radius: 3px;
@@ -43,6 +44,13 @@ const FilterButtonContainer = styled(motion.button).attrs({
     width: 18%;
     height: auto;
     margin-right: 10px;
+  }
+
+  // FIX accessibility here
+  &:focus-within,
+  &:focus,
+  &:hover {
+    filter: opacity(1);
   }
 `;
 

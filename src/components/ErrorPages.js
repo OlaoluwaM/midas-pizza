@@ -4,12 +4,12 @@ import hexToRgb from './utils/hexToRgb';
 
 import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
+import { ReactComponent as ErrorSVG } from '../assets/error.svg';
 import { ReactComponent as NotFoundSVG } from '../assets/undraw_page_not_found_su7k.svg';
 import { ReactComponent as NotAuthorizedSVG } from '../assets/undraw_secure_login_pdn4.svg';
 import { defaultPageTransitionVariants } from './local-utils/framer-variants';
-import { ReturnUpForward } from 'styled-icons/ionicons-sharp';
 
-const SectionContainer = styled(motion.section).attrs({
+export const SectionContainer = styled(motion.section).attrs({
   className: 'section-container',
   variants: defaultPageTransitionVariants,
   animate: 'show',
@@ -21,10 +21,10 @@ const SectionContainer = styled(motion.section).attrs({
   align-items: center;
   overflow: hidden;
   position: relative;
-  background: ${({ theme }) => hexToRgb(theme.baseColor, 0.3)};
+  background: ${({ theme }) => hexToRgb(theme.baseColor, 0.2)};
 
   svg {
-    scale: 0.67;
+    scale: 0.7;
   }
 `;
 
@@ -32,7 +32,7 @@ export function NotFoundPage() {
   React.useEffect(() => {
     toast("Seems like you can't find what you are looking for, why don't you go back home 🏡", {
       type: 'error',
-      autoClose: 8000,
+      autoClose: 5000,
     });
   }, []);
 
@@ -53,14 +53,6 @@ export function NotAuthorizedPage() {
   return (
     <SectionContainer>
       <NotAuthorizedSVG />
-    </SectionContainer>
-  );
-}
-
-export function GeneralErrorPage() {
-  return (
-    <SectionContainer>
-      <h1>Error</h1>
     </SectionContainer>
   );
 }

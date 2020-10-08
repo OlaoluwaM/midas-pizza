@@ -7,15 +7,18 @@ import { cleanup, fireEvent, act } from '@testing-library/react';
 
 afterAll(cleanup);
 
-afterEach(() => jest.clearAllTimers());
+beforeEach(() => jest.useFakeTimers());
+afterEach(() => {
+  jest.runOnlyPendingTimers();
+  jest.useRealTimers();
+});
+
 window.localStorage.getItem = jest.fn(() => JSON.stringify(testAccessToken));
 
 test('Should make sure shopping cart changes appropriately with counter interactions', async () => {
   fetch
     .once(JSON.stringify(formatFetchResponse(menu)), { status: 200 })
-    .once(JSON.stringify(formatFetchResponse('Order saved!')), { status: 200 });
-
-  jest.useFakeTimers();
+    .once(JSON.stringify(formatFetchResponse('Order saved!')), { status: 201 });
 
   let utils;
 

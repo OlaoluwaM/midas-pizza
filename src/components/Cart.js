@@ -13,13 +13,8 @@ import { cartState as cartStateAtom } from './atoms';
 import { CartCheckFill as PaymentIcon } from '@styled-icons/bootstrap/CartCheckFill';
 import { ReactComponent as EmptyCartSVG } from '../assets/undraw_empty_xct9.svg';
 import { cartPreviewVariants, emptyCartVectorVariants } from './local-utils/framer-variants';
+import { generateFetchOptions, generateUrl, fetchWrapper, saveOrder } from './local-utils/helpers';
 import { m as motion, AnimatePresence, AnimateSharedLayout, useCycle } from 'framer-motion';
-import {
-  generateFetchOptions,
-  generateUrl,
-  fetchWrapper,
-  serializeOrderCart,
-} from './local-utils/helpers';
 
 const { REACT_APP_STRIPE_API_KEY: STRIPE_API_KEY } = process.env;
 const stripePromise = loadStripe(STRIPE_API_KEY);
@@ -68,6 +63,8 @@ const CartContainer = styled.div`
     }
 
     &:hover,
+    &:focus,
+    &:focus-within,
     &:active {
       background: ${({ theme }) => theme.black};
       color: ${({ theme }) => theme.background};
@@ -106,15 +103,7 @@ export default function CartPreview({ initialCart }) {
 
     (async () => {
       if (!cartIsEmpty) {
-        await fetchWrapper(
-          generateUrl(`order?email=${userData.email}`),
-          generateFetchOptions(
-            'POST',
-            { orders: serializeOrderCart(cartObject) },
-            currentAccessToken.Id
-          )
-        );
-
+        await saveOrder(userData.email, cartObject, currentAccessToken.Id);
         console.log('Cart updated on server');
       } else {
         await fetchWrapper(
@@ -171,6 +160,7 @@ export default function CartPreview({ initialCart }) {
                       />
                     ))}
                   </Cart>
+
                   <motion.p className="total" layout>
                     Total: <span data-testid="cart-total">{`$${cartTotal}`}</span>
                   </motion.p>

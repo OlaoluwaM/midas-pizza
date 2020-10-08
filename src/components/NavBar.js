@@ -1,13 +1,15 @@
 import React from 'react';
 import styled from 'styled-components';
+import Logout from './Logout';
 import hexToRgb from './utils/hexToRgb';
 
 import { NavLink } from 'react-router-dom';
 import { Settings } from '@styled-icons/ionicons-solid/Settings';
-import { m as motion } from 'framer-motion';
 import { Cart3 as Cart } from '@styled-icons/bootstrap/Cart3';
 import { useRecoilValue } from 'recoil';
 import { UserSessionContext } from './context/context';
+import { settingsMenuTooltipVariants } from './local-utils/framer-variants';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { cartCount as cartCountSelector } from './selectors';
 
 const NavContainer = styled.nav`
@@ -26,6 +28,7 @@ const NavContainer = styled.nav`
     list-style: none;
 
     li {
+      position: relative;
       font-weight: var(--medium);
       height: 100%;
       margin: 15px;
@@ -67,6 +70,39 @@ const NavContainer = styled.nav`
   }
 `;
 
+const TooltipMenu = styled(motion.menu).attrs({
+  variants: settingsMenuTooltipVariants,
+  animate: 'popUp',
+  initial: 'hide',
+  exit: 'hide',
+})`
+  position: absolute;
+  right: -1.1em;
+  top: 100%;
+  min-width: 14em;
+  display: flex;
+  padding: 1em;
+  flex-direction: column;
+  border-radius: 9px;
+  margin: 0;
+  list-style: none;
+  background: ${({ theme }) => theme.backgroundLighter};
+  box-shadow: 7px 7px 1px ${({ theme }) => hexToRgb(theme.blackLighter, 0.3)};
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: -2em;
+    right: 0.8em;
+    width: 0;
+    height: 0;
+    border: 20px solid ${({ theme }) => theme.backgroundLighter};
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-top-color: transparent;
+  }
+`;
+
 function ShoppingCart() {
   const cartCountValue = useRecoilValue(cartCountSelector);
 
@@ -84,7 +120,40 @@ function ShoppingCart() {
   );
 }
 
-export default function Nav() {
+function SettingsLink({ logUserOut }) {
+  const [shouldShowMenu, setTooltipMenuVisibility] = React.useState(false);
+
+  const showTooltipMenu = () => setTooltipMenuVisibility(true);
+  const hideTooltipMenu = () => setTooltipMenuVisibility(false);
+
+  return (
+    <motion.li className="pos-right">
+      <a className="nav-link">
+        <Settings
+          title="Settings"
+          style={{ zIndex: 5 }}
+          onMouseOver={showTooltipMenu}
+          onMouseLeave={hideTooltipMenu}
+        />
+      </a>
+
+      <AnimatePresence>
+        {shouldShowMenu && (
+          <TooltipMenu
+            data-testid="settings-tooltip-menu"
+            onMouseEnter={showTooltipMenu}
+            onMouseLeave={hideTooltipMenu}
+            layout>
+            <li>Your Profile</li>
+            <Logout logUserOut={logUserOut} />
+          </TooltipMenu>
+        )}
+      </AnimatePresence>
+    </motion.li>
+  );
+}
+
+export default function Nav({ logUserOut }) {
   const { authenticated } = React.useContext(UserSessionContext);
 
   return (
@@ -112,11 +181,7 @@ export default function Nav() {
               </NavLink>
             </motion.li>
 
-            <motion.li className="pos-right">
-              <NavLink className="nav-link" activeClassName="current-page-svg" to="/settings">
-                <Settings title="Settings" />
-              </NavLink>
-            </motion.li>
+            <SettingsLink logUserOut={logUserOut} />
 
             <ShoppingCart />
           </>

@@ -17,7 +17,11 @@ function renderWithContext(value = { authenticated: false }) {
   );
 }
 
-jest.useFakeTimers();
+beforeEach(() => jest.useFakeTimers());
+afterEach(() => {
+  jest.runOnlyPendingTimers();
+  jest.useRealTimers();
+});
 
 test('User has token but it does not exist on the server side', async () => {
   fetch.mockRejectOnce(

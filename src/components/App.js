@@ -2,6 +2,7 @@ import React from 'react';
 import Home from './Home';
 import Nav from './NavBar';
 import Loading from './Loading';
+import ErrorBoundary from './ErrorBoundary';
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 
 import { ThemeProvider } from 'styled-components';
@@ -37,8 +38,7 @@ whyDidYouRender(React, {
 });
 
 function App() {
-  const userToken = React.useRef(!!localStorage.getItem('currentAccessToken'));
-  const { current: currentUserToken } = userToken;
+  const currentToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
 
   const [activeUser, setActiveUser] = React.useState({
     userData: null,
@@ -53,12 +53,10 @@ function App() {
   ];
 
   const location = useLocation();
+  const logUserOut = () => setActiveUser({ userData: null, authenticated: false });
 
   React.useEffect(() => {
-    const currentToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
-
     if ((userData && authenticated) || !currentToken) return;
-    userToken.current = !!currentToken;
 
     (async () => {
       try {
@@ -70,14 +68,13 @@ function App() {
         !authenticated && toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
 
         const { cart: storedCart = {} } = ownerOfCurrentToken;
+
         const persistedOrder = JSON.parse(localStorage.getItem('storedCart')) || {};
         const cartToUpdateWith = normalize(persistedOrder) ?? formatCartFromServer(storedCart);
 
         if (cartToUpdateWith) {
           updateCart(cartToUpdateWith);
-
-          Object.keys(cartToUpdateWith).length > 0 &&
-            toast('We saved your order, no need to thank us 😊', { type: 'info' });
+          toast('We saved your order, no need to thank us 😊', { type: 'info' });
         }
 
         setActiveUser({ userData: ownerOfCurrentToken, authenticated: true });
@@ -104,44 +101,45 @@ function App() {
 
   return (
     <UserSessionContext.Provider value={activeUser}>
-      {/* <ErrorBoundaryContext.Provider value={}></ErrorBoundaryContext.Provider> */}
       <ThemeProvider theme={themeObj}>
         <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
-          <div>
-            <Nav />
+          <ErrorBoundary>
+            <div>
+              <Nav logUserOut={logUserOut} />
 
-            <ToastContainer hideProgressBar position="bottom-right" pauseOnFocusLoss={true} />
+              <ToastContainer hideProgressBar position="bottom-right" pauseOnFocusLoss={true} />
 
-            <React.Suspense fallback={<Loading fullscreen={true} />}>
-              <AnimatePresence exitBeforeEnter initial={false}>
-                <Switch location={location} key={location.pathname}>
-                  <Route exact path="/">
-                    <Home />
-                  </Route>
-
-                  <Route path="/authenticate">
-                    <Authenticate authUser={setActiveUser} />
-                  </Route>
-
-                  {protectedRoutes.map(([path, Component, props]) => (
-                    <Route {...props} path={path} key={path}>
-                      {authenticated ? (
-                        <Component />
-                      ) : currentUserToken ? (
-                        <Loading fullscreen={true} />
-                      ) : (
-                        <NotAuthorizedPage />
-                      )}
+              <React.Suspense fallback={<Loading fullscreen={true} />}>
+                <AnimatePresence exitBeforeEnter initial={false}>
+                  <Switch location={location} key={location.pathname}>
+                    <Route exact path="/">
+                      <Home />
                     </Route>
-                  ))}
 
-                  <Route>
-                    <NotFoundPage />
-                  </Route>
-                </Switch>
-              </AnimatePresence>
-            </React.Suspense>
-          </div>
+                    <Route path="/authenticate">
+                      <Authenticate authUser={setActiveUser} />
+                    </Route>
+
+                    {protectedRoutes.map(([path, Component, props]) => (
+                      <Route {...props} path={path} key={path}>
+                        {authenticated ? (
+                          <Component />
+                        ) : currentToken ? (
+                          <Loading fullscreen={true} />
+                        ) : (
+                          <NotAuthorizedPage />
+                        )}
+                      </Route>
+                    ))}
+
+                    <Route>
+                      <NotFoundPage />
+                    </Route>
+                  </Switch>
+                </AnimatePresence>
+              </React.Suspense>
+            </div>
+          </ErrorBoundary>
         </MotionConfig>
       </ThemeProvider>
     </UserSessionContext.Provider>

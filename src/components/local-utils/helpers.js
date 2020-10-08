@@ -84,40 +84,23 @@ function convertToNumber(floatString) {
   return parseInt(floatString.toString().replace('.', ''));
 }
 
-export function serializeOrderCart(cartObject) {
-  const cartArray = Object.entries(cartObject);
-  return cartArray
-    .map(([itemName, { quantity }]) => {
-      const itemsToAdd = `${itemName},`.repeat(quantity).trim().split(',');
-      itemsToAdd.pop();
-      return itemsToAdd;
-    })
-    .flat()
-    .map(order => order.trim());
-}
-
 export function formatCartFromServer(cart) {
-  const parenthesisRegex = new RegExp(/\((.*?)\)/, 'g');
   const formattedCartObject = {};
 
-  for (const property in cart) {
-    if (property === 'orderCount' || property === 'totalPrice') continue;
+  for (const orderName in cart) {
+    if (orderName === 'orderCount' || orderName === 'totalPrice') continue;
+    const { type, quantity, total } = cart[orderName];
 
-    const newPropertyName = property.replace(parenthesisRegex, '');
-    const type = property.match(parenthesisRegex)[0].replace(/\W/g, '');
-    const quantity = cart[property].match(parenthesisRegex)[0].match(/\d/)[0];
-    const initialPrice = (
-      convertDollarToFloat(cart[property].replace(parenthesisRegex, '')) / quantity
-    ).toFixed(2);
+    const initialPrice = (total / quantity).toFixed(2);
 
-    formattedCartObject[newPropertyName] = {
+    formattedCartObject[orderName] = {
       type,
-      quantity: parseInt(quantity),
+      quantity,
       initialPrice: parseFloat(initialPrice),
     };
   }
 
-  return formattedCartObject;
+  return normalize(formattedCartObject);
 }
 
 export function getCartCount(cart) {
@@ -144,4 +127,16 @@ export function normalize(input) {
     return null;
   }
   return input;
+}
+
+export function removeCart() {
+  localStorage.removeItem('storedCart');
+  localStorage.removeItem('prevStoredCart');
+}
+
+export async function saveOrder(email, orders, tokenId) {
+  await fetchWrapper(
+    generateUrl(`order?email=${email}`),
+    generateFetchOptions('POST', { orders }, tokenId)
+  );
 }

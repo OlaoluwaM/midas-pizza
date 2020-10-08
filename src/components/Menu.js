@@ -10,12 +10,7 @@ import { UserSessionContext } from './context/context';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { defaultPageTransitionVariants2, headerVariants } from './local-utils/framer-variants';
 import { Blob3 as MenuBlob, Blob4 as MenuBlob2 } from '../assets/Blobs';
-import {
-  generateFetchOptions,
-  generateUrl,
-  fetchWrapper,
-  serializeOrderCart,
-} from './local-utils/helpers';
+import { generateFetchOptions, generateUrl, fetchWrapper, saveOrder } from './local-utils/helpers';
 
 const MenuSection = styled(motion.section).attrs({
   className: 'section-container',
@@ -106,9 +101,9 @@ export default function Menu() {
       return;
     }
 
-    const regex = new RegExp(`${type}s?\\b`);
     menuFilter.current = type;
-    setMenuItems(current.filter(item => regex.test(item[0])));
+
+    setMenuItems(current.filter(({ 1: itemData }) => itemData.type === type));
   };
 
   React.useEffect(() => {
@@ -122,24 +117,20 @@ export default function Menu() {
 
       const menuObjAsArray = Object.entries(menuData);
       menuStore.current = menuObjAsArray;
+
       filterHandler('Pizza', menuObjAsArray);
     })();
 
     return () => {
-      const { currentCart, prevCart } = {
-        currentCart: localStorage.getItem('storedCart'),
-        prevCart: localStorage.getItem('prevStoredCart'),
-      };
-
-      if (!currentCart || prevCart === currentCart) return;
-      const orders = serializeOrderCart(JSON.parse(currentCart));
-
       (async () => {
-        await fetchWrapper(
-          generateUrl(`order?email=${userData.email}`),
-          generateFetchOptions('POST', { orders }, currentAccessToken.Id)
-        );
+        const { currentCart, prevCart } = {
+          currentCart: localStorage.getItem('storedCart'),
+          prevCart: localStorage.getItem('prevStoredCart'),
+        };
 
+        if (!currentCart || prevCart === currentCart) return;
+
+        await saveOrder(userData.email, JSON.parse(currentCart), currentAccessToken.Id);
         console.log('Order saved!');
       })();
     };
@@ -162,10 +153,17 @@ export default function Menu() {
 
         <AnimatePresence exitBeforeEnter>
           {isLoading && <Loading key="loader-component" />}
+
           {!isLoading && (
             <MenuContainer key="menu">
-              {menuItems.map(([itemName, price], ind) => (
-                <MenuItem key={itemName} menuItemName={itemName} price={price} custom={ind} />
+              {menuItems.map(({ 0: itemName, 1: { initialPrice: price, type } }, ind) => (
+                <MenuItem
+                  key={itemName}
+                  itemName={itemName}
+                  price={price}
+                  foodType={type}
+                  custom={ind}
+                />
               ))}
             </MenuContainer>
           )}
