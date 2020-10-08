@@ -1,5 +1,5 @@
 import React from 'react';
-import Input from './AuthInputField';
+import Input from './InputField';
 import Loading from './Loading';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';

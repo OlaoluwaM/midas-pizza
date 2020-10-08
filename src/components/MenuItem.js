@@ -133,7 +133,7 @@ const MenuItemContainer = styled(motion.div).attrs({
         font-weight: var(--bold);
         font-family: var(--primaryFont);
         outline: rgba(0, 0, 0, 0.2);
-        transition: 0.1s ease box-shadow, background 0.2s ease, color 0.3s ease;
+        transition: 0.1s ease box-shadow, 0.2s ease background, color 0.3s ease;
 
         svg {
           width: 15%;

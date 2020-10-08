@@ -57,39 +57,65 @@ const ErrorDisplay = styled(motion.p)`
   font-size: 0.8em;
 `;
 
-const Input = props => {
-  const { name, type = 'text', validationsParam = null, ...rest } = props;
-  const { register, errors } = useFormContext();
-
-  const validationObj = !!validationOptions[name] ? validationOptions[name](validationsParam) : {};
+export const InputField = React.forwardRef((props, ref) => {
+  const { motionProps = {}, children, hookFormProps, ...inputAttributes } = props;
 
   return (
     <AnimateSharedLayout>
-      <InputContainer variants={generalAuthVariants} layout>
-        <input name={name} type={type} {...rest} ref={register(validationObj)} />
+      <InputContainer {...motionProps} layout>
+        <input
+          {...inputAttributes}
+          ref={e => {
+            ref.current = e;
+            if (!hookFormProps?.register) return;
 
-        <ErrorMessage
-          name={name}
-          errors={errors}
-          layout
-          render={({ message }) => (
-            <AnimatePresence exitBeforeEnter>
-              <ErrorDisplay
-                data-testid="invalid-input-error"
-                variants={errorMessageVariants}
-                initial="hide"
-                animate="show"
-                exit="exit"
-                layout
-                key={`${message}_${name}_id`}>
-                {message}
-              </ErrorDisplay>
-            </AnimatePresence>
-          )}
+            hookFormProps.register(e, hookFormProps.validationRules);
+          }}
         />
+
+        {children}
       </InputContainer>
     </AnimateSharedLayout>
   );
-};
+});
 
-export default Input;
+export default function AuthInputField({ name, validationsParam = null, ...rest }) {
+  const inputRef = React.useRef();
+  const { register, errors } = useFormContext();
+
+  const validationRules = !!validationOptions[name]
+    ? validationOptions[name](validationsParam)
+    : {};
+
+  const motionProps = { variants: generalAuthVariants };
+  const hookFormProps = { register, validationRules };
+  const inputAttributes = { name, type: 'text', ...rest };
+
+  return (
+    <InputField
+      motionProps={motionProps}
+      ref={inputRef}
+      hookFormProps={hookFormProps}
+      {...inputAttributes}>
+      <ErrorMessage
+        name={name}
+        errors={errors}
+        layout
+        render={({ message }) => (
+          <AnimatePresence exitBeforeEnter>
+            <ErrorDisplay
+              data-testid="invalid-input-error"
+              variants={errorMessageVariants}
+              initial="hide"
+              animate="show"
+              exit="exit"
+              layout
+              key={`${message}_${name}_id`}>
+              {message}
+            </ErrorDisplay>
+          </AnimatePresence>
+        )}
+      />
+    </InputField>
+  );
+}

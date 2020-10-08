@@ -15,7 +15,7 @@ import { cartCount as cartCountSelector } from './selectors';
 const NavContainer = styled.nav`
   width: 100vw;
   height: 7%;
-  background: ${({ theme }) => theme.background};
+  background: transparent;
   position: fixed;
   z-index: 2;
   color: ${({ theme }) => hexToRgb(theme.black, 0.5)};
@@ -144,7 +144,7 @@ function SettingsLink({ logUserOut }) {
             onMouseEnter={showTooltipMenu}
             onMouseLeave={hideTooltipMenu}
             layout>
-            <li>Your Profile</li>
+            <NavLink to="/settings">Your Profile</NavLink>
             <Logout logUserOut={logUserOut} />
           </TooltipMenu>
         )}

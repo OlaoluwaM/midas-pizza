@@ -48,6 +48,7 @@ $colorPalette: (
 
 * {
   box-sizing: border-box;
+  outline-color: map-get($map: $colorPalette, $key: baseColor);
 }
 
 html,
@@ -119,7 +120,7 @@ a.current-page:after {
 
 input,
 form > button {
-  outline: rgba(0, 0, 0, 0.2);
+  outline-color: map-get($map: $colorPalette, $key: baseColor);
 }
 
 .Toastify__toast {
@@ -214,7 +215,7 @@ button.checkout-button {
   margin-bottom: 2em;
   font-size: 1.2em;
   cursor: pointer;
-  outline: rgba(0, 0, 0, 0.2);
+
   margin: 0 auto 1em auto;
   transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease;
 
