@@ -1,46 +1,41 @@
 const passwordPatterRegex = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$^+=!*()@%&]).{8,}/);
 
 export const validationOptions = {
-  password(isLogin) {
-    if (isLogin) return { required: 'Please provide your password.' };
-
-    const formatMessage = `Password must be alphanumeric and must contain special characters.`;
-
-    return {
-      required: 'Please provide a password.',
-      minLength: {
-        value: 8,
-        message: 'Your password must be at least 8 characters long.',
-      },
-      pattern: {
-        value: passwordPatterRegex,
-        message: formatMessage,
-      },
-    };
+  passwordLogin: {
+    required: 'Please provide your password.',
   },
 
-  confirmPassword() {
-    return { required: 'Please confirm your password.' };
+  passwordSignIn: {
+    required: 'Please provide a password.',
+    minLength: {
+      value: 8,
+      message: 'Your password must be at least 8 characters long.',
+    },
+    pattern: {
+      value: passwordPatterRegex,
+      message:
+        'Password should be alphanumeric a combination of special characters and uppercase letters',
+    },
   },
 
-  email() {
-    return {
-      required: 'Please provide your email.',
-    };
+  confirmPassword: {
+    required: 'Please confirm your password.',
   },
 
-  name() {
-    return {
-      required: 'Please provide a username.',
-      minLength: {
-        value: 5,
-        message: 'Your username must be at least 5 characters long.',
-      },
-    };
+  email: {
+    required: 'Please provide your email.',
   },
 
-  streetAddress() {
-    return { required: 'Please provide your street address' };
+  name: {
+    required: 'Please provide a username.',
+    minLength: {
+      value: 5,
+      message: 'Your username must be at least 5 characters long.',
+    },
+  },
+
+  streetAddress: {
+    required: 'Please provide your street address',
   },
 };
 

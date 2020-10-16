@@ -64,13 +64,8 @@ export async function fetchWrapper(url, options) {
   } catch (error) {
     console.error(error);
 
-    if (error?.message?.search(/Failed to/i) > -1) {
-      throw new CustomError('Server is down', 'ServerConnectionError', 500);
-    }
-
     const errorText = typeof error === 'string' ? error : await error.text();
-    console.error(errorText);
-    throw new CustomError(errorText, 'ServerResponseError', error?.status);
+    throw new CustomError(errorText, error?.status);
   }
 }
 
@@ -139,4 +134,10 @@ export async function saveOrder(email, orders, tokenId) {
     generateUrl(`order?email=${email}`),
     generateFetchOptions('POST', { orders }, tokenId)
   );
+}
+
+export function getErrMessage(errorObj) {
+  return propertyName => {
+    return errorObj[propertyName]?.message ?? '';
+  };
 }

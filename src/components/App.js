@@ -2,34 +2,35 @@ import React from 'react';
 import Home from './Home';
 import Nav from './NavBar';
 import Loading from './Loading';
-import ErrorBoundary from './ErrorBoundary';
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 
+import { toast } from 'react-toastify';
 import { ThemeProvider } from 'styled-components';
+import { ErrorBoundary } from 'react-error-boundary';
 import { useSetRecoilState } from 'recoil';
-import { ToastContainer, toast } from 'react-toastify';
 import { cartState as cartStateAtom } from './atoms';
-import { Route, Switch, useLocation } from 'react-router-dom';
 import { themeObj, UserSessionContext } from './context/context';
-import { NotFoundPage, NotAuthorizedPage } from './ErrorPages';
+import { Route, Switch, useLocation, Redirect } from 'react-router-dom';
+import { NotFoundPage, NotAuthorizedPage, ErrorPage, ServerDownPage } from './ErrorPages';
 import {
-  generateFetchOptions,
+  normalize,
   generateUrl,
   fetchWrapper,
+  generateFetchOptions,
   formatCartFromServer,
-  normalize,
 } from './local-utils/helpers';
 import {
-  AnimatePresence,
   MotionConfig,
-  AnimateLayoutFeature,
-  AnimationFeature,
   ExitFeature,
+  AnimatePresence,
+  AnimationFeature,
+  AnimateLayoutFeature,
 } from 'framer-motion';
 
 const Authenticate = React.lazy(() => import('./Auth'));
 const Menu = React.lazy(() => import('./Menu'));
 const CartPreview = React.lazy(() => import('./Cart'));
+const Settings = React.lazy(() => import('./Settings'));
 
 whyDidYouRender(React, {
   onlyLogs: true,
@@ -38,22 +39,45 @@ whyDidYouRender(React, {
 });
 
 function App() {
+  const connectionStates = ['not connected', 'connecting', 'connected'];
   const currentToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
 
   const [activeUser, setActiveUser] = React.useState({
     userData: null,
     authenticated: false,
   });
+
+  const [serverConnectionStatus, setConnectionStatus] = React.useState(1);
   const updateCart = useSetRecoilState(cartStateAtom);
 
   const { userData, authenticated } = activeUser;
   const protectedRoutes = [
-    ['/menu', Menu, { exact: true }],
     ['/menu/cart', CartPreview],
+    ['/menu', Menu, { exact: true }],
+    ['/settings', Settings],
   ];
 
   const location = useLocation();
   const logUserOut = () => setActiveUser({ userData: null, authenticated: false });
+  const retryServerConnection = () => setConnectionStatus(1);
+
+  React.useEffect(() => {
+    if (serverConnectionStatus === 2) return;
+
+    (async () => {
+      console.log('retrying');
+      try {
+        await fetchWrapper(generateUrl('/ping'), generateFetchOptions('GET'));
+        setConnectionStatus(2);
+        console.log('Server is up');
+        return;
+      } catch (error) {
+        console.error(error);
+        setConnectionStatus(0);
+        console.log('Server is down');
+      }
+    })();
+  }, [serverConnectionStatus]);
 
   React.useEffect(() => {
     if ((userData && authenticated) || !currentToken) return;
@@ -80,20 +104,10 @@ function App() {
         setActiveUser({ userData: ownerOfCurrentToken, authenticated: true });
       } catch (error) {
         console.error(error);
-        const { name = null } = error;
 
-        if (name === 'ServerConnectionError' || name === null) {
-          console.error('Redirect required');
-          // <Redirect to="/error-page" />
-        } else {
-          const { status } = error;
-          let errorText = 'An error occurred. Please refresh and try again';
-          if (status === 401) {
-            errorText = 'Your session has expired. Please log back in';
-            localStorage.removeItem('currentAccessToken');
-          }
-
-          toast(errorText, { type: 'error' });
+        if (error?.status === 401) {
+          localStorage.removeItem('currentAccessToken');
+          toast('Your session has expired. You will need to log in', { type: 'info' });
         }
       }
     })();
@@ -103,43 +117,54 @@ function App() {
     <UserSessionContext.Provider value={activeUser}>
       <ThemeProvider theme={themeObj}>
         <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
-          <ErrorBoundary>
+          {serverConnectionStatus === 0 && <Redirect to="/server-down" />}
+
+          {serverConnectionStatus === 1 ? (
+            <Loading fullscreen={true} />
+          ) : (
             <div>
               <Nav logUserOut={logUserOut} />
 
-              <ToastContainer hideProgressBar position="bottom-right" pauseOnFocusLoss={true} />
-
-              <React.Suspense fallback={<Loading fullscreen={true} />}>
-                <AnimatePresence exitBeforeEnter initial={false}>
-                  <Switch location={location} key={location.pathname}>
-                    <Route exact path="/">
-                      <Home />
-                    </Route>
-
-                    <Route path="/authenticate">
-                      <Authenticate authUser={setActiveUser} />
-                    </Route>
-
-                    {protectedRoutes.map(([path, Component, props]) => (
-                      <Route {...props} path={path} key={path}>
-                        {authenticated ? (
-                          <Component />
-                        ) : currentToken ? (
-                          <Loading fullscreen={true} />
-                        ) : (
-                          <NotAuthorizedPage />
-                        )}
+              <ErrorBoundary FallbackComponent={ErrorPage}>
+                <React.Suspense fallback={<Loading fullscreen={true} />}>
+                  <AnimatePresence exitBeforeEnter initial={false}>
+                    <Switch location={location} key={location.pathname}>
+                      <Route exact path="/">
+                        <Home />
                       </Route>
-                    ))}
 
-                    <Route>
-                      <NotFoundPage />
-                    </Route>
-                  </Switch>
-                </AnimatePresence>
-              </React.Suspense>
+                      <Route path="/authenticate">
+                        <Authenticate authUser={setActiveUser} />
+                      </Route>
+
+                      {protectedRoutes.map(([path, Component, props]) => (
+                        <Route {...props} path={path} key={path}>
+                          {authenticated ? (
+                            <Component />
+                          ) : currentToken ? (
+                            <Loading fullscreen={true} />
+                          ) : (
+                            <NotAuthorizedPage />
+                          )}
+                        </Route>
+                      ))}
+
+                      <Route path="/server-down">
+                        <ServerDownPage
+                          serverStatus={serverConnectionStatus}
+                          retryConnection={retryServerConnection}
+                        />
+                      </Route>
+
+                      <Route>
+                        <NotFoundPage />
+                      </Route>
+                    </Switch>
+                  </AnimatePresence>
+                </React.Suspense>
+              </ErrorBoundary>
             </div>
-          </ErrorBoundary>
+          )}
         </MotionConfig>
       </ThemeProvider>
     </UserSessionContext.Provider>

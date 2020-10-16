@@ -1,29 +1,25 @@
 import React from 'react';
-import Input from './InputField';
 import Loading from './Loading';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
-import CustomError from './local-utils/custom-error';
 
 import { toast } from 'react-toastify';
 import { Redirect } from 'react-router-dom';
-import { authVariants } from './local-utils/framer-variants';
 import { UserSessionContext } from './context/context';
-import { handleInvalidInput } from './local-utils/authFunctions';
-import { useForm, FormProvider } from 'react-hook-form';
+import { SignUpForm, LoginForm } from './Forms.js';
+import { generateFetchOptions, fetchWrapper } from './local-utils/helpers';
 import { ReactComponent as PizzaDeliverySVG } from '../assets/undraw_on_the_way_ldaq.svg';
-import { generateUrl, generateFetchOptions, fetchWrapper } from './local-utils/helpers';
 import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion';
-
-const { formVariants, generalAuthVariants } = authVariants;
-
-// TODO check if correct input validation errors are displayed
+import {
+  defaultPageTransitionVariants,
+  generalAuthElementVariants,
+} from './local-utils/framer-variants';
 
 const AuthSection = styled(motion.section).attrs({
   className: 'section-container',
-  variants: formVariants,
-  animate: 'show',
+  variants: defaultPageTransitionVariants,
   initial: 'hide',
+  animate: 'show',
   exit: 'exit',
 })`
   display: flex;
@@ -55,61 +51,38 @@ const AuthSection = styled(motion.section).attrs({
     font-size: 3.5em;
     font-family: var(--primaryFont);
     font-weight: var(--xXBold);
+    color: ${({ theme }) => hexToRgb(theme.baseColor, 0.8)};
     margin: 0.3em 0.8em 0.3em 0;
     text-align: center;
   }
+
+  /* .loader {
+    position: relative;
+  } */
 `;
 
-const Form = styled(motion.form).attrs({
-  variants: formVariants,
-  layoutId: 'auth',
-  key: 'form',
+const SubmitButton = styled(motion.button).attrs({
+  variants: generalAuthElementVariants,
+  layout: true,
+  type: 'submit',
+  key: 'auth-form-submit-button',
+  className: 'submit-button',
 })`
-  width: 100%;
-  height: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 15px;
-  color: ${({ theme }) => theme.black};
-`;
-
-const SubmitButton = styled(motion.button)`
   padding: 0.8em 0;
-  background: transparent;
   width: 85%;
-  cursor: pointer;
-  font-weight: var(--regular);
   margin: 0 0 0.3em 0;
   border: none;
-  background: ${({ theme }) => theme.baseColor};
   border-radius: 10px;
-  font-size: 1.3em;
-  transition: box-shadow 0.3s ease, background 0.3s ease;
-
-  &:active {
-    box-shadow: none;
-  }
 `;
 
 const SwitchFormStateText = styled(motion.p).attrs({
-  variants: generalAuthVariants,
-  transition: { delay: 0.5 },
+  variants: generalAuthElementVariants,
+  className: 'form-state-switch-text',
 })`
   position: fixed;
   bottom: 0;
   align-self: center;
-  font-weight: var(--bold);
-  color: ${({ theme }) => hexToRgb(theme.accentColor, 0.5)};
-  cursor: pointer;
   margin-bottom: 0.7em;
-  transition: color 0.3s ease;
-
-  &:active,
-  &:hover {
-    color: ${({ theme }) => hexToRgb(theme.accentColor, 1)};
-  }
 `;
 
 export default function Authenticate({ authUser }) {
@@ -119,99 +92,71 @@ export default function Authenticate({ authUser }) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [formStateIndex, setFormStateIndex] = React.useState(1);
 
-  const formObj = useForm({ reValidateMode: 'onBlur' });
-  const { register, handleSubmit, errors } = formObj;
-  const { clearErrors, reset, unregister, setError, formState } = formObj;
-
   const isLogin = formStateIndex === 0;
-  const formStateEndpoints = ['tokens', 'users'];
 
   const switchFormState = () => {
-    if (Object.keys(errors).length > 0) clearErrors();
-    setFormStateIndex(prev => (prev === 1 ? 0 : prev + 1));
-    if (!isLogin) unregister(['password', 'name', 'confirmPassword', 'streetAddress']);
+    setFormStateIndex(prevIndex => (prevIndex === 1 ? 0 : prevIndex + 1));
   };
 
-  const submitHandler = async formData => {
-    const url = generateUrl(formStateEndpoints[formStateIndex]);
-
+  const apiSubmitHandler = async (url, data) => {
     try {
-      if (!isLogin) {
-        const { password, confirmPassword } = formData;
-        if (password !== confirmPassword) {
-          throw new CustomError('confirmPassword field does not match', 'ValidationError');
-        }
-        delete formData.confirmPassword;
-      }
       setIsLoading(true);
 
-      await fetchWrapper(url, generateFetchOptions('POST', formData));
-
+      await fetchWrapper(url, generateFetchOptions('POST', data));
       authUser(prev => ({ ...prev, authenticated: true }));
       const toastOptions = { type: 'success', autoClose: 3000 };
 
       isLogin ? toast('Welcome back', toastOptions) : toast('Thanks for joining', toastOptions);
     } catch (error) {
-      const { message: errorMessage, name } = error;
-      console.error(errorMessage);
-
-      if (name === 'ValidationError' || error?.status === 400) {
-        errorMessage?.search(/confirmPassword/) > -1 ? clearErrors('confirmPassword') : reset({});
-
-        const { field, message } = handleInvalidInput(errorMessage);
-
-        if (field && message) setError(field, { type: 'manual', message });
-      } else {
-        toast('Something went wrong in the authentication process', { type: 'error' });
-        //TODO Redirect to Error Page
-      }
+      toast('An error occurred during authentication', { type: 'error' });
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
+
+  const memoizedApiSubmitHandler = React.useCallback(async (url, data) => {
+    await apiSubmitHandler(url, data);
+  }, []);
 
   return (
     <AuthSection>
       {authenticated && !isLoading && <Redirect push to="/" />}
       <PizzaDeliverySVG />
 
-      <motion.div>
-        <AnimateSharedLayout>
-          <motion.h2 variants={generalAuthVariants} layout>
+      <div>
+        <AnimateSharedLayout type="switch">
+          <motion.h2 variants={generalAuthElementVariants} layout="position">
             {formStates[formStateIndex]}
           </motion.h2>
 
-          <FormProvider register={register} errors={errors} formState={formState}>
-            <AnimatePresence>{isLoading && <Loading layoutId="auth" />}</AnimatePresence>
+          <AnimatePresence>
+            {isLoading && <Loading layoutId="auth-form" key="loader" />}
+          </AnimatePresence>
 
-            <Form onSubmit={handleSubmit(submitHandler)}>
-              {!isLogin && <Input name="name" placeholder="Username" />}
+          <AnimatePresence exitBeforeEnter>
+            {isLogin ? (
+              <LoginForm apiAuth={memoizedApiSubmitHandler} isLoading={isLoading} key="loginForm">
+                {isDisabled => (
+                  <SubmitButton disabled={isDisabled}>{formStates[formStateIndex]}</SubmitButton>
+                )}
+              </LoginForm>
+            ) : (
+              <SignUpForm apiAuth={memoizedApiSubmitHandler} isLoading={isLoading} key="signUpForm">
+                {isDisabled => (
+                  <SubmitButton disabled={isDisabled}>{formStates[formStateIndex]}</SubmitButton>
+                )}
+              </SignUpForm>
+            )}
+          </AnimatePresence>
 
-              <Input name="email" type="email" placeholder="Email" />
-
-              <Input
-                name="password"
-                type="password"
-                placeholder="Password"
-                validationsParam={isLogin}
-              />
-
-              {!isLogin && (
-                <Input name="confirmPassword" type="password" placeholder="Confirm Password" />
-              )}
-              {!isLogin && <Input name="streetAddress" placeholder="Street Address" />}
-
-              <SubmitButton variants={generalAuthVariants} layout>
-                {formStates[formStateIndex]}
-              </SubmitButton>
-            </Form>
-          </FormProvider>
+          <SwitchFormStateText key={isLogin} layoutId={isLogin} onClick={switchFormState}>
+            {isLogin ? 'Not a member? ' : 'Already a member? '}Click here
+          </SwitchFormStateText>
         </AnimateSharedLayout>
-
-        <SwitchFormStateText key={isLogin} layoutId={isLogin} onClick={switchFormState}>
-          {isLogin ? 'Not a member? ' : 'Already a member? '}Click here
-        </SwitchFormStateText>
-      </motion.div>
+      </div>
     </AuthSection>
   );
 }
+
+Authenticate.whyDidYouRender = true;

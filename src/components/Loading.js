@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { m as motion } from 'framer-motion';
-import { default as styled, keyframes } from 'styled-components';
+import { default as styled, keyframes, css } from 'styled-components';
 
 const spin = keyframes`
   from {
@@ -15,15 +15,12 @@ const spin = keyframes`
 const variants = {
   hide: {
     opacity: 0,
-    transition: { when: 'beforeChildren' },
   },
   show: {
     opacity: 1,
-    transition: { when: 'afterChildren' },
   },
   exit: {
     opacity: 0,
-    transition: { when: 'beforeChildren' },
   },
 };
 
@@ -36,14 +33,23 @@ const Overlay = styled(motion.div).attrs({
   key: 'overlay',
   className: 'loader',
 })`
-  width: 100%;
-  height: 100%;
   background: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1;
-  position: ${({ isFullscreen }) => (isFullscreen ? 'fixed' : 'absolute')};
+  width: 100%;
+
+  ${({ isFullscreen }) =>
+    isFullscreen
+      ? css`
+          position: fixed;
+          height: 100%;
+        `
+      : css`
+          position: absolute;
+          height: 45%;
+        `}
 `;
 
 const Spinner = styled.div`
@@ -56,9 +62,10 @@ const Spinner = styled.div`
   will-change: transform;
 `;
 
-export default function Loading({ fullscreen = false, layoutId, className }) {
+export default function Loading({ fullscreen = false, layoutId }) {
+  const layoutObj = layoutId ? { layoutId } : { layout: true };
   return (
-    <Overlay isFullscreen={fullscreen} layoutId={layoutId}>
+    <Overlay isFullscreen={fullscreen} {...layoutObj}>
       <Spinner />
     </Overlay>
   );

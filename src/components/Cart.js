@@ -12,16 +12,19 @@ import { default as Checkout, Modal } from './Checkout';
 import { cartState as cartStateAtom } from './atoms';
 import { CartCheckFill as PaymentIcon } from '@styled-icons/bootstrap/CartCheckFill';
 import { ReactComponent as EmptyCartSVG } from '../assets/undraw_empty_xct9.svg';
-import { cartPreviewVariants, emptyCartVectorVariants } from './local-utils/framer-variants';
 import { generateFetchOptions, generateUrl, fetchWrapper, saveOrder } from './local-utils/helpers';
 import { m as motion, AnimatePresence, AnimateSharedLayout, useCycle } from 'framer-motion';
+import {
+  defaultPageTransitionVariants2,
+  emptyCartVectorVariants,
+} from './local-utils/framer-variants';
 
 const { REACT_APP_STRIPE_API_KEY: STRIPE_API_KEY } = process.env;
 const stripePromise = loadStripe(STRIPE_API_KEY);
 
 const CartPreviewContainer = styled(motion.section).attrs({
   className: 'section-container',
-  variants: cartPreviewVariants,
+  variants: defaultPageTransitionVariants2,
   animate: 'visible',
   initial: 'hidden',
   exit: 'exit',

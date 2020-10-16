@@ -4,10 +4,10 @@ import Logout from './Logout';
 import hexToRgb from './utils/hexToRgb';
 
 import { NavLink } from 'react-router-dom';
-import { Settings } from '@styled-icons/ionicons-solid/Settings';
 import { Cart3 as Cart } from '@styled-icons/bootstrap/Cart3';
 import { useRecoilValue } from 'recoil';
 import { UserSessionContext } from './context/context';
+import { Settings2 as Settings } from '@styled-icons/evaicons-solid/Settings2';
 import { settingsMenuTooltipVariants } from './local-utils/framer-variants';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { cartCount as cartCountSelector } from './selectors';
@@ -18,7 +18,7 @@ const NavContainer = styled.nav`
   background: transparent;
   position: fixed;
   z-index: 2;
-  color: ${({ theme }) => hexToRgb(theme.black, 0.5)};
+  color: ${({ theme }) => hexToRgb(theme.gray, 0.3)};
   font-family: var(--secondaryFont);
 
   ul {
@@ -27,7 +27,7 @@ const NavContainer = styled.nav`
     padding: 0 4em;
     list-style: none;
 
-    li {
+    & > li {
       position: relative;
       font-weight: var(--medium);
       height: 100%;
@@ -89,6 +89,10 @@ const TooltipMenu = styled(motion.menu).attrs({
   background: ${({ theme }) => theme.backgroundLighter};
   box-shadow: 7px 7px 1px ${({ theme }) => hexToRgb(theme.blackLighter, 0.3)};
 
+  & > * {
+    transition: background 0.2s ease;
+  }
+
   &:before {
     content: '';
     position: absolute;
@@ -100,6 +104,33 @@ const TooltipMenu = styled(motion.menu).attrs({
     border-left-color: transparent;
     border-right-color: transparent;
     border-top-color: transparent;
+  }
+
+  & > li {
+    display: flex;
+    color: ${({ theme }) => hexToRgb(theme.gray, 0.9)};
+    padding: 0.8em 1em;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 0.8em;
+    font-weight: var(--medium);
+    margin: 0.7em 0 1.3em 0;
+    cursor: pointer;
+    border-radius: 3px;
+
+    & > a {
+      color: inherit;
+      transition: color 0.3s ease;
+      text-align: center;
+    }
+
+    &:hover,
+    &:active,
+    &:focus,
+    &:focus-within {
+      color: ${({ theme }) => hexToRgb(theme.accentColor, 0.7)};
+      background: ${({ theme }) => hexToRgb(theme.gray, 0.1)};
+    }
   }
 `;
 
@@ -144,7 +175,10 @@ function SettingsLink({ logUserOut }) {
             onMouseEnter={showTooltipMenu}
             onMouseLeave={hideTooltipMenu}
             layout>
-            <NavLink to="/settings">Your Profile</NavLink>
+            <li>
+              <Settings />
+              <NavLink to="/settings">Account Settings</NavLink>
+            </li>
             <Logout logUserOut={logUserOut} />
           </TooltipMenu>
         )}

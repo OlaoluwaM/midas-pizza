@@ -8,8 +8,8 @@ import FilterPanel from './FilterPanel';
 import { GooeySVGBackground } from './Reusables';
 import { UserSessionContext } from './context/context';
 import { m as motion, AnimatePresence } from 'framer-motion';
-import { defaultPageTransitionVariants2, headerVariants } from './local-utils/framer-variants';
 import { Blob3 as MenuBlob, Blob4 as MenuBlob2 } from '../assets/Blobs';
+import { defaultPageTransitionVariants2, headerVariants } from './local-utils/framer-variants';
 import { generateFetchOptions, generateUrl, fetchWrapper, saveOrder } from './local-utils/helpers';
 
 const MenuSection = styled(motion.section).attrs({
@@ -17,7 +17,7 @@ const MenuSection = styled(motion.section).attrs({
   variants: defaultPageTransitionVariants2,
   initial: 'hidden',
   animate: 'visible',
-  exit: 'hidden',
+  exit: 'exit',
 })`
   padding: 0;
   margin: 0;
@@ -139,37 +139,37 @@ export default function Menu() {
   console.log(`Current filter is ${menuFilter.current}`);
 
   return (
-    <>
-      <MenuSection>
-        <GooeySVGBackground id="goo" />
-        <motion.h1 className="goo" variants={headerVariants}>
-          Our Menu
-        </motion.h1>
+    <MenuSection>
+      <GooeySVGBackground id="goo" />
+      <motion.h1 className="goo" variants={headerVariants}>
+        Our Menu
+      </motion.h1>
 
-        <MenuBlob className="blob" />
-        <MenuBlob2 className="blob" />
+      <MenuBlob className="blob" />
+      <MenuBlob2 className="blob" />
 
-        <FilterPanel filterForType={filterHandler} activeFilter={menuFilter.current} />
+      <FilterPanel filterForType={filterHandler} activeFilter={menuFilter.current} />
 
-        <AnimatePresence exitBeforeEnter>
-          {isLoading && <Loading key="loader-component" />}
+      <AnimatePresence exitBeforeEnter>
+        {/* {isLoading && } */}
 
-          {!isLoading && (
-            <MenuContainer key="menu">
-              {menuItems.map(({ 0: itemName, 1: { initialPrice: price, type } }, ind) => (
-                <MenuItem
-                  key={itemName}
-                  itemName={itemName}
-                  price={price}
-                  foodType={type}
-                  custom={ind}
-                />
-              ))}
-            </MenuContainer>
-          )}
-        </AnimatePresence>
-      </MenuSection>
-    </>
+        {isLoading ? (
+          <Loading key="loader-component" />
+        ) : (
+          <MenuContainer key="menu">
+            {menuItems.map(({ 0: itemName, 1: { initialPrice: price, type } }, ind) => (
+              <MenuItem
+                key={itemName}
+                itemName={itemName}
+                price={price}
+                foodType={type}
+                custom={ind}
+              />
+            ))}
+          </MenuContainer>
+        )}
+      </AnimatePresence>
+    </MenuSection>
   );
 }
 

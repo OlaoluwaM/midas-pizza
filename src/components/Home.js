@@ -6,9 +6,11 @@ import { NavLink } from 'react-router-dom';
 import { m as motion } from 'framer-motion';
 import { UserSessionContext } from './context/context';
 import { ReactComponent as EatingPizzaSVG } from '../assets/undraw_staying_in_i80u.svg';
-import { homeVariants, defaultPageTransitionVariants } from './local-utils/framer-variants';
-
-const { contentVariants, artVariants } = homeVariants;
+import {
+  homeContentVariants,
+  homeSVGVariants,
+  defaultPageTransitionVariants,
+} from './local-utils/framer-variants';
 
 const HomeSection = styled(motion.section).attrs({
   className: 'section-container',
@@ -30,7 +32,6 @@ const Content = styled(motion.div)`
   color: ${({ theme }) => theme.black};
   padding-left: 3.5em;
   z-index: 1;
-  /* background: ${({ theme }) => hexToRgb(theme.baseColor, 0.2)}; */
   transition: background 0.3s ease;
 
   h1 {
@@ -93,7 +94,9 @@ const Content = styled(motion.div)`
   }
 `;
 
-const Art = styled(motion.div)`
+const HomeSvgContainer = styled(motion.div).attrs({
+  variants: homeSVGVariants,
+})`
   flex-grow: 1;
   height: 100%;
   position: relative;
@@ -122,7 +125,7 @@ export default function Home() {
     <HomeSection>
       <Content exit={{ background: 'transparent' }}>
         <motion.div
-          variants={contentVariants}
+          variants={homeContentVariants}
           style={{ all: 'inherit', backgroundColor: 'transparent' }}>
           <h1>Pizza from the comfort of your home</h1>
 
@@ -139,9 +142,9 @@ export default function Home() {
         </motion.div>
       </Content>
 
-      <Art variants={artVariants}>
+      <HomeSvgContainer>
         <EatingPizzaSVG />
-      </Art>
+      </HomeSvgContainer>
     </HomeSection>
   );
 }

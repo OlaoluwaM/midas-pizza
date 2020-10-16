@@ -1,26 +1,23 @@
 import hexToRgb from '../utils/hexToRgb';
 import { themeObj as theme } from '../context/context';
 
-class Variants {
-  constructor(showVariants, hideVariants, exitVariants = null, exitInheritHide = true) {
-    this.show = showVariants;
-    this.hide = hideVariants;
-    if (exitVariants || exitInheritHide) {
-      this.exit = exitInheritHide && !exitVariants ? hideVariants : exitVariants;
-    }
-  }
-}
-
-export const defaultPageTransitionVariants = new Variants(
-  {
+export const defaultPageTransitionVariants = {
+  show: {
     opacity: 1,
     transition: { when: 'beforeChildren', staggerDirection: -1, staggerChildren: 0.3 },
   },
-  {
+  hide: {
     opacity: 0,
     transition: { when: 'afterChildren', delayChildren: 0.2, staggerChildren: 0.3 },
-  }
-);
+  },
+
+  exit: {
+    opacity: 0,
+    transition: {
+      when: 'afterChildren',
+    },
+  },
+};
 
 export const defaultPageTransitionVariants2 = {
   visible: {
@@ -33,73 +30,86 @@ export const defaultPageTransitionVariants2 = {
     transition: {
       when: 'afterChildren',
       staggerChildren: 0.1,
-      delayChildren: 0.4,
+      delayChildren: 0.2,
+    },
+  },
+
+  exit: {
+    opacity: 0,
+    transition: {
+      when: 'afterChildren',
     },
   },
 };
 
-export const homeVariants = {
-  contentVariants: new Variants(
-    {
-      opacity: 1,
-      y: 0,
-      transition: { type: 'tween', duration: 0.2 },
-    },
-    {
-      opacity: 0,
-      y: 50,
-    },
-    { opacity: 0, y: 0 }
-  ),
-
-  artVariants: new Variants(
-    {
-      opacity: 1,
-      x: 0,
-    },
-    {
-      opacity: 0,
-      x: 50,
-    },
-    { opacity: 0, x: 0 }
-  ),
+export const homeContentVariants = {
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: 'tween', duration: 0.2 },
+  },
+  hide: {
+    opacity: 0,
+    y: 50,
+  },
+  exit: {
+    opacity: 0,
+    y: 0,
+  },
 };
 
-export const authVariants = {
-  formVariants: new Variants(
-    {
-      opacity: 1,
-      transition: { when: 'beforeChildren', staggerChildren: 0.1 },
-    },
-    {
-      opacity: 0,
-      transition: {
-        when: 'afterChildren',
-        staggerChildren: 0.1,
-      },
-    }
-  ),
+export const homeSVGVariants = {
+  show: {
+    opacity: 1,
+    x: 0,
+  },
+  hide: {
+    opacity: 0,
+    x: 50,
+  },
+  exit: { opacity: 0, x: 0 },
+};
 
-  generalAuthVariants: new Variants(
-    {
-      opacity: 1,
-      y: 0,
-    },
-    { opacity: 0, y: 40 },
-    { opacity: 0 }
-  ),
+export const authPageGeneralVariants = {
+  show: {
+    opacity: 1,
+    transition: { when: 'beforeChildren', delayChildren: 0.2 },
+  },
 
-  errorMessageVariants: new Variants(
-    {
-      opacity: 1,
-      y: 0,
-    },
-    {
-      opacity: 0,
-      y: -60,
-    },
-    { opacity: 0 }
-  ),
+  hide: {
+    opacity: 0,
+    transition: { when: 'afterChildren', delayChildren: 0.2 },
+  },
+
+  exit: {
+    opacity: 0,
+    transition: { when: 'afterChildren' },
+  },
+};
+
+export const generalAuthElementVariants = {
+  show: {
+    opacity: 1,
+    y: 0,
+  },
+  hide: {
+    opacity: 0,
+    y: 40,
+  },
+  exit: { opacity: 0 },
+};
+
+export const errorMessageVariants = {
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { delay: 0.3 },
+  },
+  hide: {
+    opacity: 0,
+    x: -20,
+  },
+  exit: { opacity: 0 },
 };
 
 // ! MENU Variants
@@ -140,15 +150,6 @@ export const filterButtonVariants = {
     borderColor: hexToRgb(theme.backgroundLighter),
     x: 0,
   },
-
-  Infocus: {
-    boxShadow: '0px 0px 0px rgba(0,0,0,0.2)',
-    color: theme.blackLighter,
-    opacity: 0.8,
-    fillOpacity: 0.8,
-    borderColor: hexToRgb(theme.blackLighter),
-    x: 0,
-  },
 };
 
 export const menuItemVariants = {
@@ -163,21 +164,6 @@ export const menuItemVariants = {
     x: -10,
   },
   exit: { opacity: 0 },
-};
-
-export const cartPreviewVariants = {
-  ...defaultPageTransitionVariants2,
-  visible: {
-    ...defaultPageTransitionVariants2.visible,
-    transition: {
-      ...defaultPageTransitionVariants2.visible.transition,
-      staggerChildren: 0.1,
-      delay: 0.4,
-    },
-  },
-  exit: {
-    opacity: 0,
-  },
 };
 
 export const orderItemVariants = {
@@ -261,5 +247,29 @@ export const settingsMenuTooltipVariants = {
   hide: {
     opacity: 0,
     boxShadow: `0px 0px 0px ${hexToRgb(theme.blackLighter, 0.4)}`,
+  },
+};
+
+export const settingsFormVariants = {
+  visible: {
+    y: 0,
+    opacity: 1,
+  },
+
+  hidden: {
+    opacity: 0,
+    y: 30,
+  },
+};
+
+export const settingsFormTextVariants = {
+  visible: {
+    opacity: 1,
+    y: 0,
+  },
+
+  hidden: {
+    opacity: 0,
+    y: 30,
   },
 };

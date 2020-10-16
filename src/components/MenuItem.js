@@ -9,11 +9,11 @@ import snacksImage from '../assets/snacks-image-fran-hogan-unsplash.jpg';
 
 import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
+import { getCartCount } from './local-utils/helpers';
 import { menuItemVariants } from './local-utils/framer-variants';
-import { CartPlusFill as CartIcon } from '@styled-icons/bootstrap/CartPlusFill';
 import { useSetRecoilState } from 'recoil';
+import { CartPlusFill as CartIcon } from '@styled-icons/bootstrap/CartPlusFill';
 import { cartState as cartStateAtom } from './atoms';
-import { convertDollarToFloat, getCartCount } from './local-utils/helpers';
 
 const MenuItemContainer = styled(motion.div).attrs({
   variants: menuItemVariants,
@@ -122,7 +122,7 @@ const MenuItemContainer = styled(motion.div).attrs({
         align-items: center;
         justify-content: space-around;
         border: 4px solid ${({ theme }) => theme.accentColor};
-        /* box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.2); */
+        box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.2);
         color: ${({ theme }) => theme.accentColor};
         background: ${({ theme }) => theme.backgroundLighter};
         border-radius: 7px;
@@ -132,7 +132,6 @@ const MenuItemContainer = styled(motion.div).attrs({
         cursor: pointer;
         font-weight: var(--bold);
         font-family: var(--primaryFont);
-        outline: rgba(0, 0, 0, 0.2);
         transition: 0.1s ease box-shadow, 0.2s ease background, color 0.3s ease;
 
         svg {

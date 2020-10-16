@@ -1,16 +1,17 @@
 import React from 'react';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
+import PropTypes from 'prop-types';
 
+import { normalize } from './local-utils/helpers';
 import { ErrorMessage } from '@hookform/error-message';
-import { authVariants } from './local-utils/framer-variants';
-import { useFormContext } from 'react-hook-form';
 import { validationOptions } from './local-utils/authFunctions';
+import { generalAuthElementVariants, errorMessageVariants } from './local-utils/framer-variants';
 import { m as motion, AnimatePresence, AnimateSharedLayout } from 'framer-motion';
 
-const { errorMessageVariants, generalAuthVariants } = authVariants;
-
-const InputContainer = styled(motion.div)`
+const InputContainer = styled(motion.div).attrs({
+  layout: 'position',
+})`
   color: ${({ theme }) => hexToRgb(theme.blackLighter, 0.3)};
   width: 85%;
   display: flex;
@@ -53,69 +54,64 @@ const ErrorDisplay = styled(motion.p)`
   color: var(--error);
   margin-bottom: 0px;
   margin-top: 10px;
-  font-weight: var(--medium);
+  font-weight: var(--xXBold);
   font-size: 0.8em;
 `;
 
-export const InputField = React.forwardRef((props, ref) => {
-  const { motionProps = {}, children, hookFormProps, ...inputAttributes } = props;
+const InputFieldErrorElement = React.memo(({ thisIsFor, message }) => {
+  return (
+    <AnimatePresence exitBeforeEnter>
+      <ErrorDisplay
+        data-testid={`invalid-input-error-${thisIsFor}`}
+        variants={errorMessageVariants}
+        initial="hide"
+        exit="exit"
+        layout
+        key={`${message}_${thisIsFor}_id`}>
+        {message}
+      </ErrorDisplay>
+    </AnimatePresence>
+  );
+});
+
+// const InputFieldErrorElementWrapper = ({ thisIsFor }) => {
+//   const { errors } = useFormContext();
+//   return <InputFieldErrorElement thisIsFor={thisIsFor} errors={errors} />;
+// };
+
+// InputFieldErrorElementWrapper.whyDidYouRender = true;
+InputFieldErrorElement.whyDidYouRender = true;
+
+const HookFormInputField = React.memo(props => {
+  const { motionProps = { variants: generalAuthElementVariants }, validationObj = {} } = props;
+  const { register, error: errorMessage, ...rest } = props;
+
+  const inputAttributes = { type: 'text', ...rest };
+  const { name } = inputAttributes;
+
+  const validationRules = normalize(validationObj) ?? validationOptions[name];
 
   return (
     <AnimateSharedLayout>
-      <InputContainer {...motionProps} layout>
-        <input
-          {...inputAttributes}
-          ref={e => {
-            ref.current = e;
-            if (!hookFormProps?.register) return;
-
-            hookFormProps.register(e, hookFormProps.validationRules);
-          }}
-        />
-
-        {children}
+      <InputContainer {...motionProps}>
+        <motion.input {...inputAttributes} ref={register(validationRules)} layout="position" />
+        {errorMessage && <InputFieldErrorElement thisIsFor={name} message={errorMessage} />}
       </InputContainer>
     </AnimateSharedLayout>
   );
 });
 
-export default function AuthInputField({ name, validationsParam = null, ...rest }) {
-  const inputRef = React.useRef();
-  const { register, errors } = useFormContext();
+HookFormInputField.propTypes = {
+  motionProps: PropTypes.object,
+  validationObj: PropTypes.object,
+  register: PropTypes.func.isRequired,
+  error: PropTypes.string.isRequired,
+};
 
-  const validationRules = !!validationOptions[name]
-    ? validationOptions[name](validationsParam)
-    : {};
+InputFieldErrorElement.propTypes = {
+  thisIsFor: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
+};
 
-  const motionProps = { variants: generalAuthVariants };
-  const hookFormProps = { register, validationRules };
-  const inputAttributes = { name, type: 'text', ...rest };
-
-  return (
-    <InputField
-      motionProps={motionProps}
-      ref={inputRef}
-      hookFormProps={hookFormProps}
-      {...inputAttributes}>
-      <ErrorMessage
-        name={name}
-        errors={errors}
-        layout
-        render={({ message }) => (
-          <AnimatePresence exitBeforeEnter>
-            <ErrorDisplay
-              data-testid="invalid-input-error"
-              variants={errorMessageVariants}
-              initial="hide"
-              animate="show"
-              exit="exit"
-              layout
-              key={`${message}_${name}_id`}>
-              {message}
-            </ErrorDisplay>
-          </AnimatePresence>
-        )}
-      />
-    </InputField>
-  );
-}
+HookFormInputField.whyDidYouRender = true;
+export default HookFormInputField;

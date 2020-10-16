@@ -22,10 +22,9 @@ const LogoutButton = styled.button`
   cursor: pointer;
   font-family: var(--primaryFont);
   font-weight: var(--xBold);
-  background: ${({ theme }) => theme.backgroundLighter};
+  background: ${({ theme }) => hexToRgb(theme.accentColor, 0.1)};
   color: ${({ theme }) => theme.accentColor};
-  border: 5px double ${({ theme }) => theme.accentColor};
-  transition: scale 0.3s ease, background 0.3s ease, color 0.3s ease;
+  transition: scale 0.3s ease, color 0.3s ease;
 
   &:focus,
   &:focus-within,
