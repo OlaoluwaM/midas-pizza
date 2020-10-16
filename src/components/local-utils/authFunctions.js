@@ -38,18 +38,3 @@ export const validationOptions = {
     required: 'Please provide your street address',
   },
 };
-
-export function handleInvalidInput(error) {
-  if (error?.search(/password/) > -1) {
-    return { field: 'password', message: 'Password was incorrect' };
-  } else if (error?.search(/(may|does) not exist/) > -1) {
-    return { field: 'email', message: 'Email did not belong to any user' };
-  } else if (error?.search(/already exist/) > -1) {
-    const message = 'Email entered belonged to another user, please provide another email';
-    return { field: 'email', message };
-  } else if (error?.search(/confirmPassword/) > -1) {
-    return { field: 'confirmPassword', message: 'Passwords do not match' };
-  } else {
-    return { field: void 0, message: void 0 };
-  }
-}
