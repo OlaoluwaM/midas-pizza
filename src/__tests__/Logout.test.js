@@ -28,6 +28,7 @@ test.each([
   ['with empty cart', menuContext.userData, 0],
 ])('Should check if user can log out %s cart', async (_, dataFromServer, orderCount) => {
   fetch
+    .once(JSON.stringify(formatFetchResponse(menuContext.userData)), { status: 200 })
     .once(JSON.stringify(formatFetchResponse(dataFromServer)), { status: 200 })
     .once(JSON.stringify(formatFetchResponse('response')), { status: 200 })
     .once(JSON.stringify(formatFetchResponse('response')), { status: 200 });

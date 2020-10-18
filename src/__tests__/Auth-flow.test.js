@@ -1,27 +1,24 @@
 import React from 'react';
 import Authenticate from '../components/Auth';
 
-import { ThemeProvider } from 'styled-components';
-import { themeObj, UserSessionContext } from '../components/context/context';
-import { render, cleanup, fireEvent, act } from '@testing-library/react';
+import { cleanup, fireEvent, act, waitForElementToBeRemoved } from '@testing-library/react';
 
 afterAll(cleanup);
 
-const authUserMock = jest.fn();
+beforeEach(() => {
+  fetch.resetMocks();
+});
+
+const authUserMock = jest.fn(() => null);
 
 function renderAuthComp() {
-  return render(
-    <ThemeProvider theme={themeObj}>
-      <UserSessionContext.Provider value={{ activeUser: null, authenticated: false }}>
-        <Authenticate authUser={authUserMock} />
-      </UserSessionContext.Provider>
-    </ThemeProvider>
-  );
+  return renderWithProviders(<Authenticate authUser={authUserMock} />, {
+    contextValue: { activeUser: null, authenticated: false },
+  });
 }
 
-fetch.mockResponse(JSON.stringify(formatFetchResponse(testAccessToken)), { status: 200 });
-
 test('Should allow user to sign up', async () => {
+  fetch.mockResponse(JSON.stringify(formatFetchResponse(testAccessToken)), { status: 200 });
   const utils = renderAuthComp();
 
   const { findByTestId, getByPlaceholderText, findByRole } = utils;
@@ -39,7 +36,9 @@ test('Should allow user to sign up', async () => {
     Object.keys(dataToEnter).forEach(placeHolderText => {
       const element = getByPlaceholderText(placeHolderText);
       fireEvent.input(element, { target: { value: dataToEnter[placeHolderText] } });
+      expect(element).toHaveValue(dataToEnter[placeHolderText]);
     });
+
     fireEvent.click(submitButton);
   });
 
@@ -50,14 +49,18 @@ test('Should allow user to sign up', async () => {
 });
 
 test('Should allow user to log in', async () => {
+  fetch.mockResponse(JSON.stringify(formatFetchResponse(testAccessToken)), { status: 200 });
   const utils = renderAuthComp();
 
   const { findByTestId, getByPlaceholderText, findByRole, findAllByText, findByText } = utils;
-  const submitButton = await findByRole('button');
   const switchText = await findByText(/already a member/i);
 
   fireEvent.click(switchText);
+  await waitForElementToBeRemoved(() => getByPlaceholderText('Confirm Password'));
+
   expect(await findAllByText(/log in/i)).toHaveLength(2);
+
+  const submitButton = await findByRole('button');
 
   const dataToEnter = {
     Email: 'britt@gmail.com',
@@ -68,6 +71,7 @@ test('Should allow user to log in', async () => {
     Object.keys(dataToEnter).forEach(placeHolderText => {
       const element = getByPlaceholderText(placeHolderText);
       fireEvent.input(element, { target: { value: dataToEnter[placeHolderText] } });
+      expect(element).toHaveValue(dataToEnter[placeHolderText]);
     });
     fireEvent.click(submitButton);
   });

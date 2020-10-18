@@ -1,92 +1,110 @@
-import React from 'react'
+import React from 'react';
 import Authenticate from '../components/Auth';
 
-import { cleanup, fireEvent, act, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { cleanup, fireEvent, act, screen, waitForElementToBeRemoved } from '@testing-library/react';
 
 afterAll(cleanup);
 
-test('Sign up tests', async () => {
+test('Should make sure user sees appropriate error on invalid input during sign up', async () => {
+  // Arrange
   const utils = renderWithProviders(<Authenticate />);
 
-  // Arrange
   const { findAllByText, findAllByTestId, getByPlaceholderText } = utils;
-  const { findByPlaceholderText, findByRole, findByText } = utils;
-
-  const submitButton = await findByRole('button');
-  const passwordField = await findByPlaceholderText('Password');
+  const { findByPlaceholderText, findByRole, findByTestId } = utils;
 
   // Make sure Sign up form is rendered
   expect(await findAllByText(/sign up/i)).toHaveLength(2);
 
+  const submitButton = await findByRole('button');
   fireEvent.click(submitButton);
+
   // Errors displayed on empty submission
-  expect(await findAllByTestId('invalid-input-error')).toHaveLength(5);
+  expect(await findAllByTestId(/invalid-input-error/)).toHaveLength(5);
+  expect(submitButton).toBeDisabled();
+
+  const passwordField = await findByPlaceholderText('Password');
 
   await act(async () => {
-    fireEvent.focus(passwordField);
-    fireEvent.input(passwordField, { target: { value: 'IAmAwesome@20032020' } });
-    fireEvent.blur(passwordField);
+    passwordField.focus();
+    expect(passwordField).toHaveFocus();
+
+    userEvent.type(passwordField, 'IAmAwesome@20032020');
+    userEvent.tab();
+
+    expect(passwordField).not.toHaveFocus();
   });
 
   // Field re-validates on blur and successful input
-  expect(await findAllByTestId('invalid-input-error')).toHaveLength(4);
+  expect(await findAllByTestId(/invalid-input-error/)).toHaveLength(4);
+
   const dataToPass = {
     Username: 'britt',
     Email: 'britt@gmail.com',
     Password: 'IAmBritt@20032020',
-    'Street Address': '545 W. Ann St.Matthews, NC 28104',
     'Confirm Password': '123',
+    'Street Address': '545 W. Ann St.Matthews, NC 28104',
   };
 
   await act(async () => {
-    fireEvent.input(passwordField, { target: { value: '' } });
     Object.keys(dataToPass).forEach(elem => {
       const element = getByPlaceholderText(elem);
-      fireEvent.input(element, { target: { value: dataToPass[elem] } });
+      userEvent.type(element, dataToPass[elem]);
+      userEvent.tab();
     });
+  });
+
+  await act(async () => {
+    expect(submitButton).not.toBeDisabled();
     fireEvent.click(submitButton);
   });
 
   // An error should be displayed if confirm password and password fields do not match
-  expect(await findByText(/Passwords do not/i)).toBeInTheDocument();
+  expect(await findByTestId('invalid-input-error-confirmPassword')).toBeInTheDocument();
 });
 
-test('Login tests', () => {
+test('Should make sure user can switch and see the login form', async () => {
   const utils = renderWithProviders(<Authenticate />);
 
   // Arrange
-  const { getAllByText, getByText } = utils;
-  const switchText = getByText(/already a member/i);
+  const { findAllByText, findByText, getByPlaceholderText } = utils;
+  const switchText = await findByText(/already a member/i);
 
   fireEvent.click(switchText);
 
+  // Wait for sign up form elements to animate out
+  await waitForElementToBeRemoved(() => getByPlaceholderText('Confirm Password'));
+
   // Form state should become login
-  expect(getByText(/not a member/i)).toBeInTheDocument();
-  expect(getAllByText(/log in/i)).toHaveLength(2);
+  expect(await findByText(/not a member/i)).toBeInTheDocument();
+  expect(await findAllByText(/log in/i)).toHaveLength(2);
 });
 
 describe('Invalid input tests', () => {
   beforeEach(() => fetch.resetMocks());
 
-  test('Log in', async () => {
+  test('Should make sure user can see authentication errors if login was invalid', async () => {
     fetch.mockResponses(
-      ['User may not exist', { status: 400 }],
-      ['Invalid password', { status: 400 }]
+      ['User may not exist', { status: 401 }],
+      ['Sorry your password was incorrect', { status: 400 }]
     );
+
     const utils = renderWithProviders(<Authenticate />);
+
+    const { findByRole, findAllByTestId, getByPlaceholderText } = utils;
+    const { queryAllByTestId, findByTestId } = utils;
 
     // Change to login form state
     const switchText = await screen.findByText(/already a mem/i);
     fireEvent.click(switchText);
+    await waitForElementToBeRemoved(() => getByPlaceholderText('Confirm Password'));
 
-    const { findByRole, findAllByTestId, getByPlaceholderText, findByText } = utils;
-    const { queryAllByTestId, findByTestId } = utils;
     const submitButton = await findByRole('button');
 
     fireEvent.click(submitButton);
 
     // To make sure the fields validate on submission
-    expect(await findAllByTestId('invalid-input-error')).toHaveLength(2);
+    expect(await findAllByTestId(/invalid-input-error/)).toHaveLength(2);
 
     const invalidDataToPass = {
       Email: 'dedede@gmail.com',
@@ -104,27 +122,25 @@ describe('Invalid input tests', () => {
       });
 
       // Errors should leave on valid input
-      expect(queryAllByTestId('invalid-input-error')).toHaveLength(0);
+      expect(queryAllByTestId(/invalid-input-error/)).toHaveLength(0);
 
       fireEvent.click(submitButton);
       // Loading indicator should be displayed
       expect(await findByTestId('loader')).toBeInTheDocument();
 
       if (i === 0) {
-        expect(await findByText(/did not belong/i)).toBeInTheDocument();
-        expect(await findAllByTestId('invalid-input-error')).toHaveLength(1);
+        expect(await findByTestId('invalid-input-error-email')).toBeInTheDocument();
       } else {
-        expect(await findByText(/Password was/i)).toBeInTheDocument();
-        expect(await findAllByTestId('invalid-input-error')).toHaveLength(1);
+        expect(await findByTestId('invalid-input-error-passwordLogin')).toBeInTheDocument();
       }
     }
   });
 
-  test('Sign Up', async () => {
-    fetch.mockRejectOnce('User may already exist', { status: 400 });
+  test('Should allow user see invalid input and authentication messages if sign up was invalid', async () => {
+    fetch.mockRejectOnce('Sorry, user already exists', { status: 400 });
     const utils = renderWithProviders(<Authenticate />);
 
-    const { findByRole, findAllByTestId, getByPlaceholderText, findByText } = utils;
+    const { findByRole, getByPlaceholderText } = utils;
     const { queryAllByTestId, findByTestId } = utils;
     const submitButton = await findByRole('button');
 
@@ -146,13 +162,12 @@ describe('Invalid input tests', () => {
     });
 
     // Errors should leave on valid input
-    expect(queryAllByTestId('invalid-input-error')).toHaveLength(0);
+    expect(queryAllByTestId(/invalid-input-error/)).toHaveLength(0);
 
     fireEvent.click(submitButton);
     // Loading indicator should be displayed
     expect(await findByTestId('loader')).toBeInTheDocument();
 
-    expect(await findByText(/provide another email/i)).toBeInTheDocument();
-    expect(await findAllByTestId('invalid-input-error')).toHaveLength(1);
+    expect(await findByTestId('invalid-input-error-email')).toBeInTheDocument();
   });
 });

@@ -2,16 +2,11 @@ import React from 'react';
 import Menu from '../components/Menu';
 import NavBar from '../components/NavBar';
 
-import { ToastContainer } from 'react-toastify';
 import { cleanup, fireEvent, act } from '@testing-library/react';
 
 afterAll(cleanup);
 
-beforeEach(() => jest.useFakeTimers());
-afterEach(() => {
-  jest.runOnlyPendingTimers();
-  jest.useRealTimers();
-});
+jest.useFakeTimers();
 
 window.localStorage.getItem = jest.fn(() => JSON.stringify(testAccessToken));
 
@@ -25,7 +20,6 @@ test('Should make sure shopping cart changes appropriately with counter interact
   await act(async () => {
     utils = renderWithProviders(
       <>
-        <ToastContainer />
         <NavBar />
         <Menu />
       </>,
@@ -54,9 +48,9 @@ test('Should make sure shopping cart changes appropriately with counter interact
   fireEvent.input(quantityInput, { target: { value: 1 } });
   fireEvent.click(addToCartButton);
 
-  act(() => {
-    jest.advanceTimersByTime(1000);
-  });
+  // act(() => {
+  //   jest.advanceTimersByTime(1000);
+  // });
 
   // Notification should be displayed when user tries to exceed order limit
   const toast = await findByRole('alert');

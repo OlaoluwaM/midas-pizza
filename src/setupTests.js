@@ -12,6 +12,7 @@ import { render } from '@testing-library/react';
 import { RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
+import { ToastContainer } from 'react-toastify';
 import { themeObj, UserSessionContext } from './components/context/context';
 import { MotionConfig, AnimateLayoutFeature, AnimationFeature, ExitFeature } from 'framer-motion';
 
@@ -70,14 +71,16 @@ global.menuContext = {
 
 global.renderWithProviders = function (
   ui,
-  { contextValue = { authenticated: false }, routeProps = {} } = {}
+  { withAnimations = true, contextValue = { authenticated: false }, routeProps = {} } = {}
 ) {
   const Wrapper = ({ children }) => (
     <MemoryRouter {...routeProps}>
       <RecoilRoot>
-        <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
+        <MotionConfig
+          features={withAnimations ? [AnimateLayoutFeature, AnimationFeature, ExitFeature] : []}>
           <ThemeProvider theme={themeObj}>
             <UserSessionContext.Provider value={contextValue}>
+              <ToastContainer />
               {children}
             </UserSessionContext.Provider>
           </ThemeProvider>
