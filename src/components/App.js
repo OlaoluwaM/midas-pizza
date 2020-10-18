@@ -39,7 +39,6 @@ whyDidYouRender(React, {
 });
 
 function App() {
-  const connectionStates = ['not connected', 'connecting', 'connected'];
   const currentToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
 
   const [activeUser, setActiveUser] = React.useState({
@@ -47,6 +46,7 @@ function App() {
     authenticated: false,
   });
 
+  const connectionStatuses = Object.freeze(['not connected', 'connecting', 'connected']);
   const [serverConnectionStatus, setConnectionStatus] = React.useState(1);
   const updateCart = useSetRecoilState(cartStateAtom);
 
@@ -62,15 +62,14 @@ function App() {
   const retryServerConnection = () => setConnectionStatus(1);
 
   React.useEffect(() => {
-    if (serverConnectionStatus === 2) return;
+    if (serverConnectionStatus === 2 || serverConnectionStatus === 0) return;
+    console.log('Trying to connect to sever...');
 
     (async () => {
-      console.log('retrying');
       try {
         await fetchWrapper(generateUrl('/ping'), generateFetchOptions('GET'));
         setConnectionStatus(2);
         console.log('Server is up');
-        return;
       } catch (error) {
         console.error(error);
         setConnectionStatus(0);
@@ -80,7 +79,8 @@ function App() {
   }, [serverConnectionStatus]);
 
   React.useEffect(() => {
-    if ((userData && authenticated) || !currentToken) return;
+    if (serverConnectionStatus !== 2 || (userData && authenticated) || !currentToken) return;
+    console.log('authenticating user...');
 
     (async () => {
       try {
@@ -111,16 +111,24 @@ function App() {
         }
       }
     })();
-  }, [authenticated]);
+  }, [authenticated, serverConnectionStatus]);
+
+  const { checkingConnectionWithServer, serverIsDown } = {
+    checkingConnectionWithServer: serverConnectionStatus === 1 || serverConnectionStatus > 2,
+    serverIsDown: !serverConnectionStatus,
+  };
 
   return (
     <UserSessionContext.Provider value={activeUser}>
       <ThemeProvider theme={themeObj}>
         <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
-          {serverConnectionStatus === 0 && <Redirect to="/server-down" />}
-
-          {serverConnectionStatus === 1 ? (
+          {checkingConnectionWithServer ? (
             <Loading fullscreen={true} />
+          ) : serverIsDown ? (
+            <ServerDownPage
+              serverStatus={serverConnectionStatus}
+              retryConnection={retryServerConnection}
+            />
           ) : (
             <div>
               <Nav logUserOut={logUserOut} />
@@ -148,13 +156,6 @@ function App() {
                           )}
                         </Route>
                       ))}
-
-                      <Route path="/server-down">
-                        <ServerDownPage
-                          serverStatus={serverConnectionStatus}
-                          retryConnection={retryServerConnection}
-                        />
-                      </Route>
 
                       <Route>
                         <NotFoundPage />
