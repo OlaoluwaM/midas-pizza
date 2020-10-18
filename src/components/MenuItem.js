@@ -116,15 +116,14 @@ const MenuItemContainer = styled(motion.div).attrs({
 
       .add-to-cart-button {
         position: relative;
-        width: 13em;
-        flex-basis: 13em;
+        width: 14em;
+        flex-basis: 14em;
         display: flex;
         align-items: center;
         justify-content: space-around;
-        border: 4px solid ${({ theme }) => theme.accentColor};
-        box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.2);
+        border: none;
         color: ${({ theme }) => theme.accentColor};
-        background: ${({ theme }) => theme.backgroundLighter};
+        background: ${({ theme }) => hexToRgb(theme.accentColor, 0.1)};
         border-radius: 7px;
         padding: 1em 0;
         align-self: flex-end;

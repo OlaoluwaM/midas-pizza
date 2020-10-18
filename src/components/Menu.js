@@ -21,7 +21,7 @@ const MenuSection = styled(motion.section).attrs({
 })`
   padding: 0;
   margin: 0;
-  padding-left: 4em;
+  padding-left: 3em;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -79,7 +79,7 @@ const MenuContainer = styled.menu`
   gap: 1em 2em;
   flex-grow: 1;
   width: 100%;
-  padding-right: 4em;
+  padding-right: 2em;
   padding-left: 0px;
   position: relative;
 `;
