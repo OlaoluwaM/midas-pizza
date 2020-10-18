@@ -39,7 +39,7 @@ export function LoginForm({ apiAuth, isLoading, children }) {
   React.useEffect(() => {
     if (!normalize(errorString) || isLoading) return;
     const { field, message } = JSON.parse(errorString);
-    setError(field, { message, shouldFocus: true });
+    setError(field, { message });
 
     return () => setErrorString('');
   }, [errorString, isLoading]);
@@ -105,7 +105,7 @@ export function SignUpForm({ apiAuth, isLoading, children }) {
   React.useEffect(() => {
     if (!normalize(errorString) || isLoading) return;
     const { field, message } = JSON.parse(errorString);
-    setError(field, { type: 'manual', message, shouldFocus: true });
+    setError(field, { message });
 
     return () => setErrorString('');
   }, [errorString, isLoading]);
@@ -126,7 +126,7 @@ export function SignUpForm({ apiAuth, isLoading, children }) {
 
       await apiAuth(url, dataToSendToServer);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       const { status: errorStatus } = error;
 
       if (errorStatus === 400) {

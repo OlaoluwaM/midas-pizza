@@ -73,12 +73,12 @@ export const homeSVGVariants = {
 export const authPageGeneralVariants = {
   show: {
     opacity: 1,
-    transition: { when: 'beforeChildren', delayChildren: 0.2 },
+    transition: { when: 'beforeChildren' },
   },
 
   hide: {
     opacity: 0,
-    transition: { when: 'afterChildren', delayChildren: 0.2 },
+    transition: { when: 'afterChildren' },
   },
 
   exit: {

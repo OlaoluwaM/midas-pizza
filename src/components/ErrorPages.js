@@ -54,7 +54,7 @@ const ServerDownPageWrapper = styled(ErrorPageContainer)`
   color: transparent;
   width: 100%;
   height: 100vh;
-  background: ${({ theme }) => hexToRgb(theme.baseColor, 0.2)};
+  background: ${({ theme }) => hexToRgb(theme.baseColor, 0.1)};
 
   svg {
     width: 45%;
@@ -65,15 +65,15 @@ const ServerDownPageWrapper = styled(ErrorPageContainer)`
 
     & > button {
       bottom: 1em;
-      background: ${({ theme }) => hexToRgb(theme.blackLighter, 0.2)};
-      color: ${({ theme }) => theme.blackLighter};
+      background: ${({ theme }) => hexToRgb(theme.baseColor, 0.2)};
+      color: ${({ theme }) => theme.baseColor};
       border: none;
 
       &:hover,
       &:focus,
       &:active,
       &:focus-within {
-        background: ${({ theme }) => theme.blackLighter};
+        background: ${({ theme }) => theme.baseColor};
         color: ${({ theme }) => theme.background};
       }
     }
@@ -129,36 +129,26 @@ export function ErrorPage({ error }) {
 }
 
 export function ServerDownPage({ serverStatus, retryConnection }) {
-  const { loading, connected, down } = {
+  const { loading, connected } = {
     loading: serverStatus === 1,
     connected: serverStatus === 2,
-    down: serverStatus === 0,
   };
 
   React.useEffect(() => {
     if (loading || connected) return;
-
     toast('It seems the server is down, please try again or come back later. Thank You 😊', {
       type: 'error',
     });
   }, [serverStatus]);
 
-  console.log({ loading, connected, down });
   return (
     <ServerDownPageWrapper>
-      {connected && <Redirect to="/" />}
-
-      <motion.div
-        className="motion-wrapper"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        key="error-page">
-        <ServerDownSVG />
+      <div className="motion-wrapper">
+        <ServerDownSVG title="Server is Down" />
         <button className="submit-button checkout-button" onClick={retryConnection}>
           Retry
         </button>
-      </motion.div>
+      </div>
     </ServerDownPageWrapper>
   );
 }
