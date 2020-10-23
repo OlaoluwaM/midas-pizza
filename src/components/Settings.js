@@ -1,24 +1,22 @@
 import React from 'react';
-import Input from './InputField';
 import styled from 'styled-components';
 import Loading from './Loading';
 import hexToRgb from './utils/hexToRgb';
 
 import { toast } from 'react-toastify';
 import { UserSessionContext } from './context/context';
-import { useForm, FormProvider } from 'react-hook-form';
 import { ReactComponent as SettingsSvg } from '../assets/settings.svg';
-import { generateUrl, generateFetchOptions, fetchWrapper } from './local-utils/helpers';
+import { UpdatePasswordForm, UpdateProfileForm } from './Forms';
 import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion';
 import {
-  settingsFormVariants,
   settingsFormTextVariants,
-  defaultPageTransitionVariants2,
+  defaultPageTransitionVariants,
 } from './local-utils/framer-variants';
+import { generateUrl, fetchWrapper, generateFetchOptions } from './local-utils/helpers';
 
 const SettingsSection = styled(motion.section).attrs({
   className: 'section-container',
-  variants: defaultPageTransitionVariants2,
+  variants: defaultPageTransitionVariants,
   initial: 'hidden',
   animate: 'visible',
   exit: 'exit',
@@ -37,6 +35,7 @@ const SettingsSection = styled(motion.section).attrs({
     align-items: center;
     flex-basis: 70%;
     height: 100%;
+    position: relative;
     color: ${({ theme }) => theme.baseColor};
 
     h1 {
@@ -51,90 +50,43 @@ const SettingsSection = styled(motion.section).attrs({
   }
 `;
 
-const Form = styled(motion.form).attrs({
-  variants: settingsFormVariants,
-})`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 90%;
-
-  button {
-    background: ${({ theme }) => hexToRgb(theme.baseColor, 0.3)};
-    color: inherit;
-    border: none;
-    width: calc(0.85 * 100%);
-
-    &:active,
-    &:hover,
-    &:focus,
-    &:focus-within {
-      background: ${({ theme }) => theme.baseColor};
-      color: ${({ theme }) => theme.background};
-    }
-  }
-`;
-
-function UpdateProfileForm() {
-  return (
-    <>
-      <Input name="name" />
-      <Input name="email" type="email" />
-      <Input name="streetAddress" placeholder="Street Address" />
-    </>
-  );
-}
-
-function UpdatePasswordForm() {
-  return (
-    <>
-      <Input name="oldPassword" type="password" placeholder="Old Password" />
-      <Input name="password" type="password" placeholder="New Password" validationsParam={false} />
-      <Input name="confirmPassword" type="password" placeholder="Confirm New Password" />
-    </>
-  );
-}
-
-function SettingsForm({ formStateIndex }) {
-  const formObj = useForm({
-    reValidateMode: 'onBlur',
-    shouldFocusError: true,
-    shouldUnregister: true,
-    defaultValues: { name, email, streetAddress },
-  });
-
-  const { register, handleSubmit, errors, formState } = formObj;
-
+export default function Settings() {
   const {
-    userData: { email, name, streetAddress },
+    userData: { email },
   } = React.useContext(UserSessionContext);
 
-  return (
-    <FormProvider register={register} errors={errors} formState={formState}>
-      <Form layout>
-        {formStateIndex === 0 ? <UpdateProfileForm /> : <UpdatePasswordForm />}
-
-        <button className="checkout-button" type="submit">
-          Save Changes
-        </button>
-      </Form>
-    </FormProvider>
-  );
-}
-
-export default function Settings() {
   const formStates = ['Update your profile', 'Change password'];
-
   const [isLoading, setIsLoading] = React.useState(false);
   const [formStateIndex, setFormStateIndex] = React.useState(0);
+
+  const { current: endpoint } = React.useRef(generateUrl(`users?email=${email}`));
 
   const toggleFormState = () => {
     setFormStateIndex(index => (index < formStates.length - 1 ? index + 1 : 0));
   };
 
-  const saveChanges = async formData => {
-    console.log(formData);
+  const saveChanges = async (url, data) => {
+    try {
+      setIsLoading(true);
+      const { Id: tokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
+
+      await fetchWrapper(url, generateFetchOptions('PUT', data, tokenId));
+      const toastOptions = { type: 'success', autoClose: 3000 };
+
+      !formStateIndex
+        ? toast('Profile updated', toastOptions)
+        : toast('Password updated successfully', toastOptions);
+    } catch (error) {
+      toast('An error occurred updating your account', { type: 'error' });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const memoizedSaveChangesHandler = React.useCallback(saveChanges.bind(null, endpoint), [
+    formStateIndex,
+  ]);
 
   return (
     <SettingsSection>
@@ -142,17 +94,25 @@ export default function Settings() {
 
       <div className="form-container">
         <AnimateSharedLayout>
-          <motion.h1 variants={settingsFormTextVariants} layout="position">
+          <motion.h1 variants={settingsFormTextVariants} layout="position" key={formStateIndex}>
             {formStates[formStateIndex]}
           </motion.h1>
 
-          <SettingsForm formStateIndex={formStateIndex} />
+          <AnimatePresence>
+            {isLoading && <Loading layoutId="settings-form" key="loader" />}
+          </AnimatePresence>
+
+          {formStateIndex === 0 ? (
+            <UpdateProfileForm saveChanges={memoizedSaveChangesHandler} isLoading={isLoading} />
+          ) : (
+            <UpdatePasswordForm saveChanges={memoizedSaveChangesHandler} />
+          )}
 
           <motion.p
             className="form-state-switch-text"
             variants={settingsFormTextVariants}
             onClick={toggleFormState}
-            layout="position">
+            key={formStateIndex ^ 1}>
             {formStates[formStateIndex ^ 1]}
           </motion.p>
         </AnimateSharedLayout>
@@ -161,4 +121,4 @@ export default function Settings() {
   );
 }
 
-SettingsForm.whyDidYouRender = true;
+Settings.whyDidYouRender = true;
