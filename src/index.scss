@@ -76,6 +76,16 @@ a.nav-link {
   transition: color 0.3s ease, fill 0.3s ease, stroke 0.3s ease;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  background-color: change-color($color: map-get($colorPalette, baseColor), $alpha: 0.5);
+  box-shadow: 0 0 0px 1000px change-color($color: map-get($colorPalette, baseColor), $alpha: 0.2)
+    inset;
+  outline: none;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 $routeHighlightColor: change-color(
   $color:
     map-get(
@@ -200,6 +210,10 @@ button.checkout-button,
   border-radius: 5px;
   transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease;
   font-size: 1.2em;
+
+  &:active {
+    scale: 0.95;
+  }
 }
 
 button.checkout-button {
@@ -215,17 +229,17 @@ button.checkout-button {
   align-items: center;
   justify-content: space-around;
   margin-bottom: 2em;
-
   margin: 0 auto 1em auto;
-
-  &:active {
-    scale: 0.95;
-  }
 }
 
 .submit-button {
+  padding: 0.8em 0;
+  margin: 0 0 0.3em 0;
+  border: none;
   background: change-color(get-color(baseColor), $alpha: 0.2);
   color: get-color(baseColor);
+  width: calc(0.85 * 100%);
+  border-radius: 10px;
 
   &:disabled {
     filter: grayscale(1);
@@ -263,5 +277,14 @@ button.checkout-button {
   to {
     opacity: 1;
     transform: scaleX(1);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
