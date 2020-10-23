@@ -17,7 +17,7 @@ function renderAuthComp() {
   });
 }
 
-test('Should allow user to sign up', async () => {
+test('Should check of user can sign up', async () => {
   fetch.mockResponse(JSON.stringify(formatFetchResponse(testAccessToken)), { status: 200 });
   const utils = renderAuthComp();
 
@@ -48,7 +48,7 @@ test('Should allow user to sign up', async () => {
   expect(location.pathname).toEqual('/');
 });
 
-test('Should allow user to log in', async () => {
+test('Should check of user can log in', async () => {
   fetch.mockResponse(JSON.stringify(formatFetchResponse(testAccessToken)), { status: 200 });
   const utils = renderAuthComp();
 

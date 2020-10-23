@@ -103,6 +103,7 @@ test('Should let the user know when the server is down', async () => {
     const loader = await findByTestId('loader');
     expect(loader).toBeInTheDocument();
   });
+
   screen.debug();
 
   const { findByRole, findByTitle } = utils;

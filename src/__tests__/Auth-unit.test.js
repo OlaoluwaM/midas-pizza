@@ -11,7 +11,7 @@ test('Should make sure user sees appropriate error on invalid input during sign 
   const utils = renderWithProviders(<Authenticate />);
 
   const { findAllByText, findAllByTestId, getByPlaceholderText } = utils;
-  const { findByPlaceholderText, findByRole, findByTestId } = utils;
+  const { findByPlaceholderText, findByRole, findByTestId, getByTestId } = utils;
 
   // Make sure Sign up form is rendered
   expect(await findAllByText(/sign up/i)).toHaveLength(2);
@@ -34,6 +34,8 @@ test('Should make sure user sees appropriate error on invalid input during sign 
 
     expect(passwordField).not.toHaveFocus();
   });
+
+  await waitForElementToBeRemoved(() => getByTestId('invalid-input-error-passwordSignIn'));
 
   // Field re-validates on blur and successful input
   expect(await findAllByTestId(/invalid-input-error/)).toHaveLength(4);
@@ -83,65 +85,65 @@ test('Should make sure user can switch and see the login form', async () => {
 describe('Invalid input tests', () => {
   beforeEach(() => fetch.resetMocks());
 
-  test('Should make sure user can see authentication errors if login was invalid', async () => {
-    fetch.mockResponses(
-      ['User may not exist', { status: 401 }],
-      ['Sorry your password was incorrect', { status: 400 }]
-    );
+  test.each([
+    ['user does not exist', { error: 'User may not exist', status: 401 }, 'email'],
+    [
+      'Password was incorrect',
+      { error: 'Sorry your password was incorrect', status: 400 },
+      'passwordLogin',
+    ],
+  ])(
+    'Should make sure user can see authentication errors in login form if %s',
+    async (_, { error, status }, fieldWithError) => {
+      fetch.mockRejectOnce({ text: async () => error }, { status });
 
-    const utils = renderWithProviders(<Authenticate />);
+      const utils = renderWithProviders(<Authenticate />);
 
-    const { findByRole, findAllByTestId, getByPlaceholderText } = utils;
-    const { queryAllByTestId, findByTestId } = utils;
+      const { findByRole, findAllByTestId } = utils;
+      const { findByTestId, getByPlaceholderText } = utils;
 
-    // Change to login form state
-    const switchText = await screen.findByText(/already a mem/i);
-    fireEvent.click(switchText);
-    await waitForElementToBeRemoved(() => getByPlaceholderText('Confirm Password'));
+      // Change to login form state
+      const switchText = await screen.findByText(/already a mem/i);
 
-    const submitButton = await findByRole('button');
+      fireEvent.click(switchText);
 
-    fireEvent.click(submitButton);
+      await waitForElementToBeRemoved(() => getByPlaceholderText('Confirm Password'));
 
-    // To make sure the fields validate on submission
-    expect(await findAllByTestId(/invalid-input-error/)).toHaveLength(2);
+      const submitButton = await findByRole('button');
 
-    const invalidDataToPass = {
-      Email: 'dedede@gmail.com',
-      Password: '123',
-    };
+      fireEvent.click(submitButton);
 
-    for await (let i of [0, 1]) {
+      // To make sure the fields validate on submission
+      expect(await findAllByTestId(/invalid-input-error/)).toHaveLength(2);
+
+      const invalidDataToPass = {
+        Email: 'dedede@gmail.com',
+        Password: '123',
+      };
+
       await act(async () => {
         Object.keys(invalidDataToPass).forEach(placeHolderText => {
           const inputField = getByPlaceholderText(placeHolderText);
-          fireEvent.focus(inputField);
+          fireEvent.focusIn(inputField);
           fireEvent.input(inputField, { target: { value: invalidDataToPass[placeHolderText] } });
           fireEvent.blur(inputField);
+          expect(inputField).toHaveValue(invalidDataToPass[placeHolderText]);
         });
       });
 
-      // Errors should leave on valid input
-      expect(queryAllByTestId(/invalid-input-error/)).toHaveLength(0);
-
+      // screen.debug();
       fireEvent.click(submitButton);
-      // Loading indicator should be displayed
       expect(await findByTestId('loader')).toBeInTheDocument();
 
-      if (i === 0) {
-        expect(await findByTestId('invalid-input-error-email')).toBeInTheDocument();
-      } else {
-        expect(await findByTestId('invalid-input-error-passwordLogin')).toBeInTheDocument();
-      }
+      expect(await findByTestId(`invalid-input-error-${fieldWithError}`)).toBeInTheDocument();
     }
-  });
+  );
 
   test('Should allow user see invalid input and authentication messages if sign up was invalid', async () => {
     fetch.mockRejectOnce('Sorry, user already exists', { status: 400 });
     const utils = renderWithProviders(<Authenticate />);
 
-    const { findByRole, getByPlaceholderText } = utils;
-    const { queryAllByTestId, findByTestId } = utils;
+    const { findByRole, findByPlaceholderText, queryAllByTestId, findByTestId } = utils;
     const submitButton = await findByRole('button');
 
     const invalidDataToPass = {
@@ -152,21 +154,25 @@ describe('Invalid input tests', () => {
       'Confirm Password': 'IAmBritt@20032020',
     };
 
-    await act(async () => {
-      Object.keys(invalidDataToPass).forEach(placeHolderText => {
-        const inputField = getByPlaceholderText(placeHolderText);
-        fireEvent.focus(inputField);
-        fireEvent.input(inputField, { target: { value: invalidDataToPass[placeHolderText] } });
+    for await (let placeHolderText of Object.keys(invalidDataToPass)) {
+      const inputField = await findByPlaceholderText(placeHolderText);
+      fireEvent.focusIn(inputField);
+      fireEvent.input(inputField, { target: { value: invalidDataToPass[placeHolderText] } });
+
+      await act(async () => {
         fireEvent.blur(inputField);
       });
-    });
+
+      expect(inputField).toHaveValue(invalidDataToPass[placeHolderText]);
+    }
 
     // Errors should leave on valid input
     expect(queryAllByTestId(/invalid-input-error/)).toHaveLength(0);
 
     fireEvent.click(submitButton);
-    // Loading indicator should be displayed
+
     expect(await findByTestId('loader')).toBeInTheDocument();
+    // Loading indicator should be displayed
 
     expect(await findByTestId('invalid-input-error-email')).toBeInTheDocument();
   });

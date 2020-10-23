@@ -22,7 +22,7 @@ test('Should check if user can see and update order in cart', async () => {
   // Render Cart
   await act(async () => {
     utils = render(
-      <MemoryRouter initialEntries={['/menu/cart']}>
+      <MemoryRouter initialEntries={['/cart']}>
         <RecoilRoot>
           <App />
         </RecoilRoot>
@@ -116,7 +116,7 @@ test('Should check if user can empty their cart', async () => {
   // Render Cart
   await act(async () => {
     utils = render(
-      <MemoryRouter initialEntries={['/menu/cart']}>
+      <MemoryRouter initialEntries={['/cart']}>
         <RecoilRoot>
           <App />
         </RecoilRoot>
