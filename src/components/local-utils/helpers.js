@@ -65,7 +65,7 @@ export async function fetchWrapper(url, options) {
     console.error(error);
 
     const errorText = typeof error === 'string' ? error : await error.text();
-    throw new CustomError(errorText, error?.status);
+    throw new CustomError(errorText, undefined, error?.status);
   }
 }
 
@@ -118,7 +118,7 @@ export function getTotal(cart) {
 }
 
 export function normalize(input) {
-  if (input?.length === 0 || Object.keys(input).length === 0 || input === '') {
+  if (input && (input?.length === 0 || Object.keys(input).length === 0 || input === '')) {
     return null;
   }
   return input;
@@ -140,4 +140,10 @@ export function getErrMessage(errorObj) {
   return propertyName => {
     return errorObj[propertyName]?.message ?? '';
   };
+}
+
+export function updateLocalStorageAccessToken(email) {
+  if (!normalize(email)) return;
+  const newAccessToken = { ...JSON.parse(localStorage.getItem('currentAccessToken')), email };
+  localStorage.setItem('currentAccessToken', JSON.stringify(newAccessToken));
 }

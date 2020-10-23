@@ -28,9 +28,9 @@ import {
 } from 'framer-motion';
 
 const Authenticate = React.lazy(() => import('./Auth'));
-const Menu = React.lazy(() => import('./Menu'));
 const CartPreview = React.lazy(() => import('./Cart'));
 const Settings = React.lazy(() => import('./Settings'));
+const Menu = React.lazy(() => import('./Menu'));
 
 whyDidYouRender(React, {
   onlyLogs: true,
@@ -52,9 +52,9 @@ function App() {
 
   const { userData, authenticated } = activeUser;
   const protectedRoutes = [
-    ['/menu/cart', CartPreview],
-    ['/menu', Menu, { exact: true }],
+    ['/menu', Menu],
     ['/settings', Settings],
+    ['/cart', CartPreview],
   ];
 
   const location = useLocation();
@@ -102,6 +102,7 @@ function App() {
         }
 
         setActiveUser({ userData: ownerOfCurrentToken, authenticated: true });
+        console.log('Authentication complete!');
       } catch (error) {
         console.error(error);
 
@@ -137,7 +138,7 @@ function App() {
                 <React.Suspense fallback={<Loading fullscreen={true} />}>
                   <AnimatePresence exitBeforeEnter initial={false}>
                     <Switch location={location} key={location.pathname}>
-                      <Route exact path="/">
+                      <Route exact path="/" key="home">
                         <Home />
                       </Route>
 

@@ -2,13 +2,14 @@ import hexToRgb from '../utils/hexToRgb';
 import { themeObj as theme } from '../context/context';
 
 export const defaultPageTransitionVariants = {
-  show: {
+  visible: {
     opacity: 1,
-    transition: { when: 'beforeChildren', staggerDirection: -1, staggerChildren: 0.3 },
+    transition: { when: 'beforeChildren', staggerDirection: -1, staggerChildren: 0.2 },
   },
-  hide: {
+
+  hidden: {
     opacity: 0,
-    transition: { when: 'afterChildren', delayChildren: 0.2, staggerChildren: 0.3 },
+    transition: { when: 'afterChildren', staggerChildren: 0.2 },
   },
 
   exit: {
@@ -22,7 +23,7 @@ export const defaultPageTransitionVariants = {
 export const defaultPageTransitionVariants2 = {
   visible: {
     opacity: 1,
-    transition: { when: 'beforeChildren', staggerChildren: 0.2 },
+    transition: { when: 'beforeChildren', staggerChildren: 0.1 },
   },
 
   hidden: {
@@ -30,7 +31,6 @@ export const defaultPageTransitionVariants2 = {
     transition: {
       when: 'afterChildren',
       staggerChildren: 0.1,
-      delayChildren: 0.2,
     },
   },
 
@@ -43,12 +43,12 @@ export const defaultPageTransitionVariants2 = {
 };
 
 export const homeContentVariants = {
-  show: {
+  visible: {
     opacity: 1,
     y: 0,
     transition: { type: 'tween', duration: 0.2 },
   },
-  hide: {
+  hidden: {
     opacity: 0,
     y: 50,
   },
@@ -59,11 +59,11 @@ export const homeContentVariants = {
 };
 
 export const homeSVGVariants = {
-  show: {
+  visible: {
     opacity: 1,
     x: 0,
   },
-  hide: {
+  hidden: {
     opacity: 0,
     x: 50,
   },
@@ -71,12 +71,12 @@ export const homeSVGVariants = {
 };
 
 export const authPageGeneralVariants = {
-  show: {
+  visible: {
     opacity: 1,
     transition: { when: 'beforeChildren' },
   },
 
-  hide: {
+  hidden: {
     opacity: 0,
     transition: { when: 'afterChildren' },
   },
@@ -88,11 +88,11 @@ export const authPageGeneralVariants = {
 };
 
 export const generalAuthElementVariants = {
-  show: {
+  visible: {
     opacity: 1,
     y: 0,
   },
-  hide: {
+  hidden: {
     opacity: 0,
     y: 40,
   },
@@ -100,12 +100,12 @@ export const generalAuthElementVariants = {
 };
 
 export const errorMessageVariants = {
-  show: {
+  visible: {
     opacity: 1,
     x: 0,
     transition: { delay: 0.3 },
   },
-  hide: {
+  hidden: {
     opacity: 0,
     x: -20,
   },
@@ -244,7 +244,8 @@ export const settingsMenuTooltipVariants = {
     boxShadow: `7px 7px 1px ${hexToRgb(theme.blackLighter, 0.4)}`,
     transition: { type: 'spring' },
   },
-  hide: {
+
+  hidden: {
     opacity: 0,
     boxShadow: `0px 0px 0px ${hexToRgb(theme.blackLighter, 0.4)}`,
   },
@@ -271,5 +272,8 @@ export const settingsFormTextVariants = {
   hidden: {
     opacity: 0,
     y: 30,
+  },
+  exit: {
+    opacity: 0,
   },
 };

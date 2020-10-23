@@ -2,17 +2,26 @@ import React from 'react';
 import Input from './InputField';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import CustomError from './local-utils/custom-error';
 
+import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import { m as motion } from 'framer-motion';
-import { authPageGeneralVariants } from './local-utils/framer-variants';
-import { getErrMessage, generateUrl, normalize } from './local-utils/helpers';
+import { UserSessionContext } from './context/context';
+import { authPageGeneralVariants, generalAuthElementVariants } from './local-utils/framer-variants';
+import {
+  getErrMessage,
+  generateUrl,
+  normalize,
+  fetchWrapper,
+  generateFetchOptions,
+  updateLocalStorageAccessToken,
+} from './local-utils/helpers';
 
 const Form = styled(motion.form).attrs({
   variants: authPageGeneralVariants,
   layoutId: 'auth-form',
-  initial: 'hide',
-  animate: 'show',
+  initial: 'hidden',
   exit: 'exit',
 })`
   width: 100%;
@@ -25,7 +34,25 @@ const Form = styled(motion.form).attrs({
   color: ${({ theme }) => theme.black};
 `;
 
-export function LoginForm({ apiAuth, isLoading, children }) {
+const SettingsForm = styled(motion.form).attrs({
+  variants: authPageGeneralVariants,
+  layout: true,
+  layoutId: 'settings-form',
+})`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90%;
+`;
+
+const SubmitButton = styled(motion.button).attrs({
+  className: 'submit-button',
+  type: 'submit',
+  layout: 'position',
+  key: 'submit-button',
+  variants: generalAuthElementVariants,
+})``;
+export function LoginForm({ apiAuth, isLoading }) {
   const [errorString, setErrorString] = React.useState('');
 
   const formObj = useForm({
@@ -33,18 +60,20 @@ export function LoginForm({ apiAuth, isLoading, children }) {
     shouldFocusError: true,
   });
 
-  const { register, handleSubmit, errors, setError } = formObj;
+  const { register, handleSubmit, errors, setError, clearErrors } = formObj;
   const errMsgFromErrors = getErrMessage(errors);
+  const formContainsInvalidInput = !!normalize(errors);
 
   React.useEffect(() => {
     if (!normalize(errorString) || isLoading) return;
     const { field, message } = JSON.parse(errorString);
     setError(field, { message });
 
-    return () => setErrorString('');
+    return () => {
+      setErrorString('');
+      formContainsInvalidInput && clearErrors();
+    };
   }, [errorString, isLoading]);
-
-  const isDisabled = !!normalize(errors);
 
   const submitHandler = async formData => {
     try {
@@ -84,12 +113,12 @@ export function LoginForm({ apiAuth, isLoading, children }) {
         placeholder="Password"
       />
 
-      {children(isDisabled)}
+      <SubmitButton disabled={formContainsInvalidInput}>Log in</SubmitButton>
     </Form>
   );
 }
 
-export function SignUpForm({ apiAuth, isLoading, children }) {
+export function SignUpForm({ apiAuth, isLoading }) {
   const [errorString, setErrorString] = React.useState('');
 
   const formObj = useForm({
@@ -97,17 +126,20 @@ export function SignUpForm({ apiAuth, isLoading, children }) {
     shouldFocusError: true,
   });
 
-  const { register, handleSubmit, errors, setError } = formObj;
+  const { register, handleSubmit, errors, setError, clearErrors } = formObj;
   const errMsgFromErrors = getErrMessage(errors);
 
-  const isDisabled = !!normalize(errors);
+  const formContainsInvalidInput = !!normalize(errors);
 
   React.useEffect(() => {
     if (!normalize(errorString) || isLoading) return;
     const { field, message } = JSON.parse(errorString);
     setError(field, { message });
 
-    return () => setErrorString('');
+    return () => {
+      setErrorString('');
+      formContainsInvalidInput && clearErrors();
+    };
   }, [errorString, isLoading]);
 
   const submitHandler = async formData => {
@@ -180,20 +212,228 @@ export function SignUpForm({ apiAuth, isLoading, children }) {
         placeholder="Street Address"
       />
 
-      {children(isDisabled)}
+      <SubmitButton disabled={formContainsInvalidInput}>Sign Up</SubmitButton>
     </Form>
+  );
+}
+
+export function UpdateProfileForm({ saveChanges, isLoading }) {
+  const { userData } = React.useContext(UserSessionContext);
+  const [errorString, setErrorString] = React.useState('');
+
+  const formObj = useForm({
+    reValidateMode: 'onBlur',
+    shouldFocusError: true,
+    defaultValues: {
+      name: userData.name,
+      email: userData.email,
+      streetAddress: userData.streetAddress,
+    },
+  });
+
+  const { register, handleSubmit, errors, clearErrors, setError } = formObj;
+  const formContainsInvalidInput = !!normalize(errors);
+
+  const errMsgFromErrors = getErrMessage(errors);
+
+  React.useEffect(() => {
+    if (!normalize(errorString) || isLoading) return;
+    const { field, message } = JSON.parse(errorString);
+    setError(field, { message });
+
+    return () => {
+      setErrorString('');
+      formContainsInvalidInput && clearErrors();
+    };
+  }, [errorString, isLoading]);
+
+  const submitHandler = async (formData, e) => {
+    const dataToSendToServer = {};
+    try {
+      Object.entries(formData).forEach(({ 0: field, 1: fieldData }) => {
+        fieldData !== userData[field] && (dataToSendToServer[field] = fieldData);
+        return;
+      });
+
+      if (!normalize(dataToSendToServer)) {
+        toast("You haven't updated your information yet", { type: 'info' });
+        return;
+      }
+
+      await saveChanges(dataToSendToServer);
+      updateLocalStorageAccessToken(dataToSendToServer?.email);
+
+      e.target.reset();
+    } catch (error) {
+      console.error(error);
+
+      if (error?.status === 500) {
+        setErrorString(
+          JSON.stringify({ field: 'email', message: 'A user with this email exists' })
+        );
+      }
+    }
+  };
+
+  return (
+    <SettingsForm onSubmit={handleSubmit(submitHandler)}>
+      <Input
+        name="name"
+        placeholder="New username"
+        register={register}
+        error={errMsgFromErrors('name')}
+      />
+
+      <Input
+        name="email"
+        type="email"
+        placeholder="New email"
+        register={register}
+        error={errMsgFromErrors('email')}
+      />
+
+      <Input
+        name="streetAddress"
+        placeholder="Street Address"
+        register={register}
+        error={errMsgFromErrors('streetAddress')}
+      />
+
+      <SubmitButton disabled={formContainsInvalidInput}>Save Changes</SubmitButton>
+    </SettingsForm>
+  );
+}
+
+export function UpdatePasswordForm({ saveChanges }) {
+  const { userData } = React.useContext(UserSessionContext);
+
+  const formObj = useForm({
+    reValidateMode: 'onBlur',
+    shouldFocusError: true,
+  });
+
+  const { register, handleSubmit, errors, setError, clearErrors } = formObj;
+  const formContainsInvalidInput = !!normalize(errors);
+
+  const errMsgFromErrors = getErrMessage(errors);
+
+  React.useEffect(() => {
+    return () => {
+      formContainsInvalidInput && clearErrors();
+    };
+  }, []);
+
+  const checkOldPassword = async oldPassword => {
+    const { email } = userData;
+
+    try {
+      await fetchWrapper(
+        generateUrl('/tokens'),
+        generateFetchOptions('POST', { email, password: oldPassword })
+      );
+
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const submitHandler = async (formData, e) => {
+    const { passwordSignIn: oldPassword, confirmPassword, newPassword } = formData;
+
+    try {
+      if (newPassword !== confirmPassword) {
+        throw new CustomError(
+          { fields: ['confirmPassword'], message: 'Passwords do not match' },
+          'ValidationError'
+        );
+      }
+
+      if (oldPassword === newPassword) {
+        throw new CustomError(
+          {
+            fields: ['passwordSignIn', 'newPassword'],
+            message: 'Your old and new password cannot be the same',
+          },
+          'ValidationError'
+        );
+      }
+
+      const oldPasswordIsCorrect = await checkOldPassword(oldPassword);
+
+      if (!oldPasswordIsCorrect) {
+        throw new CustomError(
+          { fields: ['passwordSignIn'], message: 'Incorrect Password' },
+          'ValidationError'
+        );
+      }
+
+      await saveChanges({ password: newPassword });
+      e.target.reset();
+    } catch (error) {
+      if (error?.type === 'ValidationError') {
+        const {
+          message: { fields, message },
+        } = error;
+
+        fields.forEach(field => setError(field, { type: 'manual', message }));
+      }
+
+      console.error(error);
+    }
+  };
+
+  return (
+    <SettingsForm onSubmit={handleSubmit(submitHandler)}>
+      <Input
+        name="passwordSignIn"
+        type="password"
+        placeholder="Old password"
+        register={register}
+        error={errMsgFromErrors('passwordSignIn')}
+      />
+
+      <Input
+        name="newPassword"
+        type="password"
+        placeholder="New password"
+        register={register}
+        error={errMsgFromErrors('newPassword')}
+      />
+
+      <Input
+        name="confirmPassword"
+        type="password"
+        placeholder="Confirm new password"
+        register={register}
+        error={errMsgFromErrors('confirmPassword')}
+      />
+
+      <SubmitButton disabled={formContainsInvalidInput}>Save Changes</SubmitButton>
+    </SettingsForm>
   );
 }
 
 SignUpForm.whyDidYouRender = true;
 LoginForm.whyDidYouRender = true;
+UpdatePasswordForm.whyDidYouRender = true;
+UpdateProfileForm.whyDidYouRender = true;
 
 SignUpForm.propTypes = {
   apiAuth: PropTypes.func.isRequired,
-  // children: PropTypes.node,
+  isLoading: PropTypes.bool.isRequired,
 };
 
 LoginForm.propTypes = {
   apiAuth: PropTypes.func.isRequired,
-  // children: PropTypes.node,
+  isLoading: PropTypes.bool.isRequired,
+};
+
+UpdatePasswordForm.propTypes = {
+  saveChanges: PropTypes.func.isRequired,
+};
+
+UpdateProfileForm.propTypes = {
+  saveChanges: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired,
 };

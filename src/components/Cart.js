@@ -32,7 +32,7 @@ const CartPreviewContainer = styled(motion.section).attrs({
   display: flex;
   z-index: 1;
   flex-direction: column;
-  padding: 0 1.5em 0 3.5em;
+  padding: 0 1.5em 0 2.5em;
   position: relative;
 
   & > .svg-container {

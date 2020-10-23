@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 
 import { toast } from 'react-toastify';
+import { useHistory } from 'react-router-dom';
 import { m as motion } from 'framer-motion';
-import { useHistory, Redirect } from 'react-router-dom';
 import { ReactComponent as ErrorSVG } from '../assets/error.svg';
 import { ReactComponent as NotFoundSVG } from '../assets/undraw_page_not_found_su7k.svg';
 import { defaultPageTransitionVariants } from './local-utils/framer-variants';
@@ -14,8 +14,8 @@ import { ReactComponent as NotAuthorizedSVG } from '../assets/undraw_secure_logi
 export const SectionContainer = styled(motion.section).attrs({
   className: 'section-container',
   variants: defaultPageTransitionVariants,
-  animate: 'show',
-  initial: 'hide',
+  animate: 'visible',
+  initial: 'hidden',
   exit: 'exit',
 })`
   display: flex;

@@ -73,8 +73,8 @@ const NavContainer = styled.nav`
 const TooltipMenu = styled(motion.menu).attrs({
   variants: settingsMenuTooltipVariants,
   animate: 'popUp',
-  initial: 'hide',
-  exit: 'hide',
+  initial: 'hidden',
+  exit: 'hidden',
 })`
   position: absolute;
   right: -1.1em;
@@ -140,7 +140,7 @@ function ShoppingCart() {
   return (
     <motion.li className="pos-right shopping-cart">
       <NavLink
-        to="/menu/cart"
+        to="/cart"
         className="nav-link"
         data-testid="cart-link"
         activeClassName="current-page-svg">

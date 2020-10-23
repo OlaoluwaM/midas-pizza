@@ -4,10 +4,9 @@ import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
 
 import { normalize } from './local-utils/helpers';
-import { ErrorMessage } from '@hookform/error-message';
 import { validationOptions } from './local-utils/authFunctions';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { generalAuthElementVariants, errorMessageVariants } from './local-utils/framer-variants';
-import { m as motion, AnimatePresence, AnimateSharedLayout } from 'framer-motion';
 
 const InputContainer = styled(motion.div).attrs({
   layout: 'position',
@@ -60,44 +59,38 @@ const ErrorDisplay = styled(motion.p)`
 
 const InputFieldErrorElement = React.memo(({ thisIsFor, message }) => {
   return (
-    <AnimatePresence exitBeforeEnter>
-      <ErrorDisplay
-        data-testid={`invalid-input-error-${thisIsFor}`}
-        variants={errorMessageVariants}
-        initial="hide"
-        exit="exit"
-        layout
-        key={`${message}_${thisIsFor}_id`}>
-        {message}
-      </ErrorDisplay>
-    </AnimatePresence>
+    <ErrorDisplay
+      data-testid={`invalid-input-error-${thisIsFor}`}
+      variants={errorMessageVariants}
+      initial="hidden"
+      exit="exit"
+      layout="position"
+      key={`${message}_${thisIsFor}_id`}>
+      {message}
+    </ErrorDisplay>
   );
 });
 
-// const InputFieldErrorElementWrapper = ({ thisIsFor }) => {
-//   const { errors } = useFormContext();
-//   return <InputFieldErrorElement thisIsFor={thisIsFor} errors={errors} />;
-// };
-
-// InputFieldErrorElementWrapper.whyDidYouRender = true;
 InputFieldErrorElement.whyDidYouRender = true;
 
 const HookFormInputField = React.memo(props => {
-  const { motionProps = { variants: generalAuthElementVariants }, validationObj = {} } = props;
+  const { motionProps = {}, validationObj = {} } = props;
   const { register, error: errorMessage, ...rest } = props;
 
   const inputAttributes = { type: 'text', ...rest };
+  const motionData = { variants: generalAuthElementVariants, ...motionProps };
   const { name } = inputAttributes;
 
   const validationRules = normalize(validationObj) ?? validationOptions[name];
 
   return (
-    <AnimateSharedLayout>
-      <InputContainer {...motionProps}>
-        <motion.input {...inputAttributes} ref={register(validationRules)} layout="position" />
+    <InputContainer {...motionData}>
+      <motion.input {...inputAttributes} ref={register(validationRules)} layout="position" />
+
+      <AnimatePresence exitBeforeEnter>
         {errorMessage && <InputFieldErrorElement thisIsFor={name} message={errorMessage} />}
-      </InputContainer>
-    </AnimateSharedLayout>
+      </AnimatePresence>
+    </InputContainer>
   );
 });
 

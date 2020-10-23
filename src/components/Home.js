@@ -15,8 +15,8 @@ import {
 const HomeSection = styled(motion.section).attrs({
   className: 'section-container',
   variants: defaultPageTransitionVariants,
-  animate: 'show',
-  initial: 'hide',
+  animate: 'visible',
+  initial: 'hidden',
   exit: 'exit',
 })`
   overflow: hidden;
@@ -119,11 +119,11 @@ const HomeSvgContainer = styled(motion.div).attrs({
 
 export default function Home() {
   const { authenticated } = React.useContext(UserSessionContext);
-  const linkLocation = authenticated ? '/menu' : '/authenticate';
+  const finalLocation = authenticated ? '/menu' : '/authenticate';
 
   return (
     <HomeSection>
-      <Content exit={{ background: 'transparent' }}>
+      <Content>
         <motion.div
           variants={homeContentVariants}
           style={{ all: 'inherit', backgroundColor: 'transparent' }}>
@@ -135,7 +135,7 @@ export default function Home() {
             <strong>new delivery platform</strong>
           </p>
 
-          <NavLink data-testid="link" to={linkLocation}>
+          <NavLink data-testid="link" to={finalLocation}>
             <span>{authenticated ? 'Order' : 'Sign Up'}</span>
             <span className="backdrop"></span>
           </NavLink>

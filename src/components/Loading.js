@@ -1,34 +1,32 @@
 import React from 'react';
 
 import { m as motion } from 'framer-motion';
-import { default as styled, keyframes, css } from 'styled-components';
-
-const spin = keyframes`
-  from {
-    transform: rotate(0)
-  }
-  to {
-    transform: rotate(360deg)
-  }
-`;
+import { default as styled, css } from 'styled-components';
 
 const variants = {
-  hide: {
+  hidden: {
     opacity: 0,
+    transition: {
+      when: 'afterChildren',
+    },
   },
-  show: {
+  visible: {
     opacity: 1,
+    transition: { when: 'beforeChildren' },
   },
   exit: {
     opacity: 0,
+    transition: {
+      when: 'afterChildren',
+    },
   },
 };
 
 const Overlay = styled(motion.div).attrs({
   'data-testid': 'loader',
   variants: variants,
-  initial: 'hide',
-  animate: 'show',
+  initial: 'hidden',
+  animate: 'visible',
   exit: 'exit',
   key: 'overlay',
   className: 'loader',
@@ -58,15 +56,15 @@ const Spinner = styled.div`
   border-radius: 100%;
   border: 5px solid transparent;
   border-top-color: ${({ theme }) => theme.baseColor};
-  animation: ${spin} 0.5s linear infinite;
+  animation: spin 0.5s linear infinite;
   will-change: transform;
 `;
 
-export default function Loading({ fullscreen = false, layoutId }) {
+export default function Loading({ fullscreen = false, layoutId, children }) {
   const layoutObj = layoutId ? { layoutId } : { layout: true };
   return (
     <Overlay isFullscreen={fullscreen} {...layoutObj}>
-      <Spinner />
+      {children ?? <Spinner />}
     </Overlay>
   );
 }

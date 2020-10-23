@@ -18,8 +18,8 @@ import {
 const AuthSection = styled(motion.section).attrs({
   className: 'section-container',
   variants: defaultPageTransitionVariants,
-  initial: 'hide',
-  animate: 'show',
+  initial: 'hidden',
+  animate: 'visible',
   exit: 'exit',
 })`
   display: flex;
@@ -55,24 +55,6 @@ const AuthSection = styled(motion.section).attrs({
     margin: 0.3em 0.8em 0.3em 0;
     text-align: center;
   }
-
-  /* .loader {
-    position: relative;
-  } */
-`;
-
-const SubmitButton = styled(motion.button).attrs({
-  variants: generalAuthElementVariants,
-  layout: true,
-  type: 'submit',
-  key: 'auth-form-submit-button',
-  className: 'submit-button',
-})`
-  padding: 0.8em 0;
-  width: 85%;
-  margin: 0 0 0.3em 0;
-  border: none;
-  border-radius: 10px;
 `;
 
 const SwitchFormStateText = styled(motion.p).attrs({
@@ -115,9 +97,7 @@ export default function Authenticate({ authUser }) {
     }
   };
 
-  const memoizedApiSubmitHandler = React.useCallback(async (url, data) => {
-    await apiSubmitHandler(url, data);
-  }, []);
+  const memoizedApiSubmitHandler = React.useCallback(apiSubmitHandler, [isLogin]);
 
   return (
     <AuthSection>
@@ -125,8 +105,8 @@ export default function Authenticate({ authUser }) {
       <PizzaDeliverySVG />
 
       <div>
-        <AnimateSharedLayout type="switch">
-          <motion.h2 variants={generalAuthElementVariants} layout="position">
+        <AnimateSharedLayout>
+          <motion.h2 variants={generalAuthElementVariants} layout key={formStateIndex}>
             {formStates[formStateIndex]}
           </motion.h2>
 
@@ -136,17 +116,13 @@ export default function Authenticate({ authUser }) {
 
           <AnimatePresence exitBeforeEnter>
             {isLogin ? (
-              <LoginForm apiAuth={memoizedApiSubmitHandler} isLoading={isLoading} key="loginForm">
-                {isDisabled => (
-                  <SubmitButton disabled={isDisabled}>{formStates[formStateIndex]}</SubmitButton>
-                )}
-              </LoginForm>
+              <LoginForm apiAuth={memoizedApiSubmitHandler} isLoading={isLoading} key="loginForm" />
             ) : (
-              <SignUpForm apiAuth={memoizedApiSubmitHandler} isLoading={isLoading} key="signUpForm">
-                {isDisabled => (
-                  <SubmitButton disabled={isDisabled}>{formStates[formStateIndex]}</SubmitButton>
-                )}
-              </SignUpForm>
+              <SignUpForm
+                apiAuth={memoizedApiSubmitHandler}
+                isLoading={isLoading}
+                key="signUpForm"
+              />
             )}
           </AnimatePresence>
 
