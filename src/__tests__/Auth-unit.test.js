@@ -95,7 +95,7 @@ describe('Invalid input tests', () => {
   ])(
     'Should make sure user can see authentication errors in login form if %s',
     async (_, { error, status }, fieldWithError) => {
-      fetch.mockRejectOnce({ text: async () => error }, { status });
+      fetch.mockRejectOnce({ text: async () => error, status });
 
       const utils = renderWithProviders(<Authenticate />);
 
@@ -131,7 +131,6 @@ describe('Invalid input tests', () => {
         });
       });
 
-      // screen.debug();
       fireEvent.click(submitButton);
       expect(await findByTestId('loader')).toBeInTheDocument();
 
