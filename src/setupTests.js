@@ -6,7 +6,7 @@ import '@testing-library/jest-dom/extend-expect';
 require('jest-fetch-mock').enableMocks();
 
 import React from 'react';
-import CustomError from './components/local-utils/custom-error';
+import CustomError from './components/utils/custom-error';
 
 import { render } from '@testing-library/react';
 import { RecoilRoot } from 'recoil';

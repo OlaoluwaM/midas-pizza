@@ -18,7 +18,7 @@ import {
   fetchWrapper,
   generateFetchOptions,
   formatCartFromServer,
-} from './local-utils/helpers';
+} from './utils/helpers';
 import {
   MotionConfig,
   ExitFeature,

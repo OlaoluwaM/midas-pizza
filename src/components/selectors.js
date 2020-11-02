@@ -1,5 +1,5 @@
 import { selector } from 'recoil';
-import { getCartCount } from './local-utils/helpers';
+import { getCartCount } from './utils/helpers';
 import { cartState as cartStateAtom } from './atoms';
 
 export const cartCount = selector({

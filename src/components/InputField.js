@@ -3,10 +3,10 @@ import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
 
-import { normalize } from './local-utils/helpers';
-import { validationOptions } from './local-utils/authFunctions';
+import { normalize } from './utils/helpers';
+import { validationOptions } from './utils/authFunctions';
 import { m as motion, AnimatePresence } from 'framer-motion';
-import { generalAuthElementVariants, errorMessageVariants } from './local-utils/framer-variants';
+import { generalAuthElementVariants, errorMessageVariants } from './utils/framer-variants';
 
 const InputContainer = styled(motion.div).attrs({
   layout: 'position',

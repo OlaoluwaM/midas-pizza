@@ -2,13 +2,13 @@ import React from 'react';
 import Input from './InputField';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import CustomError from './local-utils/custom-error';
+import CustomError from './utils/custom-error';
 
 import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import { m as motion } from 'framer-motion';
 import { UserSessionContext } from './context/context';
-import { authPageGeneralVariants, generalAuthElementVariants } from './local-utils/framer-variants';
+import { authPageGeneralVariants, generalAuthElementVariants } from './utils/framer-variants';
 import {
   getErrMessage,
   generateUrl,
@@ -16,7 +16,7 @@ import {
   fetchWrapper,
   generateFetchOptions,
   updateLocalStorageAccessToken,
-} from './local-utils/helpers';
+} from './utils/helpers';
 
 const Form = styled(motion.form).attrs({
   variants: authPageGeneralVariants,

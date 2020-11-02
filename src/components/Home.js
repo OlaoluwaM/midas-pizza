@@ -10,7 +10,7 @@ import {
   homeContentVariants,
   homeSVGVariants,
   defaultPageTransitionVariants,
-} from './local-utils/framer-variants';
+} from './utils/framer-variants';
 
 const HomeSection = styled(motion.section).attrs({
   className: 'section-container',

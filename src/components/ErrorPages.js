@@ -7,7 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { m as motion } from 'framer-motion';
 import { ReactComponent as ErrorSVG } from '../assets/error.svg';
 import { ReactComponent as NotFoundSVG } from '../assets/undraw_page_not_found_su7k.svg';
-import { defaultPageTransitionVariants } from './local-utils/framer-variants';
+import { defaultPageTransitionVariants } from './utils/framer-variants';
 import { ReactComponent as ServerDownSVG } from '../assets/undraw_server_down_s4lk.svg';
 import { ReactComponent as NotAuthorizedSVG } from '../assets/undraw_secure_login_pdn4.svg';
 

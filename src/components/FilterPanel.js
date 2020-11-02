@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
 import { m as motion } from 'framer-motion';
-import { filterButtonVariants } from './local-utils/framer-variants';
+import { filterButtonVariants } from './utils/framer-variants';
 import { ReactComponent as Pizza } from '../assets/pizza-slice.svg';
 import { ReactComponent as Drink } from '../assets/soda.svg';
 import { ReactComponent as Snack } from '../assets/fried-potatoes.svg';

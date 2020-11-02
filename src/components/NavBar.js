@@ -8,7 +8,7 @@ import { Cart3 as Cart } from '@styled-icons/bootstrap/Cart3';
 import { useRecoilValue } from 'recoil';
 import { UserSessionContext } from './context/context';
 import { Settings2 as Settings } from '@styled-icons/evaicons-solid/Settings2';
-import { settingsMenuTooltipVariants } from './local-utils/framer-variants';
+import { settingsMenuTooltipVariants } from './utils/framer-variants';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { cartCount as cartCountSelector } from './selectors';
 

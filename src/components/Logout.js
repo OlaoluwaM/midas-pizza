@@ -12,7 +12,7 @@ import {
   fetchWrapper,
   removeCartFromLocalStorage,
   saveOrder,
-} from './local-utils/helpers';
+} from './utils/helpers';
 
 const LogoutButton = styled.button`
   padding: 0.8em;

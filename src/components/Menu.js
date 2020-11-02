@@ -9,8 +9,8 @@ import { GooeySVGBackground } from './Reusables';
 import { UserSessionContext } from './context/context';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { Blob3 as MenuBlob, Blob4 as MenuBlob2 } from '../assets/Blobs';
-import { defaultPageTransitionVariants2, headerVariants } from './local-utils/framer-variants';
-import { generateFetchOptions, generateUrl, fetchWrapper, saveOrder } from './local-utils/helpers';
+import { defaultPageTransitionVariants2, headerVariants } from './utils/framer-variants';
+import { generateFetchOptions, generateUrl, fetchWrapper, saveOrder } from './utils/helpers';
 
 const MenuSection = styled(motion.section).attrs({
   className: 'section-container',

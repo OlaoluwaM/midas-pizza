@@ -8,11 +8,8 @@ import { UserSessionContext } from './context/context';
 import { ReactComponent as SettingsSvg } from '../assets/settings.svg';
 import { UpdatePasswordForm, UpdateProfileForm } from './Forms';
 import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion';
-import {
-  settingsFormTextVariants,
-  defaultPageTransitionVariants,
-} from './local-utils/framer-variants';
-import { generateUrl, fetchWrapper, generateFetchOptions } from './local-utils/helpers';
+import { settingsFormTextVariants, defaultPageTransitionVariants } from './utils/framer-variants';
+import { generateUrl, fetchWrapper, generateFetchOptions } from './utils/helpers';
 
 const SettingsSection = styled(motion.section).attrs({
   className: 'section-container',

@@ -4,7 +4,7 @@ import OrderItem from './OrderItem';
 import useDebounce from './custom-hooks/useDebounce';
 
 import { Elements } from '@stripe/react-stripe-js';
-import { getTotal } from './local-utils/helpers';
+import { getTotal } from './utils/helpers';
 import { loadStripe } from '@stripe/stripe-js';
 import { useRecoilValue } from 'recoil';
 import { UserSessionContext } from './context/context';
@@ -12,12 +12,9 @@ import { default as Checkout, Modal } from './Checkout';
 import { cartState as cartStateAtom } from './atoms';
 import { CartCheckFill as PaymentIcon } from '@styled-icons/bootstrap/CartCheckFill';
 import { ReactComponent as EmptyCartSVG } from '../assets/undraw_empty_xct9.svg';
-import { generateFetchOptions, generateUrl, fetchWrapper, saveOrder } from './local-utils/helpers';
+import { generateFetchOptions, generateUrl, fetchWrapper, saveOrder } from './utils/helpers';
 import { m as motion, AnimatePresence, AnimateSharedLayout, useCycle } from 'framer-motion';
-import {
-  defaultPageTransitionVariants2,
-  emptyCartVectorVariants,
-} from './local-utils/framer-variants';
+import { defaultPageTransitionVariants2, emptyCartVectorVariants } from './utils/framer-variants';
 
 const { REACT_APP_STRIPE_API_KEY: STRIPE_API_KEY } = process.env;
 const stripePromise = loadStripe(STRIPE_API_KEY);

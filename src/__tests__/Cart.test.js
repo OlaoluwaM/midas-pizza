@@ -3,7 +3,7 @@ import App from '../components/App';
 
 import { RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
-import { getTotal, convertDollarToFloat } from '../components/local-utils/helpers';
+import { getTotal, convertDollarToFloat } from '../components/utils/helpers';
 import { render, cleanup, fireEvent, act, within } from '@testing-library/react';
 
 afterAll(cleanup);

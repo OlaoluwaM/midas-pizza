@@ -9,10 +9,10 @@ import snacksImage from '../assets/snacks-image-fran-hogan-unsplash.jpg';
 
 import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
-import { getCartCount } from './local-utils/helpers';
+import { getCartCount } from './utils/helpers';
 import { Close as Delete } from '@styled-icons/evaicons-solid/Close';
 import { useSetRecoilState } from 'recoil';
-import { orderItemVariants } from './local-utils/framer-variants';
+import { orderItemVariants } from './utils/framer-variants';
 import { cartState as cartStateAtom } from './atoms';
 
 const OrderItemContainer = styled(motion.li).attrs({

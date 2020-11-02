@@ -7,13 +7,10 @@ import { toast } from 'react-toastify';
 import { Redirect, useLocation } from 'react-router-dom';
 import { UserSessionContext } from './context/context';
 import { SignUpForm, LoginForm } from './Forms.js';
-import { generateFetchOptions, fetchWrapper } from './local-utils/helpers';
+import { generateFetchOptions, fetchWrapper } from './utils/helpers';
 import { ReactComponent as PizzaDeliverySVG } from '../assets/undraw_on_the_way_ldaq.svg';
 import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion';
-import {
-  defaultPageTransitionVariants,
-  generalAuthElementVariants,
-} from './local-utils/framer-variants';
+import { defaultPageTransitionVariants, generalAuthElementVariants } from './utils/framer-variants';
 
 const AuthSection = styled(motion.section).attrs({
   className: 'section-container',

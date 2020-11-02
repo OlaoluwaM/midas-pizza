@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import Loading from './Loading';
 import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
-import CustomError from './local-utils/custom-error';
+import CustomError from './utils/custom-error';
 
 import { toast } from 'react-toastify';
 import { CloseCircle } from '@styled-icons/evaicons-solid/CloseCircle';
@@ -11,14 +11,14 @@ import { useSetRecoilState } from 'recoil';
 import { UserSessionContext } from './context/context';
 import { cartState as cartStateAtom } from './atoms';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { modalBackgroundVariants, modalVariants } from './local-utils/framer-variants';
+import { modalBackgroundVariants, modalVariants } from './utils/framer-variants';
 import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion';
 import {
   generateFetchOptions,
   generateUrl,
   fetchWrapper,
   removeCartFromLocalStorage,
-} from './local-utils/helpers';
+} from './utils/helpers';
 
 const ModalBackground = styled(motion.div).attrs({
   variants: modalBackgroundVariants,
@@ -152,7 +152,7 @@ export default function Checkout({ total = 0, orders, closeCheckoutModal }) {
         type: 'card',
         card: elements.getElement(CardElement),
       });
-      
+
       if (payload?.error) {
         throw new CustomError(
           `There seems to be an error with your card input ${JSON.stringify(payload.error)}`,

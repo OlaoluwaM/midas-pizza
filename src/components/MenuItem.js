@@ -9,8 +9,8 @@ import snacksImage from '../assets/snacks-image-fran-hogan-unsplash.jpg';
 
 import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
-import { getCartCount } from './local-utils/helpers';
-import { menuItemVariants } from './local-utils/framer-variants';
+import { getCartCount } from './utils/helpers';
+import { menuItemVariants } from './utils/framer-variants';
 import { useSetRecoilState } from 'recoil';
 import { CartPlusFill as CartIcon } from '@styled-icons/bootstrap/CartPlusFill';
 import { cartState as cartStateAtom } from './atoms';

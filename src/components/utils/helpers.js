@@ -1,5 +1,9 @@
-import rawDataType from '../utils/rawDataType';
 import CustomError from './custom-error';
+
+function rawDataType(value) {
+  const _toString = Object.prototype.toString;
+  return _toString.call(value).slice(8, -1).toLowerCase();
+}
 
 export function generateFetchOptions(method, body = {}, token = null) {
   const optionsObj = {
