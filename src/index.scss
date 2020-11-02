@@ -232,27 +232,33 @@ button.checkout-button {
   margin: 0 auto 1em auto;
 }
 
+@each $color in (black, baseColor, accentColor) {
+  .button-#{$color} {
+    background: change-color(get-color($color), $alpha: 0.2);
+    color: get-color($color);
+    transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease;
+
+    &:disabled {
+      filter: grayscale(1);
+      pointer-events: none;
+    }
+
+    &:active,
+    &:hover,
+    &:focus,
+    &:focus-within {
+      background: get-color($color);
+      color: get-color(background);
+    }
+  }
+}
+
 .submit-button {
   padding: 0.8em 0;
   margin: 0 0 0.3em 0;
   border: none;
-  background: change-color(get-color(baseColor), $alpha: 0.2);
-  color: get-color(baseColor);
   width: calc(0.85 * 100%);
   border-radius: 10px;
-
-  &:disabled {
-    filter: grayscale(1);
-    pointer-events: none;
-  }
-
-  &:active,
-  &:hover,
-  &:focus,
-  &:focus-within {
-    background: get-color(baseColor);
-    color: get-color(background);
-  }
 }
 
 .form-state-switch-text {
