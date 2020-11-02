@@ -9,20 +9,10 @@ afterAll(cleanup);
 
 const authUserMock = jest.fn();
 
-function renderAuthComp() {
-  return render(
-    <ThemeProvider theme={themeObj}>
-      <UserSessionContext.Provider value={{ activeUser: null, authenticated: false }}>
-        <Authenticate authUser={authUserMock} />
-      </UserSessionContext.Provider>
-    </ThemeProvider>
-  );
-}
-
 fetch.mockResponse(JSON.stringify(formatFetchResponse(testAccessToken)), { status: 200 });
 
 test('Should check if the bug that invalidates user sign up still persists', async () => {
-  const utils = renderAuthComp();
+  const utils = renderWithProviders(<Authenticate />);
 
   const { getByPlaceholderText, findByRole } = utils;
   const submitButton = await findByRole('button');

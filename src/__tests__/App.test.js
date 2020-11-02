@@ -45,7 +45,7 @@ test('Should automatically authenticate user', async () => {
 
   const toastArray = await findAllByRole('alert');
 
-  expect(toastArray).toHaveLength(2);
+  expect(toastArray).toHaveLength(1);
 
   toastArray.forEach(toast => {
     expect(toast).toHaveTextContent(/Welcome back|we saved your order/i);

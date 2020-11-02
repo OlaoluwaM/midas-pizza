@@ -1,21 +1,9 @@
 import React from 'react';
 import Authenticate from '../../components/Auth';
 
-import { ThemeProvider } from 'styled-components';
-import { themeObj, UserSessionContext } from '../../components/context/context';
-import { render, cleanup, fireEvent, act, screen } from '@testing-library/react';
+import { cleanup, fireEvent, act, screen } from '@testing-library/react';
 
 afterAll(cleanup);
-
-function renderWithContext(value = { authenticated: false }) {
-  return render(
-    <ThemeProvider theme={themeObj}>
-      <UserSessionContext.Provider value={value}>
-        <Authenticate />
-      </UserSessionContext.Provider>
-    </ThemeProvider>
-  );
-}
 
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => {
@@ -29,7 +17,7 @@ test('User has token but it does not exist on the server side', async () => {
     { status: 500 }
   );
 
-  const utils = renderWithContext();
+  const utils = renderWithProviders(<Authenticate />);
 
   const switchText = await screen.findByText(/already a mem/i);
   fireEvent.click(switchText);
