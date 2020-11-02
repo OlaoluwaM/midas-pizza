@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 
 import { toast } from 'react-toastify';
-import { Redirect } from 'react-router-dom';
+import { Redirect, useLocation } from 'react-router-dom';
 import { UserSessionContext } from './context/context';
 import { SignUpForm, LoginForm } from './Forms.js';
 import { generateFetchOptions, fetchWrapper } from './local-utils/helpers';
@@ -75,6 +75,7 @@ export default function Authenticate({ authUser }) {
   const [formStateIndex, setFormStateIndex] = React.useState(1);
 
   const isLogin = formStateIndex === 0;
+  const { state } = useLocation();
 
   const switchFormState = () => {
     setFormStateIndex(prevIndex => (prevIndex === 1 ? 0 : prevIndex + 1));
@@ -101,7 +102,8 @@ export default function Authenticate({ authUser }) {
 
   return (
     <AuthSection>
-      {authenticated && !isLoading && <Redirect push to="/" />}
+      {authenticated && !isLoading && <Redirect to={state?.from ?? '/'} />}
+
       <PizzaDeliverySVG />
 
       <div>

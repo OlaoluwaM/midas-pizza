@@ -11,7 +11,7 @@ import { useSetRecoilState } from 'recoil';
 import { cartState as cartStateAtom } from './atoms';
 import { themeObj, UserSessionContext } from './context/context';
 import { Route, Switch, useLocation, Redirect } from 'react-router-dom';
-import { NotFoundPage, NotAuthorizedPage, ErrorPage, ServerDownPage } from './ErrorPages';
+import { NotFoundPage, ErrorPage, ServerDownPage } from './ErrorPages';
 import {
   normalize,
   generateUrl,
@@ -22,9 +22,9 @@ import {
 import {
   MotionConfig,
   ExitFeature,
-  AnimatePresence,
   AnimationFeature,
   AnimateLayoutFeature,
+  GesturesFeature,
 } from 'framer-motion';
 
 const Authenticate = React.lazy(() => import('./Auth'));
@@ -38,6 +38,30 @@ whyDidYouRender(React, {
   diffNameColor: 'red',
 });
 
+function PrivateRoute({ authenticated, children, ...rest }) {
+  const validTokenExists = JSON.parse(localStorage.getItem('currentAccessToken')) || false;
+
+  const { location } = rest;
+
+  return (
+    <Route {...rest}>
+      {authenticated ? (
+        children
+      ) : validTokenExists ? (
+        <Loading fullscreen={true} />
+      ) : (
+        <Redirect
+          to={{
+            pathname: '/authenticate',
+            state: { from: location },
+          }}
+        />
+      )}
+    </Route>
+  );
+}
+
+PrivateRoute.whyDidYouRender = true;
 function App() {
   const currentToken = JSON.parse(localStorage.getItem('currentAccessToken')) || void 0;
 
@@ -51,11 +75,6 @@ function App() {
   const updateCart = useSetRecoilState(cartStateAtom);
 
   const { userData, authenticated } = activeUser;
-  const protectedRoutes = [
-    ['/menu', Menu],
-    ['/settings', Settings],
-    ['/cart', CartPreview],
-  ];
 
   const location = useLocation();
   const logUserOut = () => setActiveUser({ userData: null, authenticated: false });
@@ -89,7 +108,9 @@ function App() {
           generateFetchOptions('GET', null, currentToken.Id)
         );
 
-        !authenticated && toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
+        if (!(authenticated || currentToken)) {
+          toast(`Welcome Back ${ownerOfCurrentToken.name}`, { type: 'success' });
+        }
 
         const { cart: storedCart = {} } = ownerOfCurrentToken;
 
@@ -122,7 +143,8 @@ function App() {
   return (
     <UserSessionContext.Provider value={activeUser}>
       <ThemeProvider theme={themeObj}>
-        <MotionConfig features={[AnimateLayoutFeature, AnimationFeature, ExitFeature]}>
+        <MotionConfig
+          features={[AnimateLayoutFeature, AnimationFeature, ExitFeature, GesturesFeature]}>
           {checkingConnectionWithServer ? (
             <Loading fullscreen={true} />
           ) : serverIsDown ? (
@@ -136,33 +158,31 @@ function App() {
 
               <ErrorBoundary FallbackComponent={ErrorPage}>
                 <React.Suspense fallback={<Loading fullscreen={true} />}>
-                  <AnimatePresence exitBeforeEnter initial={false}>
-                    <Switch location={location} key={location.pathname}>
-                      <Route exact path="/" key="home">
-                        <Home />
-                      </Route>
+                  <Switch location={location} key={location.pathname}>
+                    <Route exact path="/">
+                      <Home />
+                    </Route>
 
-                      <Route path="/authenticate">
-                        <Authenticate authUser={setActiveUser} />
-                      </Route>
+                    <Route path="/authenticate">
+                      <Authenticate authUser={setActiveUser} />
+                    </Route>
 
-                      {protectedRoutes.map(([path, Component, props]) => (
-                        <Route {...props} path={path} key={path}>
-                          {authenticated ? (
-                            <Component />
-                          ) : currentToken ? (
-                            <Loading fullscreen={true} />
-                          ) : (
-                            <NotAuthorizedPage />
-                          )}
-                        </Route>
-                      ))}
+                    <PrivateRoute path="/menu" authenticated={authenticated}>
+                      <Menu />
+                    </PrivateRoute>
 
-                      <Route>
-                        <NotFoundPage />
-                      </Route>
-                    </Switch>
-                  </AnimatePresence>
+                    <PrivateRoute path="/settings" authenticated={authenticated}>
+                      <Settings />
+                    </PrivateRoute>
+
+                    <PrivateRoute path="/cart" authenticated={authenticated}>
+                      <CartPreview />
+                    </PrivateRoute>
+
+                    <Route>
+                      <NotFoundPage />
+                    </Route>
+                  </Switch>
                 </React.Suspense>
               </ErrorBoundary>
             </div>

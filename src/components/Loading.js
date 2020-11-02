@@ -53,6 +53,7 @@ const Overlay = styled(motion.div).attrs({
 const Spinner = styled.div`
   width: 30px;
   height: 30px;
+  transform-origin: center;
   border-radius: 100%;
   border: 5px solid transparent;
   border-top-color: ${({ theme }) => theme.baseColor};

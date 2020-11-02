@@ -32,7 +32,7 @@ const CartPreviewContainer = styled(motion.section).attrs({
   display: flex;
   z-index: 1;
   flex-direction: column;
-  padding: 0 1.5em 0 2.5em;
+  padding: 0 1.5em 0 3.5em;
   position: relative;
 
   & > .svg-container {
@@ -125,7 +125,11 @@ export default function CartPreview({ initialCart }) {
         {showModal ? (
           <Elements stripe={stripePromise} key="stripe-elements">
             <Modal key="modal" closeModal={showCheckoutModal}>
-              <Checkout total={cartTotal} />
+              <Checkout
+                total={cartTotal}
+                orders={cartObject}
+                closeCheckoutModal={showCheckoutModal}
+              />
             </Modal>
           </Elements>
         ) : null}
@@ -153,7 +157,7 @@ export default function CartPreview({ initialCart }) {
               <AnimatePresence>
                 <>
                   <Cart layoutId="cart">
-                    {cart.map(([orderName, { quantity, initialPrice, type }], i) => (
+                    {cart.map(([orderName, { quantity, initialPrice, type }]) => (
                       <OrderItem
                         key={orderName}
                         orderName={orderName}

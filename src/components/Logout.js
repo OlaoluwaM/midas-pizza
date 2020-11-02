@@ -10,7 +10,7 @@ import {
   generateFetchOptions,
   generateUrl,
   fetchWrapper,
-  removeCart,
+  removeCartFromLocalStorage,
   saveOrder,
 } from './local-utils/helpers';
 
@@ -54,7 +54,7 @@ export default function Logout({ logUserOut }) {
     );
 
     localStorage.removeItem('currentAccessToken');
-    removeCart();
+    removeCartFromLocalStorage();
     updateCart({});
 
     logUserOut();

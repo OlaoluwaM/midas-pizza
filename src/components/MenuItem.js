@@ -116,40 +116,28 @@ const MenuItemContainer = styled(motion.div).attrs({
 
       .add-to-cart-button {
         position: relative;
-        width: 14em;
         flex-basis: 14em;
+        flex-grow: 1;
         display: flex;
         align-items: center;
         justify-content: space-around;
         border: none;
-        color: ${({ theme }) => theme.accentColor};
-        background: ${({ theme }) => hexToRgb(theme.accentColor, 0.1)};
         border-radius: 7px;
-        padding: 1em 0;
+        padding: 1.3em 0;
         align-self: flex-end;
-        font-size: 1em;
         cursor: pointer;
         font-weight: var(--bold);
         font-family: var(--primaryFont);
         transition: 0.1s ease box-shadow, 0.2s ease background, color 0.3s ease;
 
         svg {
-          width: 15%;
+          width: 13%;
           margin-right: -30px;
         }
+
         span {
-          transform: scale(1.2);
-        }
-
-        &:focus,
-        &:focus-within,
-        &:hover {
-          color: ${({ theme }) => theme.backgroundLighter};
-          background: ${({ theme }) => theme.accentColor};
-        }
-
-        &:active {
-          box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
+          font-size: 1.4em;
+          /* transform: scale(0.9); */
         }
       }
     }
@@ -194,7 +182,7 @@ function QuantityInput({ incrementQuantity }) {
 function AddToCartButton({ addToCart }) {
   return (
     <motion.button
-      className={'add-to-cart-button'}
+      className="add-to-cart-button button-black"
       onClick={addToCart}
       data-testid="add-to-cart-button">
       <CartIcon />
@@ -204,7 +192,6 @@ function AddToCartButton({ addToCart }) {
 }
 
 export default function MenuItem({ itemName, price, custom, foodType }) {
-  // TODO Add skeleton or placeholder effect for image
   const quantityToAdd = React.useRef(1);
   const updateCart = useSetRecoilState(cartStateAtom);
 

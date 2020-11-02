@@ -3,13 +3,22 @@ import styled from 'styled-components';
 import Loading from './Loading';
 import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
+import CustomError from './local-utils/custom-error';
 
+import { toast } from 'react-toastify';
 import { CloseCircle } from '@styled-icons/evaicons-solid/CloseCircle';
+import { useSetRecoilState } from 'recoil';
 import { UserSessionContext } from './context/context';
-import { m as motion, AnimateSharedLayout } from 'framer-motion';
+import { cartState as cartStateAtom } from './atoms';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { modalBackgroundVariants, modalVariants } from './local-utils/framer-variants';
-import { generateFetchOptions, generateUrl, fetchWrapper, removeCart } from './local-utils/helpers';
+import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion';
+import {
+  generateFetchOptions,
+  generateUrl,
+  fetchWrapper,
+  removeCartFromLocalStorage,
+} from './local-utils/helpers';
 
 const ModalBackground = styled(motion.div).attrs({
   variants: modalBackgroundVariants,
@@ -34,7 +43,7 @@ const ModalContainer = styled(motion.div).attrs({
   border-radius: 10px;
   padding: 2em;
   position: relative;
-  box-shadow: -12px 12px 0px ${({ theme }) => hexToRgb(theme.accentColor, 1)};
+  box-shadow: -12px 12px 0px ${({ theme }) => hexToRgb(theme.black, 0.5)};
   z-index: 333;
 
   svg.close-circle {
@@ -42,7 +51,7 @@ const ModalContainer = styled(motion.div).attrs({
     top: -15px;
     cursor: pointer;
     right: -15px;
-    fill: ${({ theme }) => theme.accentColor};
+    fill: var(--error);
     width: 3em;
     transition: transform 0.3s ease;
 
@@ -58,20 +67,29 @@ const CheckoutFormModalWrapper = styled(motion.div).attrs({
     close: { opacity: 0 },
     exit: { opacity: 0 },
   },
+  'data-testid': 'checkout-modal',
 })`
   width: 100%;
   height: 14em;
   display: flex;
+  position: relative;
   flex-direction: column;
 
-  .total {
+  & > div:not(.loader) {
+    all: inherit;
+  }
+
+  .loader {
+    height: 100%;
+  }
+
+  & > div > .total {
     font-size: 1.3em;
-    margin: 0 0 0.5em 0;
+    margin: 0;
     text-align: right;
 
     span {
       font-size: 1.3rem;
-      color: ${({ theme }) => theme.accentColor};
     }
   }
 `;
@@ -84,24 +102,16 @@ const CheckoutForm = styled(motion.form)`
 
   button {
     align-self: flex-start;
-    width: 25%;
-    padding: 0.5em 1.5em;
+    width: 10em;
     margin: 0;
-    background: ${({ theme }) => theme.accentColor};
-    border-color: ${({ theme }) => theme.accentColor};
-    color: ${({ theme }) => theme.background};
-    transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease, filter 0.3s ease;
-
-    &:disabled {
-      filter: brightness(0.7) opacity(0.5);
-    }
   }
 
   .StripeElement {
     display: block;
-    border-bottom: 5px solid ${({ theme }) => theme.accentColor};
+    border-bottom: 5px solid ${({ theme }) => theme.black};
     font-family: var(--primaryFont);
-    padding: 1em;
+    padding: 0.5em;
+    flex-basis: 25%;
     font-weight: var(--bold);
     font-size: 1.3em;
     transition: all 150ms ease;
@@ -119,60 +129,103 @@ export function Modal({ children, closeModal }) {
   );
 }
 
-export default function Checkout({ total = '0' }) {
+export default function Checkout({ total = 0, orders, closeCheckoutModal }) {
   const stripe = useStripe();
   const elements = useElements();
   const {
-    userData: { email },
+    userData: { email, name },
   } = React.useContext(UserSessionContext);
 
+  const updateCart = useSetRecoilState(cartStateAtom);
   const [processingPayment, setProcessingPayment] = React.useState(false);
 
   const makePayment = async e => {
     e.preventDefault();
     if (!stripe || !elements) return;
+
     const { Id: tokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
 
-    const payload = await stripe.createPaymentMethod({
-      type: 'card',
-      card: elements.getElement(CardElement),
-    });
-    setProcessingPayment(true);
+    try {
+      setProcessingPayment(true);
 
-    // TODO send requests to server to complete transaction
-    await fetchWrapper(
-      generateUrl(`checkout?email=${email}`),
-      generateFetchOptions('POST', null, tokenId)
-    );
+      const payload = await stripe.createPaymentMethod({
+        type: 'card',
+        card: elements.getElement(CardElement),
+      });
+      
+      if (payload?.error) {
+        throw new CustomError(
+          `There seems to be an error with your card input ${JSON.stringify(payload.error)}`,
+          'StripePaymentError'
+        );
+      }
 
-    removeCart();
+      await fetchWrapper(
+        generateUrl(`checkout?email=${email}`),
+        generateFetchOptions('POST', JSON.stringify({ orders }), tokenId)
+      );
 
-    console.log(payload);
+      toast(
+        `Thank you for your shopping with us ${name}. Hope to see you soon 👌👋. P.S, your order will arrive in 30 - 40 minutes ⌛`,
+        {
+          type: 'success',
+          autoClose: false,
+        }
+      );
+
+      removeCartFromLocalStorage();
+      updateCart({});
+      closeCheckoutModal();
+    } catch (error) {
+      if (error?.type === 'StripePaymentError') {
+        toast('Please check your card details and try again 😅', { type: 'error' });
+      } else {
+        toast('An error occurred during checkout, please try again later', { type: 'error' });
+      }
+      console.error(error);
+    } finally {
+      setProcessingPayment(false);
+    }
   };
 
   return (
     <CheckoutFormModalWrapper layout>
-      {!processingPayment ? (
-        <>
-          <CheckoutForm onSubmit={makePayment} layout>
-            <CardElement />
-            <motion.button className="checkout-button" type="submit" layout disabled={!stripe}>
-              Pay
-            </motion.button>
-          </CheckoutForm>
-          <motion.h2 className="total" layout>
-            Total: <span>${total}</span>
-          </motion.h2>
-        </>
-      ) : (
-        <Loading />
-      )}
+      <AnimatePresence>
+        {processingPayment ? (
+          <Loading layoutId="checkout" key="loader" />
+        ) : (
+          <motion.div
+            initial={false}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            layout
+            key="checkout-form">
+            <CheckoutForm onSubmit={makePayment}>
+              <CardElement />
+
+              <motion.button
+                className="submit-button button-black"
+                type="submit"
+                layout
+                disabled={!stripe}>
+                Pay
+              </motion.button>
+            </CheckoutForm>
+
+            <motion.h2 className="total" layout>
+              Total: <span data-testid="checkout-total">${total}</span>
+            </motion.h2>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </CheckoutFormModalWrapper>
   );
 }
 
 Checkout.propTypes = {
-  total: PropTypes.string.isRequired,
+  total: PropTypes.number.isRequired,
+  orders: PropTypes.object.isRequired,
+  closeCheckoutModal: PropTypes.func.isRequired,
 };
 
 Modal.propTypes = {

@@ -140,6 +140,7 @@ export const filterButtonVariants = {
     fillOpacity: 0.6,
     borderColor: hexToRgb(theme.gray),
     x: 0,
+    transition: { delay: 0.2 },
   },
 
   active: {
@@ -149,6 +150,13 @@ export const filterButtonVariants = {
     color: theme.black,
     borderColor: hexToRgb(theme.backgroundLighter),
     x: 0,
+  },
+
+  onHover: {
+    x: 0,
+    color: theme.black,
+    opacity: 1,
+    fillOpacity: 1,
   },
 };
 

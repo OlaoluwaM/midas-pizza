@@ -21,7 +21,7 @@ const FilterButtonContainer = styled(motion.button).attrs({
   variants: filterButtonVariants,
   initial: 'hidden',
   exit: 'hidden',
-  whileHover: 'InFocus',
+  whileHover: 'onHover',
 })`
   background: ${({ theme }) => theme.backgroundLighter};
   border-radius: 3px;
@@ -46,7 +46,6 @@ const FilterButtonContainer = styled(motion.button).attrs({
     margin-right: 10px;
   }
 
-  // FIX accessibility here
   &:focus-within,
   &:focus,
   &:hover {
@@ -68,14 +67,12 @@ export default function FilterPanel({ filterForType, activeFilter }) {
     <FilterContainer>
       {foodTypes.map(([type, IconComponent, filterHandler]) => {
         const isActiveFilter = activeFilter === type ? 'active-filter' : '';
-        const animateVariant = isActiveFilter ? 'active' : 'visible';
 
         return (
           <FilterButtonContainer
-            animate={animateVariant}
+            animate={['visible', isActiveFilter ? 'active' : null]}
             key={type}
             style={inlineStyles}
-            transition={{ delay: 0.4 }}
             className={isActiveFilter}
             onClick={filterHandler}>
             <IconComponent />

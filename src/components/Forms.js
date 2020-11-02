@@ -46,7 +46,7 @@ const SettingsForm = styled(motion.form).attrs({
 `;
 
 const SubmitButton = styled(motion.button).attrs({
-  className: 'submit-button',
+  className: 'submit-button button-baseColor',
   type: 'submit',
   layout: 'position',
   key: 'submit-button',

@@ -124,7 +124,7 @@ export function normalize(input) {
   return input;
 }
 
-export function removeCart() {
+export function removeCartFromLocalStorage() {
   localStorage.removeItem('storedCart');
   localStorage.removeItem('prevStoredCart');
 }

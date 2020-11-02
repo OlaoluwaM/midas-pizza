@@ -123,7 +123,7 @@ export function ErrorPage({ error }) {
 
   return (
     <ErrorPageContainer>
-      <ErrorSVG style={{ transform: 'scale(0.8)' }} />
+      <ErrorSVG style={{ transform: 'scale(0.8)' }} title="error-svg" />
     </ErrorPageContainer>
   );
 }
