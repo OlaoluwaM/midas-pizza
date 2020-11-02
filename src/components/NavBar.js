@@ -159,7 +159,7 @@ function SettingsLink({ logUserOut }) {
 
   return (
     <motion.li className="pos-right">
-      <a className="nav-link">
+      <a className="nav-link" href="">
         <Settings
           title="Settings"
           style={{ zIndex: 5 }}
