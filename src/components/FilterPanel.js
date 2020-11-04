@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
 
 import { m as motion } from 'framer-motion';
@@ -26,7 +27,6 @@ const FilterButtonContainer = styled(motion.button).attrs({
   background: ${({ theme }) => theme.backgroundLighter};
   border-radius: 3px;
   height: 100%;
-  outline: rgba(0, 0, 0, 0.2);
   width: 15%;
   padding: 0 0 0 1.2em;
   cursor: pointer;
@@ -46,14 +46,14 @@ const FilterButtonContainer = styled(motion.button).attrs({
     margin-right: 10px;
   }
 
-  &:focus-within,
-  &:focus,
-  &:hover {
-    filter: opacity(1);
+  &:disabled {
+    filter: grayscale(1);
+    background: ${({ theme }) => hexToRgb(theme.gray, 0.2)};
+    pointer-events: none;
   }
 `;
 
-export default function FilterPanel({ filterForType, activeFilter }) {
+export default function FilterPanel({ filterForType, activeFilter, isLoading }) {
   const foodTypes = [
     ['Pizza', Pizza, filterForType.bind(null, 'Pizza')],
     ['Drink', Drink, filterForType.bind(null, 'Drink')],
@@ -70,7 +70,8 @@ export default function FilterPanel({ filterForType, activeFilter }) {
 
         return (
           <FilterButtonContainer
-            animate={['visible', isActiveFilter ? 'active' : null]}
+            disabled={isLoading}
+            animate={isLoading ? 'visible' : isActiveFilter ? 'active' : 'visible'}
             key={type}
             style={inlineStyles}
             className={isActiveFilter}

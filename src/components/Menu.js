@@ -45,16 +45,16 @@ const MenuSection = styled(motion.section).attrs({
     background: ${() => hexToRgb('#FFDBC2', 0.9)};
     line-height: 1.35;
 
-    &:after {
+    /* &:after {
       content: 'Our';
       position: absolute;
-      top: 0;
+      top: 1;
       z-index: 1;
-      color: ${({ theme }) => theme.accentColor};
-      bottom: 0;
-      left: 0;
+      color: ${({ theme }) => theme.backgroundLighter};
+      bottom: 1;
+      left: 1;
       padding: inherit;
-    }
+    } */
   }
 
   .blob {
@@ -142,17 +142,19 @@ export default function Menu() {
     <MenuSection>
       <GooeySVGBackground id="goo" />
       <motion.h1 className="goo" variants={headerVariants}>
-        Our Menu
+        Menu
       </motion.h1>
 
       <MenuBlob className="blob" />
       <MenuBlob2 className="blob" />
 
-      <FilterPanel filterForType={filterHandler} activeFilter={menuFilter.current} />
+      <FilterPanel
+        filterForType={filterHandler}
+        activeFilter={menuFilter.current}
+        isLoading={isLoading}
+      />
 
       <AnimatePresence exitBeforeEnter>
-        {/* {isLoading && } */}
-
         {isLoading ? (
           <Loading key="loader-component" />
         ) : (

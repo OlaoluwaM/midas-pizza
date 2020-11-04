@@ -21,7 +21,7 @@
 .env.production.local
 .vscode
 nodemon.json
-
+src/components/Skeleton.js
 Problems.md
 
 npm-debug.log*
