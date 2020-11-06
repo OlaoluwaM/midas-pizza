@@ -19,39 +19,50 @@ const HomeSection = styled(motion.section).attrs({
   initial: 'hidden',
   exit: 'exit',
 })`
-  overflow: hidden;
+  align-items: center;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+
+  @media (max-width: 1090px) {
+    &.section-container {
+      display: block;
+      height: fit-content;
+      padding: 1em 0em;
+    }
+  }
 `;
 
 const Content = styled(motion.div)`
   flex-basis: 50%;
-  height: 100%;
   display: flex;
+  text-align: left;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   color: ${({ theme }) => theme.black};
-  padding-left: 3.5em;
+  padding-left: 5em;
   z-index: 1;
+
   transition: background 0.3s ease;
 
   h1 {
     font-family: var(--primaryFont);
     font-weight: var(--xLight);
-    font-size: 4.2em;
-    margin: 0 0 0.1em 0;
+    font-size: min(4vw, 3em);
+    margin: 1em 0 0 0;
     overflow-wrap: anywhere;
-    text-align: left;
+    text-align: inherit;
     padding-right: 1em;
     line-height: 1.3em;
   }
 
   p {
-    font-size: 1em;
-    text-align: left;
+    font-size: min(2vw, 0.9em);
+    text-align: inherit;
     width: 82%;
     color: ${({ theme }) => hexToRgb(theme.black, 0.5)};
     line-height: 1.8em;
-    margin: 1em 0 2.5em 0;
+    margin: 1em 0 2em 0;
 
     strong {
       color: ${({ theme }) => theme.baseColor};
@@ -63,10 +74,11 @@ const Content = styled(motion.div)`
     color: inherit;
     font-weight: var(--bold);
     position: relative;
-    width: 10em;
-    height: 3.5em;
+    width: clamp(25%, 10vmin, 35%);
+    height: min(3.7em, 12vmin);
     cursor: pointer;
     z-index: 1;
+    font-size: min(1em, 4vmin);
     margin-bottom: -2em;
 
     span {
@@ -75,9 +87,11 @@ const Content = styled(motion.div)`
       border: 3px solid ${({ theme }) => theme.black};
       background: ${({ theme }) => theme.baseColor};
       width: 100%;
-      height: inherit;
+      height: 100%;
       border-radius: 4px;
-      padding: 0.9rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       text-align: center;
       transition: transform 0.3s ease;
 
@@ -92,13 +106,32 @@ const Content = styled(motion.div)`
       transform: translate(5px, 5px);
     }
   }
+
+  @media (max-width: 1090px) {
+    text-align: center;
+    align-items: center;
+    padding: 0;
+    height: max-content;
+    margin-bottom: 5em;
+
+    h1 {
+      padding: 0;
+    }
+
+    p {
+      margin-bottom: 3.5em;
+    }
+  }
 `;
 
 const HomeSvgContainer = styled(motion.div).attrs({
   variants: homeSVGVariants,
 })`
-  flex-grow: 1;
-  height: 100%;
+  flex-basis: 50%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
 
   svg.blob {
@@ -107,13 +140,19 @@ const HomeSvgContainer = styled(motion.div).attrs({
   }
 
   svg:not(.blob) {
-    width: 88%;
+    width: 80%;
     height: auto;
-    position: absolute;
-    top: 50%;
-    left: 50%;
+    position: relative;
     z-index: 1;
-    transform: translate(-50%, -50%);
+
+    @media (max-width: 1090px) {
+      width: 65%;
+      transform: translateY(-1em);
+    }
+  }
+
+  @media (max-width: 1090px) {
+    height: 80vmin;
   }
 `;
 
@@ -123,28 +162,26 @@ export default function Home() {
 
   return (
     <HomeSection>
-      <Content>
-        <motion.div
-          variants={homeContentVariants}
-          style={{ all: 'inherit', backgroundColor: 'transparent' }}>
-          <h1>Pizza from the comfort of your home</h1>
-
-          <p>
-            Quarantine's locked you up? Well, we are introducing a new way for our customers to get
-            the pizza's they love all while staying completely safe. with our{' '}
-            <strong>new delivery platform</strong>
-          </p>
-
-          <NavLink data-testid="link" to={finalLocation}>
-            <span>{authenticated ? 'Order' : 'Sign Up'}</span>
-            <span className="backdrop"></span>
-          </NavLink>
-        </motion.div>
-      </Content>
-
       <HomeSvgContainer>
         <EatingPizzaSVG />
       </HomeSvgContainer>
+
+      <Content variants={homeContentVariants}>
+        {/* <motion.div variants={homeContentVariants} style={{ backgroundColor: 'transparent' }}> */}
+        <h1>Pizza from the comfort of your home</h1>
+
+        <p>
+          Quarantine's locked you up? Well, we are introducing a new way for our customers to get
+          the pizza's they love all while staying completely safe. with our{' '}
+          <strong>new delivery platform</strong>
+        </p>
+
+        <NavLink data-testid="link" to={finalLocation}>
+          <span>{authenticated ? 'Order' : 'Sign Up'}</span>
+          <span className="backdrop"></span>
+        </NavLink>
+        {/* </motion.div> */}
+      </Content>
     </HomeSection>
   );
 }

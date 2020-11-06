@@ -153,7 +153,7 @@ function App() {
               retryConnection={retryServerConnection}
             />
           ) : (
-            <div>
+            <>
               <Nav logUserOut={logUserOut} />
 
               <ErrorBoundary FallbackComponent={ErrorPage}>
@@ -185,7 +185,7 @@ function App() {
                   </Switch>
                 </React.Suspense>
               </ErrorBoundary>
-            </div>
+            </>
           )}
         </MotionConfig>
       </ThemeProvider>

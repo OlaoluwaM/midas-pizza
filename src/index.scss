@@ -54,11 +54,16 @@ $colorPalette: (
 html,
 body,
 #root,
-.container {
+.section-container {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   position: relative;
   background-color: map-get($map: $colorPalette, $key: background);
+}
+
+section.section-container {
+  display: flex;
+  height: calc(100% - 11%);
 }
 
 body {
@@ -119,13 +124,6 @@ a.current-page:after {
   transition: transform 0.3s $cssSpring;
   transform-origin: left;
   animation: currentPage 0.3s 1s $cssSpring both;
-}
-
-.section-container {
-  background: map-get($map: $colorPalette, $key: background);
-  display: flex;
-  width: inherit;
-  height: 100vh;
 }
 
 .Toastify__toast {

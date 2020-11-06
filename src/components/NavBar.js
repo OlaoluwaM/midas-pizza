@@ -14,9 +14,9 @@ import { cartCount as cartCountSelector } from './selectors';
 
 const NavContainer = styled.nav`
   width: 100vw;
-  height: 7%;
+  height: 7vh;
   background: transparent;
-  position: fixed;
+  position: relative;
   z-index: 2;
   color: ${({ theme }) => hexToRgb(theme.gray, 0.3)};
   font-family: var(--secondaryFont);
