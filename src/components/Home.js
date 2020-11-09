@@ -22,12 +22,22 @@ const HomeSection = styled(motion.section).attrs({
   align-items: center;
   flex-direction: row-reverse;
   justify-content: space-between;
+  overflow-x: hidden;
 
   @media (max-width: 1090px) {
     &.section-container {
       display: block;
-      height: fit-content;
       padding: 1em 0em;
+    }
+  }
+
+  @media (orientation: portrait) and (max-width: 930px) {
+    &.section-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
     }
   }
 `;
@@ -112,7 +122,7 @@ const Content = styled(motion.div)`
     align-items: center;
     padding: 0;
     height: max-content;
-    margin-bottom: 5em;
+    margin-bottom: 2em;
 
     h1 {
       padding: 0;
@@ -121,6 +131,11 @@ const Content = styled(motion.div)`
     p {
       margin-bottom: 3.5em;
     }
+  }
+
+  @media (orientation: portrait) and (max-width: 930px) {
+    flex-basis: unset;
+    margin-bottom: 0;
   }
 `;
 
@@ -146,13 +161,26 @@ const HomeSvgContainer = styled(motion.div).attrs({
     z-index: 1;
 
     @media (max-width: 1090px) {
-      width: 65%;
+      width: 60%;
       transform: translateY(-1em);
+    }
+
+    @media (orientation: landscape) and (max-width: 1090px) {
+      width: 51%;
     }
   }
 
-  @media (max-width: 1090px) {
+  @media (orientation: landscape) and (max-width: 1090px) {
+    align-items: flex-end;
+  }
+
+  /* @media (max-width: 1090px) {
     height: 80vmin;
+  } */
+
+  @media (orientation: portrait) and (max-width: 630px) {
+    height: auto;
+    flex-basis: unset;
   }
 `;
 
