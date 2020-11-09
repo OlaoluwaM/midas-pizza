@@ -207,7 +207,6 @@ button.checkout-button,
   cursor: pointer;
   border-radius: 5px;
   transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease;
-  font-size: 1.2em;
 
   &:active {
     scale: 0.95;
@@ -215,6 +214,7 @@ button.checkout-button,
 }
 
 button.checkout-button {
+  font-size: 1.2em;
   background: get-color(background);
   color: get-color(black);
   fill: get-color(black);
@@ -257,10 +257,11 @@ button.checkout-button {
   border: none;
   width: calc(0.85 * 100%);
   border-radius: 10px;
+  font-size: clamp(0.7rem, 4vmin, 1.2rem);
 }
 
 .form-state-switch-text {
-  font-size: 1em;
+  font-size: clamp(0.7rem, 3vmin, 1rem);
   font-weight: map-get($fontWeights, bold);
   color: change-color(get-color(gray), $alpha: 0.7);
   cursor: pointer;

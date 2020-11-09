@@ -29,8 +29,8 @@ const InputContainer = styled(motion.div).attrs({
     border: 2px solid ${({ theme }) => hexToRgb(theme.gray, 0.4)};
     background: transparent;
     text-indent: 10px;
-    padding: 1.1em;
-    font-size: 1em;
+    padding: min(1.1em, 4%);
+    font-size: clamp(0.7em, 2vmin, 1em);
     color: inherit;
     transition: border-color 0.5s ease;
 
