@@ -13,8 +13,8 @@ import { m as motion, AnimatePresence } from 'framer-motion';
 import { cartCount as cartCountSelector } from './selectors';
 
 const NavContainer = styled.nav`
-  width: 100vw;
-  height: 7vh;
+  width: 100%;
+  height: 9vh;
   background: transparent;
   position: relative;
   z-index: 2;
@@ -24,21 +24,19 @@ const NavContainer = styled.nav`
   ul {
     height: 100%;
     margin: 0;
-    padding: 0 4em;
     list-style: none;
 
     & > li {
       position: relative;
       font-weight: var(--medium);
       height: 100%;
-      margin: 15px;
+      margin: 0px 4% 0;
       display: inline-block;
-      padding-bottom: 1.5em;
-      margin-right: 3em;
 
       svg {
         stroke-width: 0.3px;
-        width: 1.4em;
+        width: 4vmin;
+        height: auto;
       }
 
       &.pos-right {
@@ -49,6 +47,7 @@ const NavContainer = styled.nav`
         text-decoration: none;
         font-size: 1.2em;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         height: 100%;
@@ -58,7 +57,14 @@ const NavContainer = styled.nav`
       &::last-of-type {
         margin-right: 0;
       }
+
+      @media (max-width: 980px) {
+        & {
+          font-size: 2vmin;
+        }
+      }
     }
+
     .shopping-cart {
       position: relative;
       cursor: pointer;

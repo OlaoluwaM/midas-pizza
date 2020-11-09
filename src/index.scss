@@ -63,7 +63,7 @@ body,
 
 section.section-container {
   display: flex;
-  height: calc(100% - 11%);
+  height: calc(100% - 9%);
 }
 
 body {
@@ -114,12 +114,12 @@ a.current-page-svg {
 
 a.current-page:after {
   content: '';
-  width: 100%;
-  height: 0.5em;
+  width: 65%;
+  height: 12%;
+  border-radius: 10px;
   background: $routeHighlightColor;
-  position: absolute;
-  bottom: 12%;
-  left: 5px;
+  margin-top: 7%;
+  position: relative;
   z-index: -2;
   transition: transform 0.3s $cssSpring;
   transform-origin: left;

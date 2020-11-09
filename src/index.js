@@ -7,7 +7,7 @@ import { ToastContainer } from 'react-toastify';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 import 'react-toastify/dist/ReactToastify.min.css';
-import './index.scss';
+import './index.css';
 
 ReactDOM.render(
   <React.StrictMode>
