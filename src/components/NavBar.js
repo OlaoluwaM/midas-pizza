@@ -31,6 +31,7 @@ const NavContainer = styled.nav`
       font-weight: var(--medium);
       height: 100%;
       margin: 0px 4% 0;
+      flex-direction: column;
       display: inline-block;
 
       svg {
@@ -47,7 +48,7 @@ const NavContainer = styled.nav`
         text-decoration: none;
         font-size: 1.2em;
         display: flex;
-        flex-direction: column;
+        flex-direction: inherit;
         justify-content: center;
         align-items: center;
         height: 100%;
@@ -67,6 +68,7 @@ const NavContainer = styled.nav`
 
     .shopping-cart {
       position: relative;
+      flex-direction: row;
       cursor: pointer;
 
       span {
@@ -165,7 +167,7 @@ function SettingsLink({ logUserOut }) {
 
   return (
     <motion.li className="pos-right">
-      <a className="nav-link" href="">
+      <a className="nav-link">
         <Settings
           title="Settings"
           style={{ zIndex: 5 }}
