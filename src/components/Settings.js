@@ -23,6 +23,10 @@ const SettingsSection = styled(motion.section).attrs({
 
   svg {
     transform: scale(0.85);
+
+    @media (max-width: 1000px) {
+      display: none;
+    }
   }
 
   .form-container {
@@ -38,11 +42,35 @@ const SettingsSection = styled(motion.section).attrs({
     h1 {
       width: calc(0.85 * 90%);
       text-align: center;
-      font-size: 3em;
+      font-size: clamp(2rem, 9vmin, 3rem);
       margin: 0 0 0.6em 0;
       color: ${({ theme }) => hexToRgb(theme.baseColor, 0.8)};
       font-family: var(--primaryFont);
       font-weight: var(--xBold);
+    }
+
+    @media (max-width: 1000px) {
+      height: 100%;
+      width: 90%;
+      flex-basis: unset;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 650px) {
+      width: 95%;
+    }
+
+    @media (orientation: landscape) and (max-width: 850px) {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  @media (orientation: landscape) and (max-width: 850px) {
+    &.section-container {
+      display: block;
     }
   }
 `;
