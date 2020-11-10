@@ -19,9 +19,8 @@ const MenuSection = styled(motion.section).attrs({
   animate: 'visible',
   exit: 'exit',
 })`
-  padding: 0;
+  padding: 0 min(4vmin, 3em);
   margin: 0;
-  padding-left: 3em;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -38,23 +37,11 @@ const MenuSection = styled(motion.section).attrs({
     font-family: var(--primaryFont);
     font-weight: var(--xXBold);
     display: inline;
-    margin: 4em 0 0 0;
+    margin: min(8vmax, 4em) 0 0 0;
     align-self: flex-start;
     position: relative;
-
     background: ${() => hexToRgb('#FFDBC2', 0.9)};
     line-height: 1.35;
-
-    /* &:after {
-      content: 'Our';
-      position: absolute;
-      top: 1;
-      z-index: 1;
-      color: ${({ theme }) => theme.backgroundLighter};
-      bottom: 1;
-      left: 1;
-      padding: inherit;
-    } */
   }
 
   .blob {
@@ -75,13 +62,17 @@ const MenuSection = styled(motion.section).attrs({
 
 const MenuContainer = styled.menu`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(clamp(300px, calc(100% / 4.5), 400px), 1fr));
   gap: 1em 2em;
-  flex-grow: 1;
   width: 100%;
-  padding-right: 2em;
+  padding-right: 0;
   padding-left: 0px;
   position: relative;
+  align-items: center;
+
+  @media (max-width: 720px) {
+    padding-right: 0;
+  }
 `;
 
 export default function Menu() {

@@ -12,9 +12,24 @@ import { ReactComponent as Dessert } from '../assets/ice-cream.svg';
 
 const FilterContainer = styled.div`
   width: 100%;
-  height: 7vh;
+  height: 8vh;
   margin: 3em 0;
   padding: 0;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+
+  @media (min-width: 870px) {
+    justify-content: flex-start;
+  }
+
+  @media (max-width: 870px) {
+    height: 7.7vmax;
+  }
+
+  @media (orientation: landscape) and (max-width: 870px) {
+    height: 9vmax;
+  }
 `;
 
 const FilterButtonContainer = styled(motion.button).attrs({
@@ -27,29 +42,44 @@ const FilterButtonContainer = styled(motion.button).attrs({
   background: ${({ theme }) => theme.backgroundLighter};
   border-radius: 3px;
   height: 100%;
-  width: 15%;
-  padding: 0 0 0 1.2em;
+  width: calc(100% / 5);
   cursor: pointer;
+  padding: 0.4em;
   font-weight: var(--medium);
-  margin-right: 15px;
   display: inline-flex;
   align-items: center;
+  justify-content: space-evenly;
+  flex-direction: column;
 
   span {
-    font-size: 1.1em;
+    font-size: clamp(0.5rem, 2vmin, 1.1em);
   }
 
   svg {
     fill-opacity: inherit;
-    width: 18%;
+    width: 16%;
     height: auto;
-    margin-right: 10px;
+
+    @media (min-width: 870px) {
+      margin-right: 15px;
+    }
   }
 
   &:disabled {
     filter: grayscale(1);
     background: ${({ theme }) => hexToRgb(theme.gray, 0.2)};
     pointer-events: none;
+  }
+
+  @media (min-width: 870px) {
+    width: 12%;
+    flex-direction: row;
+    justify-content: center;
+    margin-right: 2rem;
+
+    &:last-of-type {
+      margin-right: 0;
+    }
   }
 `;
 

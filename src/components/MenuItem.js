@@ -55,7 +55,7 @@ const MenuItemContainer = styled(motion.div).attrs({
     justify-content: space-around;
     border-radius: inherit;
     background: ${({ theme }) => theme.backgroundLighter};
-    padding: 1.3em 1.8em;
+    padding: 1.2em 1em;
     padding-bottom: 0;
 
     p,
@@ -64,7 +64,7 @@ const MenuItemContainer = styled(motion.div).attrs({
     }
 
     p {
-      font-size: 1.2em;
+      font-size: min(3vmin, 1.2em);
       font-weight: var(--xXBold);
       font-family: var(--primaryFont);
     }
@@ -73,7 +73,7 @@ const MenuItemContainer = styled(motion.div).attrs({
       margin: 0.5em 0 0.8em 0;
       font-weight: var(--medium);
       color: ${({ theme }) => theme.gray};
-      font-size: 1.2em;
+      font-size: min(3vmin, 1em);
     }
 
     .order-buttons {
@@ -84,7 +84,7 @@ const MenuItemContainer = styled(motion.div).attrs({
 
       .quantity-field {
         position: relative;
-        flex-basis: 40%;
+        flex-basis: 35%;
         width: 40%;
         display: flex;
         justify-content: flex-start;
@@ -92,14 +92,20 @@ const MenuItemContainer = styled(motion.div).attrs({
         opacity: 0.2;
         transition: opacity 0.2s ease;
 
+        @media (max-width: 870px) {
+          justify-content: center;
+        }
+
         &:focus-within {
           opacity: 1;
         }
 
         label {
-          margin-right: 12px;
-          font-size: 1em;
-          font-weight: var(--medium);
+          font-size: clamp(0.4em, 2vmin, 0.7em);
+          font-weight: var(--bold);
+          @media (max-width: 870px) {
+            display: none;
+          }
         }
 
         input {
@@ -108,7 +114,7 @@ const MenuItemContainer = styled(motion.div).attrs({
           text-align: center;
           border: none;
           border-bottom: 3px solid ${({ theme }) => theme.blackLighter};
-          font-size: 1.3em;
+          font-size: clamp(1em, 1vmin, 1.3em);
           font-family: var(--primaryFont);
           font-weight: var(--bold);
         }
@@ -116,11 +122,10 @@ const MenuItemContainer = styled(motion.div).attrs({
 
       .add-to-cart-button {
         position: relative;
-        flex-basis: 14em;
-        flex-grow: 1;
+        flex-basis: 60%;
         display: flex;
         align-items: center;
-        justify-content: space-around;
+        justify-content: space-evenly;
         border: none;
         border-radius: 7px;
         padding: 1.3em 0;
@@ -131,13 +136,11 @@ const MenuItemContainer = styled(motion.div).attrs({
         transition: 0.1s ease box-shadow, 0.2s ease background, color 0.3s ease;
 
         svg {
-          width: 13%;
-          margin-right: -30px;
+          width: 11%;
         }
 
         span {
-          font-size: 1.4em;
-          /* transform: scale(0.9); */
+          font-size: min(3vmin, 1em);
         }
       }
     }
@@ -165,7 +168,7 @@ function QuantityInput({ incrementQuantity }) {
 
   return (
     <motion.div className="quantity-field">
-      <label htmlFor="quantity">Qty</label>
+      <label htmlFor="quantity">Qty:</label>
       <input
         id="quantity"
         data-testid="quantity-input"
