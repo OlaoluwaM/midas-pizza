@@ -25,6 +25,7 @@ const NavContainer = styled.nav`
     height: 100%;
     margin: 0;
     list-style: none;
+    padding: 0 40px;
 
     & > li {
       position: relative;
@@ -36,7 +37,7 @@ const NavContainer = styled.nav`
 
       svg {
         stroke-width: 0.3px;
-        width: 4vmin;
+        width: 3vmin;
         height: auto;
       }
 
@@ -46,7 +47,7 @@ const NavContainer = styled.nav`
 
       a {
         text-decoration: none;
-        font-size: 1.2em;
+        font-size: min(1.5vmin, 1.2em);
         display: flex;
         flex-direction: inherit;
         justify-content: center;
@@ -85,9 +86,9 @@ const TooltipMenu = styled(motion.menu).attrs({
   exit: 'hidden',
 })`
   position: absolute;
-  right: -1.1em;
-  top: 100%;
-  min-width: 14em;
+  right: clamp(-0.8rem, -8vmin, -1rem);
+  top: clamp(3rem, 9vmin, 4rem);
+  min-width: 15em;
   display: flex;
   padding: 1em;
   flex-direction: column;
@@ -104,8 +105,8 @@ const TooltipMenu = styled(motion.menu).attrs({
   &:before {
     content: '';
     position: absolute;
-    top: -2em;
-    right: 0.8em;
+    top: clamp(-1.8rem, -26%, -1.6rem);
+    right: 2px;
     width: 0;
     height: 0;
     border: 20px solid ${({ theme }) => theme.backgroundLighter};
@@ -118,9 +119,9 @@ const TooltipMenu = styled(motion.menu).attrs({
     display: flex;
     color: ${({ theme }) => hexToRgb(theme.gray, 0.9)};
     padding: 0.8em 1em;
-    justify-content: space-around;
+    justify-content: space-evenly;
     align-items: center;
-    font-size: 0.8em;
+    font-size: min(1.5vmin, 0.8em);
     font-weight: var(--medium);
     margin: 0.7em 0 1.3em 0;
     cursor: pointer;
@@ -130,6 +131,10 @@ const TooltipMenu = styled(motion.menu).attrs({
       color: inherit;
       transition: color 0.3s ease;
       text-align: center;
+    }
+
+    & > svg {
+      width: 13%;
     }
 
     &:hover,
@@ -176,21 +181,23 @@ function SettingsLink({ logUserOut }) {
         />
       </a>
 
-      <AnimatePresence>
+      <TooltipMenu
+        data-testid="settings-tooltip-menu"
+        onMouseEnter={showTooltipMenu}
+        onMouseLeave={hideTooltipMenu}
+        layout>
+        <li>
+          <Settings />
+          <NavLink to="/settings" style={{ fontSize: 'min(2vmin, 1.2em)' }}>
+            Account Settings
+          </NavLink>
+        </li>
+        <Logout logUserOut={logUserOut} />
+      </TooltipMenu>
+      {/* <AnimatePresence>
         {shouldShowMenu && (
-          <TooltipMenu
-            data-testid="settings-tooltip-menu"
-            onMouseEnter={showTooltipMenu}
-            onMouseLeave={hideTooltipMenu}
-            layout>
-            <li>
-              <Settings />
-              <NavLink to="/settings">Account Settings</NavLink>
-            </li>
-            <Logout logUserOut={logUserOut} />
-          </TooltipMenu>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
     </motion.li>
   );
 }
