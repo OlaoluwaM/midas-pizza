@@ -7,7 +7,7 @@ In the project directory, you can run:
 ### `Git submodules`
 
 This project uses git submodules, so in order for it to work on your machine you would need to also clone the submodules into the repo.
-It can be done using the `git submodule init` command, and `git submodule update` commands
+It can be done using the `git submodule init`, and `git submodule update` commands
 
 ### `npm run serve:dev`
 

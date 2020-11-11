@@ -61,7 +61,6 @@ const ImageContainer = styled.div`
   img {
     max-width: 100%;
     display: inline;
-    width: clamp(190px, 70%, 250px);
     border-radius: 7%;
   }
 `;
