@@ -37,11 +37,10 @@ const CartPreviewContainer = styled(motion.section).attrs({
 
     svg {
       position: absolute;
-      width: 75%;
-      scale: 0.8;
+      width: 70%;
+      scale: 0.7;
       height: auto;
       top: 50%;
-      /* left: 50%; */
       transform: translateY(-50%);
 
       @media (max-width: 870px) and (orientation: landscape) {
