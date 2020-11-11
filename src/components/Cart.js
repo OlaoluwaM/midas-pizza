@@ -29,7 +29,7 @@ const CartPreviewContainer = styled(motion.section).attrs({
   display: flex;
   z-index: 1;
   flex-direction: column;
-  padding: 0 1.5em 0 3.5em;
+  padding: 0 min(3vmin, 1.2em);
   position: relative;
 
   & > .svg-container {
@@ -37,9 +37,18 @@ const CartPreviewContainer = styled(motion.section).attrs({
 
     svg {
       position: absolute;
-      scale: 0.6;
-      left: 50%;
-      transform: translateX(-78%);
+      width: 75%;
+      scale: 0.8;
+      height: auto;
+      top: 50%;
+      /* left: 50%; */
+      transform: translateY(-50%);
+
+      @media (max-width: 870px) and (orientation: landscape) {
+        top: 35%;
+        transform: unset;
+        left: unset;
+      }
     }
   }
 `;
@@ -51,8 +60,9 @@ const CartContainer = styled.div`
 
   h3 {
     text-align: left;
-    font-size: 2em;
-    margin: 3em 0 1em 0;
+    font-size: min(3.5vmax, 2em);
+    margin: min(7vmax, 2em) 0 1em 0;
+    padding-left: min(3vmin, 1em);
     font-family: var(--primaryFont);
     font-weight: var(--xBold);
   }

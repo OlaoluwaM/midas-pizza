@@ -41,7 +41,7 @@ const ModalContainer = styled(motion.div).attrs({
   width: 50%;
   background: ${({ theme }) => theme.background};
   border-radius: 10px;
-  padding: 2em;
+  padding: clamp(1em, 3vmin, 2em);
   position: relative;
   box-shadow: -12px 12px 0px ${({ theme }) => hexToRgb(theme.black, 0.5)};
   z-index: 333;
@@ -52,12 +52,20 @@ const ModalContainer = styled(motion.div).attrs({
     cursor: pointer;
     right: -15px;
     fill: var(--error);
-    width: 3em;
+    max-width: 3em;
     transition: transform 0.3s ease;
 
     &:active {
       transform: scale(0.9);
     }
+  }
+
+  @media (max-width: 780px) {
+    width: 75%;
+  }
+
+  @media (max-width: 520px) {
+    width: 95%;
   }
 `;
 
@@ -84,12 +92,12 @@ const CheckoutFormModalWrapper = styled(motion.div).attrs({
   }
 
   & > div > .total {
-    font-size: 1.3em;
+    font-size: min(4vmin, 1.3rem);
     margin: 0;
     text-align: right;
 
     span {
-      font-size: 1.3rem;
+      font-size: inherit;
     }
   }
 `;

@@ -33,7 +33,7 @@ const MenuSection = styled(motion.section).attrs({
   }
 
   h1 {
-    font-size: 3em;
+    font-size: min(3.5vmax, 3em);
     font-family: var(--primaryFont);
     font-weight: var(--xXBold);
     display: inline;

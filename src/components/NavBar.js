@@ -37,7 +37,7 @@ const NavContainer = styled.nav`
 
       svg {
         stroke-width: 0.3px;
-        width: 3vmin;
+        width: min(3.2vmin, 30px);
         height: auto;
       }
 
@@ -47,7 +47,7 @@ const NavContainer = styled.nav`
 
       a {
         text-decoration: none;
-        font-size: min(1.5vmin, 1.2em);
+        font-size: min(2.5vmin, 2em);
         display: flex;
         flex-direction: inherit;
         justify-content: center;
@@ -145,6 +145,10 @@ const TooltipMenu = styled(motion.menu).attrs({
       background: ${({ theme }) => hexToRgb(theme.gray, 0.1)};
     }
   }
+  @media (orientation: landscape) and (max-width: 800px) {
+    right: clamp(-1rem, -8vmin, -1rem);
+    top: clamp(2rem, 9vmin, 4rem);
+  }
 `;
 
 function ShoppingCart() {
@@ -181,23 +185,23 @@ function SettingsLink({ logUserOut }) {
         />
       </a>
 
-      <TooltipMenu
-        data-testid="settings-tooltip-menu"
-        onMouseEnter={showTooltipMenu}
-        onMouseLeave={hideTooltipMenu}
-        layout>
-        <li>
-          <Settings />
-          <NavLink to="/settings" style={{ fontSize: 'min(2vmin, 1.2em)' }}>
-            Account Settings
-          </NavLink>
-        </li>
-        <Logout logUserOut={logUserOut} />
-      </TooltipMenu>
-      {/* <AnimatePresence>
+      <AnimatePresence>
         {shouldShowMenu && (
+          <TooltipMenu
+            data-testid="settings-tooltip-menu"
+            onMouseEnter={showTooltipMenu}
+            onMouseLeave={hideTooltipMenu}
+            layout>
+            <li>
+              <Settings />
+              <NavLink to="/settings" style={{ fontSize: 'min(2vmin, 1.2em)' }}>
+                Account Settings
+              </NavLink>
+            </li>
+            <Logout logUserOut={logUserOut} />
+          </TooltipMenu>
         )}
-      </AnimatePresence> */}
+      </AnimatePresence>
     </motion.li>
   );
 }

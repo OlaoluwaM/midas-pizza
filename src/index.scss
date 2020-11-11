@@ -186,17 +186,17 @@ button.active-filter {
 }
 
 .total {
-  width: 90%;
+  width: 95%;
   text-align: right;
-  margin: 3em 0 1.5em 0;
-  font-size: 1em;
+  margin: 2.5em 0;
+  font-size: min(4vmin, 1.3rem);
   font-weight: map-get($fontWeights, bold);
   color: get-color(gray);
 
   span {
     margin-left: 0.6em;
     color: get-color(black);
-    font-size: 1.3rem;
+    font-size: inherit;
   }
 }
 
@@ -214,11 +214,11 @@ button.checkout-button,
 }
 
 button.checkout-button {
-  font-size: 1.2em;
+  font-size: min(3vmin, 1em);
   background: get-color(background);
   color: get-color(black);
   fill: get-color(black);
-  width: 13em;
+  max-width: 15em;
   border: 4px solid get-color(black);
   position: relative;
   align-self: center;

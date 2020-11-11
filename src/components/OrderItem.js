@@ -22,14 +22,14 @@ const OrderItemContainer = styled(motion.li).attrs({
   display: flex;
   width: 100%;
   height: auto;
-  padding: 1.2em;
+  padding: min(3vmin, 1em);
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid ${({ theme }) => hexToRgb(theme.gray, 0.4)};
 
   & > svg {
-    width: 2em;
-    flex-basis: 2em;
+    width: clamp(25px, 4vmin, 32px);
+    flex-basis: clamp(25px, 4vmin, 32px);
     cursor: pointer;
     fill: ${({ theme }) => hexToRgb(theme.gray, 0.7)};
     transition: fill 0.4s ease;
@@ -43,41 +43,41 @@ const OrderItemContainer = styled(motion.li).attrs({
   }
 
   & > h5 {
-    font-size: 1rem;
+    font-size: min(3vmin, 1.2em);
     margin: 0;
     font-weight: var(--bold);
-    flex-basis: 5em;
+    flex-basis: 7%;
     text-align: center;
   }
 `;
 
 const ImageContainer = styled.div`
   overflow: hidden;
-  border-radius: 50%;
-  width: 8em;
-  flex-basis: 8em;
-  height: 8em;
+  width: 44%;
+  flex-basis: 44%;
+  height: 100%;
   position: relative;
 
   img {
-    object-fit: cover;
-    object-position: center;
-    width: 100%;
-    height: 100%;
+    max-width: 100%;
+    display: inline;
+    width: clamp(190px, 70%, 250px);
+    border-radius: 7%;
   }
 `;
 
 const ContentGroup = styled.div`
   height: 100%;
   display: flex;
-  flex-basis: 26em;
+  flex-basis: min(50%, 28em);
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
 
   h4 {
     font-family: var(--primaryFont);
     font-weight: var(--xBold);
-    margin: 0 0 0 3em;
+    flex-basis: 46%;
+    font-size: min(2.5vmin, 1.2em);
 
     p {
       margin: 0.5em 0 0 0;
@@ -93,6 +93,8 @@ const CounterContainer = styled.div`
   justify-content: center;
   align-items: center;
   opacity: 0.5;
+  flex-basis: min(12vmin, 5em);
+  height: 3em;
   transition: opacity 0.3s ease;
 
   &:focus-within {
@@ -100,16 +102,20 @@ const CounterContainer = styled.div`
   }
 
   input {
-    font-size: 0.9em;
+    font-size: min(2.5vmin, 0.8em);
     font-weight: var(--xXBold);
-    height: 2.5em;
+    height: 85%;
     font-variant: small-caps;
     border: 1px solid ${({ theme }) => theme.black};
     background: transparent;
-    padding: 0.5em;
-    width: 3.7em;
-    flex-basis: 3.7em;
+    padding: 0.7em;
+    width: 100%;
+    border-radius: 4px;
     text-align: center;
+
+    @media (max-width: 450px) {
+      height: 70%;
+    }
   }
 `;
 
@@ -119,6 +125,8 @@ function Counter({ itemName, initialQuantity }) {
   const { REACT_APP_QUANTITY_LIMIT: quantityLimit } = process.env;
 
   const updateItemQuantity = e => {
+    console.log(count);
+    if (count === 0 || isNaN(count)) return;
     const amountToAdd = parseInt(e.target.value);
 
     updateCart(prevCart => {
@@ -127,6 +135,7 @@ function Counter({ itemName, initialQuantity }) {
         toast('Sorry cannot order more than 10 items at a go 😄', { type: 'error' });
         return prevCart;
       }
+
       const updatedItemObject = { [itemName]: { ...prevCart[itemName] } };
       updatedItemObject[itemName].quantity = amountToAdd;
       setCount(amountToAdd);
@@ -169,6 +178,11 @@ function OrderItem({ orderName, initialPrice, quantity, foodType }) {
       return newCartObject;
     });
   };
+
+  React.useEffect(() => {
+    if (!isNaN(quantity) || quantity > 0) return;
+    deleteItemHandler();
+  }, [quantity]);
 
   return (
     <OrderItemContainer layout="position">
