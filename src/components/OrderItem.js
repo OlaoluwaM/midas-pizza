@@ -53,15 +53,18 @@ const OrderItemContainer = styled(motion.li).attrs({
 
 const ImageContainer = styled.div`
   overflow: hidden;
-  width: 44%;
-  flex-basis: 44%;
-  height: 100%;
+  width: 45%;
+  flex-basis: 45%;
+  height: min(16vmin, 9em);
   position: relative;
+  border-radius: 15px;
 
   img {
-    max-width: 100%;
-    display: inline;
-    border-radius: 7%;
+    width: 100%;
+    display: inline-block;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
   }
 `;
 
