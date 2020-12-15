@@ -35,3 +35,11 @@ The build is minified and the filenames include the hashes.<br />
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### Note
+In order to run this application, you will need to have a ``.env`` file which contains
+<ul>
+  <li>REACT_APP_API_ENDPOINT</li>
+  <li>REACT_APP_QUANTITY_LIMIT</li>
+  <li>REACT_APP_STRIPE_API_KEY</li>
+</ul>
