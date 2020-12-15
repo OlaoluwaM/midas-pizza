@@ -32,22 +32,27 @@ const CartPreviewContainer = styled(motion.section).attrs({
   padding: 0 min(3vmin, 1.2em);
   position: relative;
 
+  &.section-container {
+    height: max-content;
+  }
+
   & > .svg-container {
-    display: content;
+    display: flex;
+    justify-content: center;
+    position: fixed;
+    top: 55%;
+    left: 50%;
+    width: max(40%, 300px);
+    transform: translate(-50%, -50%);
+
+    @media (max-width: 840px) and (orientation: landscape) {
+      top: 65%;
+    }
 
     svg {
-      position: absolute;
-      width: 70%;
-      scale: 0.7;
+      position: relative;
+      width: 100%;
       height: auto;
-      top: 50%;
-      transform: translateY(-50%);
-
-      @media (max-width: 870px) and (orientation: landscape) {
-        top: 35%;
-        transform: unset;
-        left: unset;
-      }
     }
   }
 `;
@@ -142,17 +147,6 @@ export default function CartPreview({ initialCart }) {
       </AnimatePresence>
 
       <CartPreviewContainer>
-        {cartIsEmpty && (
-          <motion.div
-            className="svg-container"
-            variants={emptyCartVectorVariants}
-            animate="visible"
-            initial="hidden"
-            exit="hidden">
-            <EmptyCartSVG data-testid="empty-cart-svg" />
-          </motion.div>
-        )}
-
         <CartContainer>
           <motion.h3 data-testid="cart-header" layout>
             {`Your Cart ${cartIsEmpty ? 'is empty' : ''}`}
@@ -190,6 +184,16 @@ export default function CartPreview({ initialCart }) {
             )}
           </AnimateSharedLayout>
         </CartContainer>
+        {cartIsEmpty && (
+          <motion.div
+            className="svg-container"
+            variants={emptyCartVectorVariants}
+            animate="visible"
+            initial="hidden"
+            exit="hidden">
+            <EmptyCartSVG data-testid="empty-cart-svg" />
+          </motion.div>
+        )}
       </CartPreviewContainer>
     </>
   );

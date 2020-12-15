@@ -23,6 +23,7 @@ export function generateFetchOptions(method, body = {}, token = null) {
 
 export function generateUrl(resource) {
   const { REACT_APP_API_ENDPOINT: URL } = process.env;
+  console.log(URL);
   const normalizedUrl = resource.startsWith('/') ? URL.replace('0/', '0') : URL;
   return `${normalizedUrl}${resource}`;
 }

@@ -23,7 +23,7 @@ const MenuSection = styled(motion.section).attrs({
   margin: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   position: relative;
   transition: filter 0.3s ease;

@@ -53,7 +53,6 @@ const ServerDownPageWrapper = styled(ErrorPageContainer)`
   z-index: 50;
   color: transparent;
   width: 100%;
-  height: 100vh;
   background: ${({ theme }) => hexToRgb(theme.baseColor, 0.1)};
 
   svg {
@@ -142,7 +141,7 @@ export function ServerDownPage({ serverStatus, retryConnection }) {
   }, [serverStatus]);
 
   return (
-    <ServerDownPageWrapper>
+    <ServerDownPageWrapper style={{ height: 'inherit' }}>
       <div className="motion-wrapper">
         <ServerDownSVG title="Server is Down" />
         <button className="submit-button checkout-button" onClick={retryConnection}>
