@@ -30,8 +30,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "serve:dev": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env.dev",
-    "test": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test.[j]s?(x)",
-    "test:silent": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test.[j]s?(x) --silent",
+    "test": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test*.js",
+    "test:silent": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test*.js --silent",
     "serve:prod": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env.prod",
     "eject": "react-scripts eject"
   },
