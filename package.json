@@ -28,15 +28,11 @@
   },
   "scripts": {
     "prestart": "git submodule init && git submodule update",
-    "start": "node server/entry.js",
-    "heroku-postbuild": "npm i && npm run build",
-    "build": "REACT_APP_API_ENDPOINT=$PORT react-scripts build",
-    "client:build": "react-scripts build",
-    "client:start": "react-scripts start",
-    "serve:dev": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env.dev",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "serve": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env",
     "test": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test*.js",
     "test:silent": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test*.js --silent",
-    "serve:prod": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env.prod",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
