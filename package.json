@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "engines": {
-    "node": "12.x"
+    "node": "14.x"
   },
   "dependencies": {
     "@hookform/error-message": "0.0.4",
@@ -27,8 +27,12 @@
     "styled-icons": "^10.22.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "prestart": "git submodule init && git submodule update",
+    "start": "node server/entry.js",
+    "heroku-postbuild": "npm i && npm run build",
+    "build": "REACT_APP_API_ENDPOINT=$PORT react-scripts build",
+    "client:build": "react-scripts build",
+    "client:start": "react-scripts start",
     "serve:dev": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env.dev",
     "test": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test*.js",
     "test:silent": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test*.js --silent",

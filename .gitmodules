@@ -1,3 +1,4 @@
-[submodule "server"]
-	path = server
-	url = https://github.com/OlaoluwaM/node-pizza-delivery-api
+[submodule "node-pizza-delivery-api"]
+	path = node-pizza-delivery-api
+	url = https://github.com/OlaoluwaM/node-pizza-delivery-api.git
+	branch = deploy
