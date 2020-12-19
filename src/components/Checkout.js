@@ -137,15 +137,63 @@ export function Modal({ children, closeModal }) {
   );
 }
 
+function initialPaymentState() {
+  return {
+    paymentSuccess: false,
+    paymentFailed: false,
+    paymentError: null,
+    paymentIsProcessing: false,
+    clientSecret: null,
+  };
+}
+
+function paymentStatusReducer(state, action) {
+  switch (action.type) {
+    case 'paymentSuccess':
+      return {
+        ...state,
+        paymentSuccess: true,
+      };
+    case 'paymentProcessing':
+      return {
+        ...state,
+        paymentIsProcessing: true,
+      };
+    case 'paymentFailed':
+      return {
+        ...state,
+        paymentFailed: true,
+        paymentError: action.error,
+      };
+    case 'reset':
+      return initialPaymentState;
+    default:
+      throw new ReferenceError('Action is not Defined');
+  }
+}
+
 export default function Checkout({ total = 0, orders, closeCheckoutModal }) {
+  const [stripePaymentStatus, dispatch] = React.useReducer(
+    paymentStatusReducer,
+    initialPaymentState(),
+    initialPaymentState
+  );
+
   const stripe = useStripe();
   const elements = useElements();
+
   const {
     userData: { email, name },
   } = React.useContext(UserSessionContext);
 
   const updateCart = useSetRecoilState(cartStateAtom);
-  const [processingPayment, setProcessingPayment] = React.useState(false);
+  const { paymentIsProcessing, paymentSuccess, paymentFailed, paymentError } = stripePaymentStatus;
+
+  React.useEffect(() => {
+    async () => {
+      
+    };
+  }, []);
 
   const makePayment = async e => {
     e.preventDefault();
@@ -154,7 +202,7 @@ export default function Checkout({ total = 0, orders, closeCheckoutModal }) {
     const { Id: tokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
 
     try {
-      setProcessingPayment(true);
+      dispatch({ type: 'paymentProcessing' });
 
       const payload = await stripe.createPaymentMethod({
         type: 'card',
@@ -167,11 +215,6 @@ export default function Checkout({ total = 0, orders, closeCheckoutModal }) {
           'StripePaymentError'
         );
       }
-
-      await fetchWrapper(
-        generateUrl(`checkout?email=${email}`),
-        generateFetchOptions('POST', JSON.stringify({ orders }), tokenId)
-      );
 
       toast(
         `Thank you for your shopping with us ${name}. Hope to see you soon 👌👋. P.S, your order will arrive in 30 - 40 minutes ⌛`,
