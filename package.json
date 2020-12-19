@@ -27,10 +27,9 @@
     "styled-icons": "^10.22.0"
   },
   "scripts": {
-    "prestart": "git submodule init && git submodule update",
+    "prestart": "./submodule-script.sh",
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "serve": "nodemon -r dotenv/config ./server/entry.js dotenv_config_path=./server/.env",
     "test": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test*.js",
     "test:silent": "react-scripts test --env=jest-environment-jsdom-sixteen --testMatch=**/__tests__/**/*.test*.js --silent",
     "eject": "react-scripts eject"
@@ -52,7 +51,6 @@
   },
   "devDependencies": {
     "@welldone-software/why-did-you-render": "^4.3.2",
-    "dotenv": "^8.2.0",
     "jest-environment-jsdom-sixteen": "^1.0.3",
     "jest-fetch-mock": "^3.0.3",
     "node-sass": "^4.14.1",
