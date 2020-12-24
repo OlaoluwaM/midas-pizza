@@ -274,6 +274,15 @@ button.checkout-button {
   }
 }
 
+.inline-password-svg {
+  position: absolute;
+  right: 5%;
+  cursor: pointer;
+  z-index: 3;
+  background: inherit;
+  max-width: 3%;
+}
+
 @keyframes currentPage {
   from {
     opacity: 0;
