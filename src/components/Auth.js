@@ -61,7 +61,9 @@ const AuthSection = styled(motion.section).attrs({
     transform: scaleX(-1);
 
     @media (max-width: 900px) {
-      display: none;
+      &:not(.inline-password-svg) {
+        display: none;
+      }
     }
   }
 
