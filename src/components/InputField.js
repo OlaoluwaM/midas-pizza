@@ -3,7 +3,9 @@ import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
 
+import { Eye } from '@styled-icons/bootstrap/Eye';
 import { normalize } from './utils/helpers';
+import { EyeSlash } from '@styled-icons/bootstrap/EyeSlash';
 import { validationOptions } from './utils/authFunctions';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { generalAuthElementVariants, errorMessageVariants } from './utils/framer-variants';
@@ -20,10 +22,18 @@ const InputContainer = styled(motion.div).attrs({
   margin-bottom: 1.1em;
   position: relative;
 
+  &:focus-within {
+    color: ${({ theme }) => theme.black};
+
+    & > input {
+      border-color: ${({ theme }) => theme.black};
+    }
+  }
+
   input {
     border: none;
     border-radius: 5px;
-    font-weight: var(--regular);
+    font-weight: var(--light);
     width: 100%;
     flex-basis: 80%;
     border: 2px solid ${({ theme }) => hexToRgb(theme.gray, 0.4)};
@@ -37,14 +47,6 @@ const InputContainer = styled(motion.div).attrs({
     &::placeholder {
       color: inherit;
       font-weight: var(--regular);
-    }
-  }
-
-  &:focus-within {
-    color: ${({ theme }) => theme.black};
-
-    & > input {
-      border-color: ${({ theme }) => theme.black};
     }
   }
 `;
@@ -73,6 +75,22 @@ const InputFieldErrorElement = React.memo(({ thisIsFor, message }) => {
 
 InputFieldErrorElement.whyDidYouRender = true;
 
+function ShowPasswordSvg() {
+  const [passwordIsVisible, setPasswordVisibility] = React.useState(false);
+
+  const togglePassword = e => {
+    const svg = e.currentTarget;
+    const inputElement = svg.previousElementSibling;
+    inputElement.type = passwordIsVisible ? 'password' : 'text';
+    inputElement.focus();
+    setPasswordVisibility(prevState => !prevState);
+  };
+
+  if (!passwordIsVisible) return <Eye className="inline-password-svg" onClick={togglePassword} />;
+
+  return <EyeSlash className="inline-password-svg" onClick={togglePassword} />;
+}
+
 const HookFormInputField = React.memo(props => {
   const { motionProps = {}, validationObj = {} } = props;
   const { register, error: errorMessage, ...rest } = props;
@@ -81,15 +99,23 @@ const HookFormInputField = React.memo(props => {
   const motionData = { variants: generalAuthElementVariants, ...motionProps };
   const { name } = inputAttributes;
 
+  const isPasswordField = /password/gi.test(name);
   const validationRules = normalize(validationObj) ?? validationOptions[name];
 
   return (
     <InputContainer {...motionData}>
-      <motion.input {...inputAttributes} ref={register(validationRules)} layout="position" />
+      <motion.input
+        {...inputAttributes}
+        ref={register(validationRules)}
+        layout="position"
+        style={isPasswordField && { paddingRight: '15%' }}
+      />
 
       <AnimatePresence exitBeforeEnter>
         {errorMessage && <InputFieldErrorElement thisIsFor={name} message={errorMessage} />}
       </AnimatePresence>
+
+      {isPasswordField && <ShowPasswordSvg />}
     </InputContainer>
   );
 });
