@@ -10,7 +10,12 @@ import { UserSessionContext } from './context/context';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { Blob3 as MenuBlob, Blob4 as MenuBlob2 } from '../assets/Blobs';
 import { defaultPageTransitionVariants2, headerVariants } from './utils/framer-variants';
-import { generateFetchOptions, generateUrl, fetchWrapper, saveOrder } from './utils/helpers';
+import {
+  generateFetchOptions,
+  generateUrl,
+  fetchWrapper,
+  saveOrderToServer,
+} from './utils/helpers';
 
 const MenuSection = styled(motion.section).attrs({
   className: 'section-container',
@@ -118,10 +123,19 @@ export default function Menu() {
           currentCart: localStorage.getItem('storedCart'),
           prevCart: localStorage.getItem('prevStoredCart'),
         };
-
         if (!currentCart || prevCart === currentCart) return;
 
-        await saveOrder(userData.email, JSON.parse(currentCart), currentAccessToken.Id);
+        if (prevCart) {
+          await saveOrderToServer(
+            userData.email,
+            JSON.parse(currentCart),
+            currentAccessToken.Id,
+            true
+          );
+        } else if (currentCart) {
+          await saveOrderToServer(userData.email, JSON.parse(currentCart), currentAccessToken.Id);
+        }
+
         console.log('Order saved!');
       })();
     };

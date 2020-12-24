@@ -11,7 +11,7 @@ import {
   generateUrl,
   fetchWrapper,
   removeCartFromLocalStorage,
-  saveOrder,
+  saveOrderToServer,
 } from './utils/helpers';
 
 const LogoutButton = styled.button`
@@ -46,7 +46,7 @@ export default function Logout({ logUserOut }) {
     const { email, Id: tokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
     const orders = JSON.parse(localStorage.getItem('storedCart')) || null;
 
-    if (orders) await saveOrder(email, orders, tokenId);
+    if (orders) await saveOrderToServer(email, orders, tokenId);
 
     await fetchWrapper(
       generateUrl(`/tokens?email=${email}`),

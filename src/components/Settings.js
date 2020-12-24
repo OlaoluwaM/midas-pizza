@@ -25,7 +25,9 @@ const SettingsSection = styled(motion.section).attrs({
     transform: scale(0.85);
 
     @media (max-width: 1000px) {
-      display: none;
+      &:not(.inline-password-svg) {
+        display: none;
+      }
     }
   }
 

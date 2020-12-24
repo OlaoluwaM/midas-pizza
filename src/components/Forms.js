@@ -85,11 +85,10 @@ export function LoginForm({ apiAuth, isLoading }) {
       await apiAuth(url, dataToSendToServer);
     } catch (error) {
       console.log(error);
-      const { status: errorStatus } = error;
 
-      if (errorStatus === 401) {
+      if (error?.status === 401) {
         setErrorString(JSON.stringify({ field: 'email', message: 'User does not exist' }));
-      } else if (errorStatus === 400) {
+      } else if (error?.status === 400) {
         setErrorString(JSON.stringify({ field: 'passwordLogin', message: 'Incorrect Password' }));
       } else throw error;
     }

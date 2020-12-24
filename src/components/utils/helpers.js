@@ -37,11 +37,12 @@ function swapTokenWith(tokenObj) {
 }
 
 export async function fetchWrapper(url, options) {
-  try {
-    const request = await fetch(url, options);
-    if (!request.ok) throw request;
+  let serverData, request;
 
-    const serverData = await request.json();
+  try {
+    request = await fetch(url, options);
+    console.log(request);
+    serverData = await request.json();
     let serverResponse;
 
     try {
@@ -54,12 +55,14 @@ export async function fetchWrapper(url, options) {
       ? serverResponse.newToken
       : serverResponse.response.hasOwnProperty('Id')
       ? serverResponse.response
-      : '';
+      : false;
 
     if (tokenInResponse) {
       swapTokenWith(tokenInResponse);
-      serverResponse?.newToken && delete serverResponse.newToken;
+      delete serverResponse.newToken;
     }
+
+    if (!request.ok) throw request;
 
     if (url.includes('order') && localStorage.getItem('storedCart')) {
       localStorage.setItem('prevStoredCart', localStorage.getItem('storedCart'));
@@ -67,10 +70,13 @@ export async function fetchWrapper(url, options) {
 
     return serverResponse.response;
   } catch (error) {
-    console.error(error);
+    const errorData = serverData?.response ?? error;
+    console.error(errorData);
 
-    const errorText = typeof error === 'string' ? error : await error.text();
-    throw new CustomError(errorText, undefined, error?.status);
+    const errorMessageToThrow =
+      rawDataType(errorData) === 'object' ? JSON.stringify(errorData) : errorData;
+
+    throw new CustomError(errorMessageToThrow, void 0, request?.status ?? 418);
   }
 }
 
@@ -134,10 +140,10 @@ export function removeCartFromLocalStorage() {
   localStorage.removeItem('prevStoredCart');
 }
 
-export async function saveOrder(email, orders, tokenId) {
+export async function saveOrderToServer(email, orders, tokenId, updateOrder = false) {
   await fetchWrapper(
     generateUrl(`order?email=${email}`),
-    generateFetchOptions('POST', { orders }, tokenId)
+    generateFetchOptions(updateOrder ? 'PUT' : 'POST', { orders }, tokenId)
   );
 }
 
@@ -151,4 +157,10 @@ export function updateLocalStorageAccessToken(email) {
   if (!normalize(email)) return;
   const newAccessToken = { ...JSON.parse(localStorage.getItem('currentAccessToken')), email };
   localStorage.setItem('currentAccessToken', JSON.stringify(newAccessToken));
+}
+
+export function formatCurrencyForStripe(float) {
+  if (Number.isInteger(float)) return float;
+  const floatAsCurrency = parseFloat(float.toFixed(2));
+  return floatAsCurrency * 100;
 }
