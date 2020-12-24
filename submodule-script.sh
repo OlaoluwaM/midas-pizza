@@ -5,6 +5,6 @@ if [[ ! -z "$SUBMOD_INIT" ]] || [[ ! -f "./server/entry.js" ]]; then
   git submodule init
   git submodule update
   export SUBMOD_INIT=true
-else
-  echo "$SUBMOD_INIT"
 fi
+
+echo "$SUBMOD_INIT"
