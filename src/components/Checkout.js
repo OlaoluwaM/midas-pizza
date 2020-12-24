@@ -17,6 +17,7 @@ import {
   generateFetchOptions,
   generateUrl,
   fetchWrapper,
+  formatCurrencyForStripe,
   removeCartFromLocalStorage,
 } from './utils/helpers';
 
@@ -141,7 +142,6 @@ function initialPaymentState() {
   return {
     paymentSuccess: false,
     paymentFailed: false,
-    paymentError: null,
     paymentIsProcessing: false,
     clientSecret: null,
   };
@@ -152,21 +152,32 @@ function paymentStatusReducer(state, action) {
     case 'paymentSuccess':
       return {
         ...state,
+        paymentIsProcessing: false,
         paymentSuccess: true,
       };
+
     case 'paymentProcessing':
       return {
         ...state,
         paymentIsProcessing: true,
       };
-    case 'paymentFailed':
+
+    case 'storeClientSecret':
+      return {
+        ...state,
+        clientSecret: action.clientSecret,
+      };
+
+    case 'paymentError':
       return {
         ...state,
         paymentFailed: true,
-        paymentError: action.error,
+        paymentIsProcessing: false,
       };
+
     case 'reset':
-      return initialPaymentState;
+      return initialPaymentState();
+
     default:
       throw new ReferenceError('Action is not Defined');
   }
@@ -183,66 +194,106 @@ export default function Checkout({ total = 0, orders, closeCheckoutModal }) {
   const elements = useElements();
 
   const {
-    userData: { email, name },
+    userData: { email, name, streetAddress },
   } = React.useContext(UserSessionContext);
 
   const updateCart = useSetRecoilState(cartStateAtom);
-  const { paymentIsProcessing, paymentSuccess, paymentFailed, paymentError } = stripePaymentStatus;
+  const { clientSecret, paymentIsProcessing } = stripePaymentStatus;
 
   React.useEffect(() => {
-    async () => {
-      
-    };
+    (async () => {
+      const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
+      const clientTotal = formatCurrencyForStripe(total);
+      let currentClientSecret;
+
+      try {
+        const { clientSecret, currentAmount: serverTotal } = await fetchWrapper(
+          generateUrl(`checkout?email=${email}`),
+          generateFetchOptions('GET', null, accessTokenId)
+        );
+
+        if (clientTotal !== serverTotal) {
+          const { clientSecret: updatedClientSecret } = await fetchWrapper(
+            generateUrl(`checkout?email=${email}`),
+            generateFetchOptions(
+              'PUT',
+              { updatedPayloadIntentData: { amount: clientTotal } },
+              accessTokenId
+            )
+          );
+
+          currentClientSecret = updatedClientSecret;
+        } else currentClientSecret = clientSecret;
+      } catch {
+        const { clientSecret } = await fetchWrapper(
+          generateUrl(`checkout?email=${email}`),
+          generateFetchOptions('POST', null, accessTokenId)
+        );
+
+        currentClientSecret = clientSecret;
+      }
+
+      dispatch({ type: 'storeClientSecret', clientSecret: currentClientSecret });
+    })();
+
+    return () => dispatch({ type: 'reset' });
   }, []);
 
   const makePayment = async e => {
     e.preventDefault();
     if (!stripe || !elements) return;
 
-    const { Id: tokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
-
     try {
       dispatch({ type: 'paymentProcessing' });
 
-      const payload = await stripe.createPaymentMethod({
-        type: 'card',
-        card: elements.getElement(CardElement),
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            name,
+            email,
+            address: streetAddress,
+          },
+        },
       });
 
-      if (payload?.error) {
-        throw new CustomError(
-          `There seems to be an error with your card input ${JSON.stringify(payload.error)}`,
-          'StripePaymentError'
+      if (result.error) throw new CustomError(result.error.message, result.error.type);
+
+      if (result.paymentIntent.status === 'succeeded') {
+        // Redirect user to success page
+        const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
+
+        await fetchWrapper(
+          generateUrl(`checkout/sendInvoice?email=${email}`),
+          generateFetchOptions('POST', null, accessTokenId)
+        );
+
+        toast(
+          `Thank you for your shopping with us ${name}. Hope to see you soon 👌👋. P.S, your order will arrive in 30 - 40 minutes ⌛`,
+          {
+            type: 'success',
+            autoClose: 30000,
+          }
         );
       }
 
-      toast(
-        `Thank you for your shopping with us ${name}. Hope to see you soon 👌👋. P.S, your order will arrive in 30 - 40 minutes ⌛`,
-        {
-          type: 'success',
-          autoClose: false,
-        }
-      );
-
       removeCartFromLocalStorage();
       updateCart({});
+      dispatch({ type: 'paymentSuccess' });
+
       closeCheckoutModal();
     } catch (error) {
-      if (error?.type === 'StripePaymentError') {
-        toast('Please check your card details and try again 😅', { type: 'error' });
-      } else {
-        toast('An error occurred during checkout, please try again later', { type: 'error' });
-      }
+      dispatch({ type: 'paymentError' });
+
+      toast(error.message, { type: 'error' });
       console.error(error);
-    } finally {
-      setProcessingPayment(false);
     }
   };
 
   return (
     <CheckoutFormModalWrapper layout>
       <AnimatePresence>
-        {processingPayment ? (
+        {paymentIsProcessing ? (
           <Loading layoutId="checkout" key="loader" />
         ) : (
           <motion.div

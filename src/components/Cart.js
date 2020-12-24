@@ -12,7 +12,12 @@ import { default as Checkout, Modal } from './Checkout';
 import { cartState as cartStateAtom } from './atoms';
 import { CartCheckFill as PaymentIcon } from '@styled-icons/bootstrap/CartCheckFill';
 import { ReactComponent as EmptyCartSVG } from '../assets/undraw_empty_xct9.svg';
-import { generateFetchOptions, generateUrl, fetchWrapper, saveOrder } from './utils/helpers';
+import {
+  generateFetchOptions,
+  generateUrl,
+  fetchWrapper,
+  saveOrderToServer,
+} from './utils/helpers';
 import { m as motion, AnimatePresence, AnimateSharedLayout, useCycle } from 'framer-motion';
 import { defaultPageTransitionVariants2, emptyCartVectorVariants } from './utils/framer-variants';
 
@@ -100,8 +105,8 @@ export default function CartPreview({ initialCart }) {
   const [showModal, cycleModal] = useCycle(false, true);
 
   const cart = Object.entries(cartObject);
-  const cartTotal = getTotal(cartObject).toFixed(2);
-  const debouncedCart = useDebounce(JSON.stringify(cart), 800);
+  const cartTotal = parseFloat(getTotal(cartObject).toFixed(2));
+  const debouncedCart = useDebounce(JSON.stringify(cart), 2500);
   const initialSaveToServer = React.useRef(false);
 
   const cartIsEmpty = cart.length === 0;
@@ -115,19 +120,22 @@ export default function CartPreview({ initialCart }) {
       return;
     }
 
-    (async () => {
+    let requestIsProcessing = true;
+    (async (userData, currentAccessToken) => {
+      const { email } = userData;
+      const { Id: accessTokenId } = currentAccessToken;
+
       if (!cartIsEmpty) {
-        await saveOrder(userData.email, cartObject, currentAccessToken.Id);
+        await saveOrderToServer(email, cartObject, accessTokenId, true);
         console.log('Cart updated on server');
       } else {
         await fetchWrapper(
-          generateUrl(`/order?email=${userData.email}`),
-          generateFetchOptions('DELETE', null, currentAccessToken.Id)
+          generateUrl(`/order?email=${email}`),
+          generateFetchOptions('DELETE', null, accessTokenId)
         );
-
         console.log('Cart emptied');
       }
-    })();
+    })(userData, currentAccessToken);
   }, [debouncedCart]);
 
   return (
