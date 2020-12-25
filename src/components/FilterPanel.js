@@ -42,14 +42,15 @@ const FilterButtonContainer = styled(motion.button).attrs({
   background: ${({ theme }) => theme.backgroundLighter};
   border-radius: 3px;
   height: 100%;
-  width: calc(100% / 5);
+  width: calc(100% / 6);
   cursor: pointer;
-  padding: 0.4em;
   font-weight: var(--medium);
   display: inline-flex;
   align-items: center;
   justify-content: space-evenly;
   flex-direction: column;
+  border: none;
+  padding: 0.5% 0.4em;
 
   span {
     font-size: clamp(0.5rem, 2vmin, 1.1em);
@@ -57,7 +58,7 @@ const FilterButtonContainer = styled(motion.button).attrs({
 
   svg {
     fill-opacity: inherit;
-    width: 16%;
+    width: clamp(12px, 17%, 30px);
     height: auto;
 
     @media (min-width: 870px) {
@@ -72,10 +73,10 @@ const FilterButtonContainer = styled(motion.button).attrs({
   }
 
   @media (min-width: 870px) {
-    width: 12%;
     flex-direction: row;
     justify-content: center;
     margin-right: 2rem;
+    padding: 2.2% 0.4em;
 
     &:last-of-type {
       margin-right: 0;
@@ -91,8 +92,6 @@ export default function FilterPanel({ filterForType, activeFilter, isLoading }) 
     ['Snack', Snack, filterForType.bind(null, 'Snack')],
   ];
 
-  const inlineStyles = { borderWidth: 1.5, borderStyle: 'solid' };
-
   return (
     <FilterContainer>
       {foodTypes.map(([type, IconComponent, filterHandler]) => {
@@ -100,10 +99,8 @@ export default function FilterPanel({ filterForType, activeFilter, isLoading }) 
 
         return (
           <FilterButtonContainer
-            disabled={isLoading}
             animate={isLoading ? 'visible' : isActiveFilter ? 'active' : 'visible'}
             key={type}
-            style={inlineStyles}
             className={isActiveFilter}
             onClick={filterHandler}>
             <IconComponent />

@@ -67,8 +67,9 @@ const Content = styled(motion.div)`
   }
 
   p {
-    font-size: min(2vw, 0.9em);
+    font-size: min(2vw, 1em);
     text-align: inherit;
+    font-weight: var(--medium);
     width: 82%;
     color: ${({ theme }) => hexToRgb(theme.black, 0.5)};
     line-height: 1.8em;
@@ -84,11 +85,11 @@ const Content = styled(motion.div)`
     color: inherit;
     font-weight: var(--bold);
     position: relative;
-    width: clamp(25%, 10vmin, 35%);
-    height: min(3.7em, 12vmin);
+    width: clamp(30%, 10vmin, 35%);
+    height: min(3.7em, 10vmin);
     cursor: pointer;
     z-index: 1;
-    font-size: min(1em, 4vmin);
+    font-size: min(1em, 3vmin);
     margin-bottom: -2em;
 
     span {
@@ -174,10 +175,6 @@ const HomeSvgContainer = styled(motion.div).attrs({
     align-items: flex-end;
   }
 
-  /* @media (max-width: 1090px) {
-    height: 80vmin;
-  } */
-
   @media (orientation: portrait) and (max-width: 630px) {
     height: auto;
     flex-basis: unset;
@@ -195,7 +192,6 @@ export default function Home() {
       </HomeSvgContainer>
 
       <Content variants={homeContentVariants}>
-        {/* <motion.div variants={homeContentVariants} style={{ backgroundColor: 'transparent' }}> */}
         <h1>Pizza from the comfort of your home</h1>
 
         <p>
@@ -208,7 +204,6 @@ export default function Home() {
           <span>{authenticated ? 'Order' : 'Sign Up'}</span>
           <span className="backdrop"></span>
         </NavLink>
-        {/* </motion.div> */}
       </Content>
     </HomeSection>
   );
