@@ -114,11 +114,11 @@ a.current-page-svg {
 
 a.current-page:after {
   content: '';
-  width: 65%;
-  height: 12%;
+  width: 80%;
+  height: 8%;
   border-radius: 10px;
   background: $routeHighlightColor;
-  margin-top: 7%;
+  margin-top: 5%;
   position: relative;
   z-index: -2;
   transition: transform 0.3s $cssSpring;
