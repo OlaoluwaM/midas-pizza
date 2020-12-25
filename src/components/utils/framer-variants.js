@@ -130,7 +130,6 @@ export const filterButtonVariants = {
     opacity: 0,
     fillOpacity: 0,
     x: -10,
-    borderColor: hexToRgb(theme.gray),
   },
 
   visible: {
@@ -138,7 +137,6 @@ export const filterButtonVariants = {
     color: theme.gray,
     opacity: 0.5,
     fillOpacity: 0.6,
-    borderColor: hexToRgb(theme.gray),
     x: 0,
     transition: { delay: 0.2 },
   },
@@ -148,7 +146,6 @@ export const filterButtonVariants = {
     fillOpacity: 1,
     boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.2)',
     color: theme.black,
-    borderColor: hexToRgb(theme.backgroundLighter),
     x: 0,
   },
 
