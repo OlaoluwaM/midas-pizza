@@ -86,9 +86,12 @@ function ShowPasswordSvg() {
     setPasswordVisibility(prevState => !prevState);
   };
 
-  if (!passwordIsVisible) return <Eye className="inline-password-svg" onClick={togglePassword} />;
+  const titleAttrib = passwordIsVisible ? 'Show Password  ✅' : 'Hide Password ❌';
 
-  return <EyeSlash className="inline-password-svg" onClick={togglePassword} />;
+  if (!passwordIsVisible)
+    return <Eye className="inline-password-svg" title={titleAttrib} onClick={togglePassword} />;
+
+  return <EyeSlash className="inline-password-svg" onClick={togglePassword} title={titleAttrib} />;
 }
 
 const HookFormInputField = React.memo(props => {
