@@ -1,5 +1,6 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[Project is live on Netlify](https://midas-pizza.netlify.app/)
 
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 ## Available Scripts
 
 In the project directory, you can run:
@@ -41,5 +42,5 @@ In order to run this application, you will need to have a ``.env`` file which co
 <ul>
   <li>REACT_APP_API_ENDPOINT</li>
   <li>REACT_APP_QUANTITY_LIMIT</li>
-  <li>REACT_APP_STRIPE_API_KEY</li>
+  <li>REACT_APP_STRIPE_API_KEY -- <b>This should be a publishable test key</b></li>
 </ul>
