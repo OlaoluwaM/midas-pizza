@@ -74,6 +74,7 @@ const MenuContainer = styled.menu`
   padding-left: 0px;
   position: relative;
   align-items: center;
+  padding-bottom: 30px;
 
   @media (max-width: 720px) {
     padding-right: 0;
@@ -106,12 +107,30 @@ export default function Menu() {
     const currentAccessToken = JSON.parse(localStorage.getItem('currentAccessToken'));
 
     (async () => {
+      const menuItemsPhotoIdObjectInSessionStorage =
+        JSON.parse(sessionStorage.getItem('menuItemPhotoIds')) || false;
+
+      const getPhotoId = menuItemsPhotoIdObjectInSessionStorage ? '' : '&getPhotoId=true';
+
       const menuData = await fetchWrapper(
-        generateUrl(`order/menu?email=${userData.email}`),
+        generateUrl(`order/menu?email=${userData.email}${getPhotoId}`),
         generateFetchOptions('GET', null, currentAccessToken.Id)
       );
 
-      const menuObjAsArray = Object.entries(menuData);
+      let menuObjAsArray = Object.entries(menuData);
+
+      if (!menuItemsPhotoIdObjectInSessionStorage) {
+        const photoIdObject = Object.fromEntries(
+          menuObjAsArray.map(([menuItem, { photoId }]) => [menuItem, photoId])
+        );
+        sessionStorage.setItem('menuItemPhotoIds', JSON.stringify(photoIdObject));
+      } else {
+        menuObjAsArray = menuObjAsArray.map(menuItem => {
+          menuItem[1].photoId = menuItemsPhotoIdObjectInSessionStorage[menuItem[0]];
+          return menuItem;
+        });
+      }
+
       menuStore.current = menuObjAsArray;
 
       filterHandler('Pizza', menuObjAsArray);
@@ -164,13 +183,14 @@ export default function Menu() {
           <Loading key="loader-component" />
         ) : (
           <MenuContainer key="menu">
-            {menuItems.map(({ 0: itemName, 1: { initialPrice: price, type } }, ind) => (
+            {menuItems.map(({ 0: itemName, 1: { initialPrice: price, type, photoId } }, ind) => (
               <MenuItem
                 key={itemName}
                 itemName={itemName}
                 price={price}
                 foodType={type}
                 custom={ind}
+                photoId={photoId}
               />
             ))}
           </MenuContainer>
