@@ -2,10 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
-import pizzaImage from '../assets/pizza-image-ivan-torres-unsplash.jpg';
-import drinkImage from '../assets/drink-image-maxime-renard-unsplash.jpg';
-import dessertImage from '../assets/dessert-image-emile-mbunzama-unsplash.jpg';
-import snacksImage from '../assets/snacks-image-fran-hogan-unsplash.jpg';
 
 import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
@@ -18,7 +14,6 @@ import { cartState as cartStateAtom } from './atoms';
 const MenuItemContainer = styled(motion.div).attrs({
   variants: menuItemVariants,
   initial: 'hidden',
-  animate: 'visible',
   exit: 'exit',
   'data-testid': 'menu-item',
 })`
@@ -38,8 +33,10 @@ const MenuItemContainer = styled(motion.div).attrs({
 
   img {
     position: relative;
-    max-width: 100%;
-    object-fit: contain;
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    object-position: center center;
     content-visibility: auto;
     border-radius: inherit;
     align-self: center;
@@ -194,16 +191,9 @@ function AddToCartButton({ addToCart }) {
   );
 }
 
-export default function MenuItem({ itemName, price, custom, foodType }) {
+export default function MenuItem({ itemName, price, custom, foodType, photoId }) {
   const quantityToAdd = React.useRef(1);
   const updateCart = useSetRecoilState(cartStateAtom);
-
-  const imagePool = {
-    Pizza: pizzaImage,
-    Drink: drinkImage,
-    Dessert: dessertImage,
-    Snack: snacksImage,
-  };
 
   const incrementQuantityToAddBy = quantity => {
     quantityToAdd.current = quantity;
@@ -239,8 +229,8 @@ export default function MenuItem({ itemName, price, custom, foodType }) {
   };
 
   return (
-    <MenuItemContainer custom={custom} data-food-type={foodType}>
-      <img src={imagePool[foodType]} alt={`${itemName}`} />
+    <MenuItemContainer data-food-type={foodType}>
+      <img src={`https://source.unsplash.com/${photoId}`} alt={itemName} />
       <div className="item-info">
         <p>{itemName}</p>
         <h6>{`$${price.toFixed(2)}`}</h6>
