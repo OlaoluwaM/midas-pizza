@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 
 import { toast } from 'react-toastify';
+import { BaseButton } from './general-components/general';
 import { useHistory } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 import { cartState as cartStateAtom } from './atoms';
@@ -14,7 +15,7 @@ import {
   saveOrderToServer,
 } from './utils/helpers';
 
-const LogoutButton = styled.button`
+export const LogoutButton = styled(BaseButton)`
   padding: 0.8em;
   border-radius: 7px;
   border: none;
