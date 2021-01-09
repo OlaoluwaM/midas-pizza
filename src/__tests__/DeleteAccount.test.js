@@ -3,6 +3,7 @@ import App from '../components/App';
 
 import { RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 import { render, cleanup, fireEvent, act, screen, within } from '@testing-library/react';
 
 afterAll(cleanup);
@@ -11,6 +12,7 @@ function renderApp() {
   return render(
     <MemoryRouter>
       <RecoilRoot>
+        <ToastContainer />
         <App />
       </RecoilRoot>
     </MemoryRouter>
@@ -18,10 +20,12 @@ function renderApp() {
 }
 
 beforeEach(() => {
-  window.localStorage.getItem = jest.fn(key =>
-    key === 'currentAccessToken' ? JSON.stringify(testAccessToken) : null
-  );
+  jest.useFakeTimers();
 });
+
+window.localStorage.getItem = jest.fn(key =>
+  key === 'currentAccessToken' ? JSON.stringify(testAccessToken) : null
+);
 
 test('If user can terminate account', async () => {
   const dataFromServer = { ...menuContext.userData, cart: initialUserCart };
@@ -65,17 +69,19 @@ test('If user can terminate account', async () => {
 
   expect(confirmAccountDeleteButton).not.toBeDisabled();
 
+  await act(async () => jest.advanceTimersByTime(7000));
+
   await act(async () => {
     fireEvent.click(confirmAccountDeleteButton);
   });
 
-  expect(window.sessionStorage.removeItem).toHaveBeenCalled();
-  expect(window.localStorage.removeItem).toHaveBeenCalledTimes(2);
-
-  await act(async () => jest.advanceTimersByTime(1000));
-
   expect(await findByRole('alert')).toBeInTheDocument();
+
+  expect(window.sessionStorage.removeItem).toHaveBeenCalled();
+  expect(window.localStorage.removeItem).toHaveBeenCalled();
 
   expect(settingsIcon).not.toBeInTheDocument();
   expect(cartCount).not.toBeInTheDocument();
+
+  expect(location.pathname).toEqual('/');
 });
