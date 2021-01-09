@@ -43,13 +43,13 @@ const ModalContainer = styled(motion.div).attrs({
   }
 
   @media (max-width: 780px) {
-    &.modal-container {
+    div:not(.delete-account-modal-prompt) > &.modal-container {
       width: 75%;
     }
   }
 
   @media (max-width: 520px) {
-    &.modal-container {
+    div:not(.delete-account-modal-prompt) > &.modal-container {
       width: 90%;
     }
   }
