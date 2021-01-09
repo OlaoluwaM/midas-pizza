@@ -21,8 +21,6 @@ import {
 const Form = styled(motion.form).attrs({
   variants: authPageGeneralVariants,
   layoutId: 'auth-form',
-  initial: 'hidden',
-  exit: 'exit',
 })`
   width: 100%;
   height: auto;
@@ -84,13 +82,13 @@ export function LoginForm({ apiAuth, isLoading }) {
 
       await apiAuth(url, dataToSendToServer);
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       if (error?.status === 401) {
         setErrorString(JSON.stringify({ field: 'email', message: 'User does not exist' }));
       } else if (error?.status === 400) {
         setErrorString(JSON.stringify({ field: 'passwordLogin', message: 'Incorrect Password' }));
-      } else throw error;
+      }
     }
   };
 
