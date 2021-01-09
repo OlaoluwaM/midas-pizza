@@ -13,4 +13,5 @@ export const themeObj = {
   blackLighter: '#2a2a2a',
   gray: '#bbbbbb',
   grayDark: '#B9BCCB',
+  error: '#ff0033',
 };
