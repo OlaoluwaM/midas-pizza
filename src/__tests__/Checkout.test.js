@@ -1,26 +1,24 @@
+// TODO finish test
 import React from 'react';
+import Modal from '../components/Modal';
 import Checkout from '../components/Checkout';
 
-import { Elements, useStripe } from '@stripe/react-stripe-js';
-import { cleanup, act, fireEvent } from '@testing-library/react';
+import { CardElement, useStripe, Elements } from '@stripe/react-stripe-js';
+import { cleanup, act, fireEvent, render, screen } from '@testing-library/react';
 
-jest.mock('@stripe/react-stripe-js', () => {
-  return {
-    CardElement: () => {
-      return <div>CardElement</div>;
-    },
+jest.mock('@stripe/react-stripe-js', () => ({
+  __esModule: true,
 
-    Elements: ({ children }) => {
-      return <div>{children}</div>;
-    },
+  Elements: ({ children }) => <div>{children}</div>,
 
-    useStripe: jest.fn(() => ({
-      createPaymentMethod: async () => true,
-    })),
+  CardElement: jest.fn(() => <div>CardElement</div>),
 
-    useElements: () => ({ getElement: () => 'element' }),
-  };
-});
+  useStripe: jest.fn(() => ({
+    createPaymentMethod: async () => true,
+  })),
+
+  useElements: () => ({ getElement: () => 'element' }),
+}));
 
 afterAll(cleanup);
 
@@ -31,17 +29,6 @@ beforeEach(() => {
   closeModalMock.mockClear();
 });
 
-function renderCheckout(cartTotal = 7.0) {
-  return renderWithProviders(
-    <Elements>
-      <Checkout total={cartTotal} orders={initialCart} closeCheckoutModal={closeModalMock} />
-    </Elements>,
-    {
-      contextValue: menuContext,
-    }
-  );
-}
-
 const store = {
   currentAccessToken: testAccessToken,
   storedCart: initialCart,
@@ -49,79 +36,181 @@ const store = {
 
 window.localStorage.getItem = jest.fn(key => JSON.stringify(store[key]));
 
-test('should check if user can checkout properly', async () => {
-  fetch.once(JSON.stringify(formatFetchResponse({ status: 200 })), { status: 200 });
+let cartTotal = Object.entries(initialCart).reduce(
+  (total, [_, { quantity, initialPrice: basePrice }]) => (total += quantity * basePrice),
+  0
+);
 
-  const cartTotal = Object.entries(initialCart).reduce(
-    (total, [_, { quantity, initialPrice: basePrice }]) => (total += quantity * basePrice),
-    0
+test("If user is shown cart total when user's cart does not have paymentIntent yet", async () => {
+  fetch.mockRejectOnce('An error occurred', { status: 500 }).once(
+    JSON.stringify(
+      formatFetchResponse({
+        clientSecret: 'client_secret',
+        currentAmount: cartTotal,
+      }),
+      { status: 200 }
+    )
   );
 
-  const utils = renderCheckout(cartTotal);
-
-  const { getByTestId, getByText, findByTestId, findByRole } = utils;
-  const checkoutModal = await findByTestId('checkout-modal');
-  expect(checkoutModal).toBeInTheDocument();
-
-  const totalElement = getByTestId('checkout-total');
-  expect(totalElement).toHaveTextContent(`$${cartTotal}`);
-
-  expect(getByText('CardElement')).toBeInTheDocument();
-
-  const payButton = getByText(/pay/i);
-  expect(payButton).not.toBeDisabled();
+  let utils;
 
   await act(async () => {
-    fireEvent.click(payButton);
+    utils = renderWithProviders(
+      <Modal className="checkout" closeModal={closeModalMock}>
+        <Checkout total={cartTotal} orders={initialCart} closeCheckoutModal={closeModalMock} />
+      </Modal>,
+      {
+        contextValue: menuContext,
+      }
+    );
   });
 
-  expect(await findByTestId('loader')).toBeInTheDocument();
+  const { findByTestId } = utils;
 
-  const toast = await findByRole('alert');
-  expect(toast).toHaveTextContent(/Thank you/i);
-
-  expect(window.localStorage.removeItem).toBeCalledTimes(2);
-  expect(closeModalMock).toBeCalled();
+  expect(await findByTestId('checkout-form')).toBeInTheDocument();
+  expect(await findByTestId('checkout-total')).toHaveTextContent(cartTotal.toFixed(2));
 });
 
-test('should check if user sees a notification on invalid card credentials', async () => {
-  useStripe.mockImplementationOnce(() => ({
-    createPaymentMethod: async () => ({ error: 'error' }),
-  }));
+test('If checkout cart is updated with server total if there is a client-server cart total mismatch', async () => {
+  fetch
+    .once(
+      JSON.stringify(
+        formatFetchResponse({
+          clientSecret: 'client_secret',
+          currentAmount: cartTotal,
+        }),
+        { status: 200 }
+      )
+    )
+    .once(
+      JSON.stringify(
+        formatFetchResponse({
+          clientSecret: 'client_secret',
+          updatedCartTotal: cartTotal,
+        }),
+        { status: 200 }
+      )
+    );
 
-  const utils = renderCheckout();
-
-  const { getByText, findByTestId, findByRole } = utils;
-
-  const payButton = getByText(/pay/i);
+  let utils;
 
   await act(async () => {
-    fireEvent.click(payButton);
+    utils = renderWithProviders(
+      <Modal className="checkout" closeModal={closeModalMock}>
+        <Checkout total={1.0} orders={initialCart} closeCheckoutModal={closeModalMock} />
+      </Modal>,
+      {
+        contextValue: menuContext,
+      }
+    );
   });
 
-  expect(await findByTestId('loader')).toBeInTheDocument();
-
-  const toast = await findByRole('alert');
-  expect(toast).toHaveTextContent(/card details/i);
-  expect(closeModalMock).not.toBeCalled();
+  const { findByTestId } = utils;
+  expect(await findByTestId('checkout-total')).toHaveTextContent(cartTotal.toFixed(2));
 });
 
-test('should check if user is notified upon a transaction error', async () => {
-  fetch.mockRejectOnce({ text: async () => 'Payment could not be completed', status: 500 });
-
-  const utils = renderCheckout();
-
-  const { getByText, findByTestId, findByRole } = utils;
-
-  const payButton = getByText(/pay/i);
-
-  await act(async () => {
-    fireEvent.click(payButton);
+describe('Payment status', () => {
+  beforeEach(() => {
+    fetch.once(
+      JSON.stringify(
+        formatFetchResponse({
+          clientSecret: 'client_secret',
+          currentAmount: cartTotal,
+        }),
+        { status: 200 }
+      )
+    );
+    useStripe.mockReset();
   });
 
-  expect(await findByTestId('loader')).toBeInTheDocument();
+  test('is successful', async () => {
+    fetch.once(JSON.stringify(formatFetchResponse('Invoice sent')), { status: 201 });
+    let utils;
 
-  const toast = await findByRole('alert');
-  expect(toast).toHaveTextContent(/error/i);
-  expect(closeModalMock).not.toBeCalled();
+    useStripe.mockReturnValue({
+      async confirmCardPayment() {
+        return { paymentIntent: { status: 'succeeded' } };
+      },
+    });
+
+    await act(async () => {
+      utils = renderWithProviders(
+        <Modal className="checkout" closeModal={closeModalMock}>
+          <Checkout total={cartTotal} orders={initialCart} closeCheckoutModal={closeModalMock} />
+        </Modal>,
+        {
+          contextValue: menuContext,
+        }
+      );
+    });
+
+    const { findByTestId, findByRole } = utils;
+    const payButton = await findByRole('button');
+
+    expect(payButton).not.toBeDisabled();
+
+    await act(async () => fireEvent.click(payButton));
+    expect(await findByTestId('loader')).toBeInTheDocument();
+
+    // TODO assert checkout success component is shown
+  });
+
+  test('when stripe is not loaded', async () => {
+    let utils;
+
+    await act(async () => {
+      utils = renderWithProviders(
+        <Modal className="checkout" closeModal={closeModalMock}>
+          <Checkout total={cartTotal} orders={initialCart} closeCheckoutModal={closeModalMock} />
+        </Modal>,
+        {
+          contextValue: menuContext,
+        }
+      );
+    });
+
+    const { findByRole } = utils;
+    const payButton = await findByRole('button');
+
+    expect(payButton).toBeDisabled();
+  });
+
+  test('when payment is unsuccessful', async () => {
+    const { message: mockErrorMessage, type: mockErrorType } = {
+      message: 'Mock Error',
+      type: 'nothing serious',
+    };
+
+    useStripe.mockReturnValue({
+      async confirmCardPayment() {
+        return { error: { message: mockErrorMessage, type: mockErrorType } };
+      },
+    });
+
+    let utils;
+
+    await act(async () => {
+      utils = renderWithProviders(
+        <Modal className="checkout" closeModal={closeModalMock}>
+          <Checkout total={cartTotal} orders={initialCart} closeCheckoutModal={closeModalMock} />
+        </Modal>,
+        {
+          contextValue: menuContext,
+        }
+      );
+    });
+
+    const { findByTestId, findByRole } = utils;
+    const payButton = await findByRole('button');
+
+    await act(async () => {
+      fireEvent.click(payButton);
+    });
+
+    expect(await findByTestId('loader')).toBeInTheDocument();
+
+    await act(async () => jest.advanceTimersByTime(1000));
+
+    expect(await findByRole('alert')).toHaveTextContent(new RegExp(mockErrorMessage, 'i'));
+  });
 });
