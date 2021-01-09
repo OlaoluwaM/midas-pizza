@@ -2,7 +2,14 @@ import React from 'react';
 import Authenticate from '../components/Auth';
 
 import userEvent from '@testing-library/user-event';
-import { cleanup, fireEvent, act, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  act,
+  screen,
+  waitForElementToBeRemoved,
+  within,
+} from '@testing-library/react';
 
 afterAll(cleanup);
 
@@ -36,7 +43,6 @@ test('Should make sure user sees appropriate error on invalid input during sign 
   });
 
   await waitForElementToBeRemoved(() => getByTestId('invalid-input-error-passwordSignIn'));
-
   // Field re-validates on blur and successful input
   expect(await findAllByTestId(/invalid-input-error/)).toHaveLength(4);
 
@@ -78,8 +84,8 @@ test('Should make sure user can switch and see the login form', async () => {
   await waitForElementToBeRemoved(() => getByPlaceholderText('Confirm Password'));
 
   // Form state should become login
-  expect(await findByText(/not a member/i)).toBeInTheDocument();
   expect(await findAllByText(/log in/i)).toHaveLength(2);
+  expect(await findByText(/not a member/i)).toBeInTheDocument();
 });
 
 describe('Invalid input tests', () => {
@@ -95,7 +101,7 @@ describe('Invalid input tests', () => {
   ])(
     'Should make sure user can see authentication errors in login form if %s',
     async (_, { error, status }, fieldWithError) => {
-      fetch.mockRejectOnce({ text: async () => error, status });
+      fetch.mockRejectOnce({ message: error, status });
 
       const utils = renderWithProviders(<Authenticate />);
 
@@ -132,6 +138,7 @@ describe('Invalid input tests', () => {
       });
 
       fireEvent.click(submitButton);
+
       expect(await findByTestId('loader')).toBeInTheDocument();
 
       expect(await findByTestId(`invalid-input-error-${fieldWithError}`)).toBeInTheDocument();
@@ -139,7 +146,7 @@ describe('Invalid input tests', () => {
   );
 
   test('Should allow user see invalid input and authentication messages if sign up was invalid', async () => {
-    fetch.mockRejectOnce('Sorry, user already exists', { status: 400 });
+    fetch.mockRejectOnce({ message: 'Sorry, user already exists', status: 400 });
     const utils = renderWithProviders(<Authenticate />);
 
     const { findByRole, findByPlaceholderText, queryAllByTestId, findByTestId } = utils;
@@ -176,3 +183,55 @@ describe('Invalid input tests', () => {
     expect(await findByTestId('invalid-input-error-email')).toBeInTheDocument();
   });
 });
+
+test.each([
+  [
+    'sign up',
+    [
+      ['passwordSignIn', 'Password'],
+      ['confirmPassword', 'Confirm Password'],
+    ],
+    null,
+  ],
+  ['login', [['passwordLogin', 'Password']], null],
+])(
+  'User is able to toggle password visibility in %s form',
+  async (formType, expectedFields, __) => {
+    // Render Authentication component
+    const utils = renderWithProviders(<Authenticate />);
+
+    const { findByTestId, findByText, getByPlaceholderText, findAllByText } = utils;
+
+    // To switch to login text
+    if (formType === 'login') {
+      const switchText = await findByText(/already a member/i);
+      fireEvent.click(switchText);
+
+      await waitForElementToBeRemoved(() => getByPlaceholderText('Confirm Password'));
+      expect(await findAllByText(/log in/i)).toHaveLength(2);
+    }
+    // Iterate through fields that need to be checked
+    for await (let [fieldContainerName, fieldPlaceholder] of expectedFields) {
+      // Get input field and its div parent
+      const fieldContainer = await findByTestId(`${fieldContainerName}-field-container`);
+      const inputField = await within(fieldContainer).findByPlaceholderText(fieldPlaceholder);
+
+      // Get svg button used to show password contents
+      const showPasswordButton = await within(fieldContainer).findByTitle('Show Password ✅');
+
+      // Make sure password is hidden
+      expect(inputField).toHaveAttribute('type', 'password');
+      // Click svg button to make password content visible
+      fireEvent.click(showPasswordButton);
+      // Check if password contents are visible
+      expect(inputField).toHaveAttribute('type', 'text');
+
+      // Now reverse the previous process with hide password svg button
+      const hidePasswordButton = await within(fieldContainer).findByTitle('Hide Password ❌');
+
+      expect(inputField).toHaveAttribute('type', 'text');
+      fireEvent.click(hidePasswordButton);
+      expect(inputField).toHaveAttribute('type', 'password');
+    }
+  }
+);
