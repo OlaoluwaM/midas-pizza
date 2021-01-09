@@ -282,3 +282,87 @@ export const settingsFormTextVariants = {
     opacity: 0,
   },
 };
+
+export const errorCheckoutSvgVariants = {
+  close: {
+    opacity: 0,
+    y: 70,
+    x: 0,
+    transition: { type: 'spring' },
+  },
+
+  popOut: {
+    opacity: 1,
+    y: 0,
+    x: [-15, 15, -8, 8, -6, 6, -3, 3, 0],
+    transition: {
+      type: 'spring',
+      duration: 0.4,
+      x: { type: 'tween', delay: 1, ease: 'linear' },
+      delay: 0.3,
+    },
+  },
+
+  exit: {
+    opacity: 0,
+  },
+};
+
+export const successCheckoutSvgVariants = {
+  close: {
+    opacity: 0,
+    y: 70,
+    rotate: 0,
+    transition: { type: 'spring' },
+  },
+
+  popOut: {
+    opacity: 1,
+    y: 0,
+    rotate: [0, -15, 0],
+    transition: {
+      type: 'tween',
+      duration: 0.7,
+      delay: 0.3,
+      ease: 'anticipate',
+      rotate: { duration: 0.3, delay: 1 },
+    },
+  },
+
+  exit: {
+    opacity: 0,
+  },
+};
+
+export const checkoutStatusContainerVariants = {
+  close: {
+    opacity: 0,
+    transition: { when: 'afterChildren' },
+  },
+
+  popOut: {
+    opacity: 1,
+    transition: { when: 'beforeChildren' },
+  },
+
+  exit: {
+    opacity: 0,
+    transition: { when: 'afterChildren' },
+  },
+};
+
+export const simpleAnimationCheckoutVariants = {
+  popOut: {
+    opacity: 1,
+    y: 0,
+  },
+
+  close: {
+    opacity: 0,
+    y: 50,
+  },
+
+  exit: {
+    opacity: 0,
+  },
+};
