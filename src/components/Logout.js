@@ -17,7 +17,7 @@ import {
 
 export const LogoutButton = styled(BaseButton)`
   padding: 0.8em;
-  border-radius: 7px;
+  border-radius: 5px;
   border: none;
   font-size: 1em;
   cursor: pointer;

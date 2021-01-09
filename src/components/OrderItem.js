@@ -123,7 +123,6 @@ function Counter({ itemName, initialQuantity }) {
   const { REACT_APP_QUANTITY_LIMIT: quantityLimit } = process.env;
 
   const updateItemQuantity = e => {
-    console.log(count);
     if (count === 0 || isNaN(count)) return;
     const amountToAdd = parseInt(e.target.value);
 
