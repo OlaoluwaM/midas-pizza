@@ -2,13 +2,13 @@ import React from 'react';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
+import AddToCartButton from './AddToCartButton';
 
 import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
 import { getCartCount } from './utils/helpers';
 import { menuItemVariants } from './utils/framer-variants';
 import { useSetRecoilState } from 'recoil';
-import { CartPlusFill as CartIcon } from '@styled-icons/bootstrap/CartPlusFill';
 import { cartState as cartStateAtom } from './atoms';
 
 const MenuItemContainer = styled(motion.div).attrs({
@@ -81,28 +81,16 @@ const MenuItemContainer = styled(motion.div).attrs({
 
       .quantity-field {
         position: relative;
-        flex-basis: 35%;
-        width: 40%;
+        flex-basis: 15%;
+        width: 100%;
         display: flex;
-        justify-content: flex-start;
+        justify-content: center;
         align-items: center;
         opacity: 0.2;
         transition: opacity 0.2s ease;
 
-        @media (max-width: 870px) {
-          justify-content: center;
-        }
-
         &:focus-within {
           opacity: 1;
-        }
-
-        label {
-          font-size: clamp(0.4em, 2vmin, 0.7em);
-          font-weight: var(--bold);
-          @media (max-width: 870px) {
-            display: none;
-          }
         }
 
         input {
@@ -114,30 +102,6 @@ const MenuItemContainer = styled(motion.div).attrs({
           font-size: clamp(1em, 1vmin, 1.3em);
           font-family: var(--primaryFont);
           font-weight: var(--bold);
-        }
-      }
-
-      .add-to-cart-button {
-        position: relative;
-        flex-basis: 60%;
-        display: flex;
-        align-items: center;
-        justify-content: space-evenly;
-        border: none;
-        border-radius: 7px;
-        padding: 1.3em 0;
-        align-self: flex-end;
-        cursor: pointer;
-        font-weight: var(--bold);
-        font-family: var(--primaryFont);
-        transition: 0.1s ease box-shadow, 0.2s ease background, color 0.3s ease;
-
-        svg {
-          width: 11%;
-        }
-
-        span {
-          font-size: min(3vmin, 1em);
         }
       }
     }
@@ -165,7 +129,6 @@ function QuantityInput({ incrementQuantity }) {
 
   return (
     <motion.div className="quantity-field">
-      <label htmlFor="quantity">Qty:</label>
       <input
         id="quantity"
         data-testid="quantity-input"
@@ -179,19 +142,7 @@ function QuantityInput({ incrementQuantity }) {
   );
 }
 
-function AddToCartButton({ addToCart }) {
-  return (
-    <motion.button
-      className="add-to-cart-button button-black"
-      onClick={addToCart}
-      data-testid="add-to-cart-button">
-      <CartIcon />
-      <motion.span layoutId="text">Add to cart</motion.span>
-    </motion.button>
-  );
-}
-
-export default function MenuItem({ itemName, price, custom, foodType, photoId }) {
+export default function MenuItem({ itemName, price, foodType, photoId }) {
   const quantityToAdd = React.useRef(1);
   const updateCart = useSetRecoilState(cartStateAtom);
 
@@ -201,12 +152,15 @@ export default function MenuItem({ itemName, price, custom, foodType, photoId })
 
   const addToCart = () => {
     const { current: amountOrdered } = quantityToAdd;
+    let addedToCart;
 
     updateCart(prevCartObject => {
       const cartCount = getCartCount(prevCartObject);
 
       if (cartCount + amountOrdered > quantityLimit) {
         toast(`Sorry but you cannot order more than ${quantityLimit} items`, { type: 'error' });
+        addedToCart = false;
+
         return prevCartObject;
       }
 
@@ -218,21 +172,25 @@ export default function MenuItem({ itemName, price, custom, foodType, photoId })
           type: foodType,
           quantity: 0,
           initialPrice: price,
+          photoId,
         };
       } else newCartItemObject[itemName] = { ...prevCartObject[itemName] };
 
       newCartItemObject[itemName]['quantity'] += amountOrdered;
       const newCartObject = { ...prevCartObject, ...newCartItemObject };
 
+      addedToCart = true;
       return newCartObject;
     });
+
+    return addedToCart;
   };
 
   return (
     <MenuItemContainer data-food-type={foodType}>
       <img src={`https://source.unsplash.com/${photoId}`} alt={itemName} />
       <div className="item-info">
-        <p>{itemName}</p>
+        <p data-testid="menu-item-name">{itemName}</p>
         <h6>{`$${price.toFixed(2)}`}</h6>
         <div className="order-buttons">
           <QuantityInput incrementQuantity={incrementQuantityToAddBy} />
