@@ -9,7 +9,7 @@ import { errorCheckoutSvgVariants } from './utils/framer-variants';
 import {
   CheckoutStateContainer,
   SimpleAnimationContainer,
-} from './general-components/Checkout-reusables';
+} from './general-components/CheckoutReusables';
 
 const ErrorSvgAnimationContainer = styled(motion.div).attrs({
   variants: errorCheckoutSvgVariants,

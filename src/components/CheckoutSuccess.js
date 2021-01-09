@@ -7,7 +7,7 @@ import { successCheckoutSvgVariants } from './utils/framer-variants';
 import {
   CheckoutStateContainer,
   SimpleAnimationContainer,
-} from './general-components/Checkout-reusables';
+} from './general-components/CheckoutReusables';
 
 const SuccessAnimationContainer = styled(motion.div).attrs({
   variants: successCheckoutSvgVariants,

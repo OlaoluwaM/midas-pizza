@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { BaseButton } from './general-components/general';
 import { CardElement } from '@stripe/react-stripe-js';
 import { m as motion } from 'framer-motion';
-import { CheckoutStateContainer } from './general-components/Checkout-reusables';
+import { CheckoutStateContainer } from './general-components/CheckoutReusables';
 import { simpleAnimationCheckoutVariants } from './utils/framer-variants';
 
 const CheckoutForm = styled(motion.form).attrs({
