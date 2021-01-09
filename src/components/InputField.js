@@ -55,7 +55,7 @@ const ErrorDisplay = styled(motion.p)`
   color: var(--error);
   margin-bottom: 0px;
   margin-top: 10px;
-  font-weight: var(--xXBold);
+  font-weight: var(--xBold);
   font-size: 0.8em;
 `;
 
@@ -64,9 +64,7 @@ const InputFieldErrorElement = React.memo(({ thisIsFor, message }) => {
     <ErrorDisplay
       data-testid={`invalid-input-error-${thisIsFor}`}
       variants={errorMessageVariants}
-      initial="hidden"
-      exit="exit"
-      layout="position"
+      layout
       key={`${message}_${thisIsFor}_id`}>
       {message}
     </ErrorDisplay>
@@ -75,7 +73,7 @@ const InputFieldErrorElement = React.memo(({ thisIsFor, message }) => {
 
 InputFieldErrorElement.whyDidYouRender = true;
 
-function ShowPasswordSvg() {
+function ShowPasswordSvg({ errorStyle }) {
   const [passwordIsVisible, setPasswordVisibility] = React.useState(false);
 
   const togglePassword = e => {
@@ -86,12 +84,26 @@ function ShowPasswordSvg() {
     setPasswordVisibility(prevState => !prevState);
   };
 
-  const titleAttrib = passwordIsVisible ? 'Show Password  ✅' : 'Hide Password ❌';
+  const titleAttrib = passwordIsVisible ? 'Hide Password ❌' : 'Show Password  ✅';
 
   if (!passwordIsVisible)
-    return <Eye className="inline-password-svg" title={titleAttrib} onClick={togglePassword} />;
+    return (
+      <Eye
+        className="inline-password-svg"
+        title={titleAttrib}
+        style={errorStyle}
+        onClick={togglePassword}
+      />
+    );
 
-  return <EyeSlash className="inline-password-svg" onClick={togglePassword} title={titleAttrib} />;
+  return (
+    <EyeSlash
+      className="inline-password-svg"
+      onClick={togglePassword}
+      style={errorStyle}
+      title={titleAttrib}
+    />
+  );
 }
 
 const HookFormInputField = React.memo(props => {
@@ -106,7 +118,7 @@ const HookFormInputField = React.memo(props => {
   const validationRules = normalize(validationObj) ?? validationOptions[name];
 
   return (
-    <InputContainer {...motionData}>
+    <InputContainer {...motionData} data-testid={`${name}-field-container`}>
       <motion.input
         {...inputAttributes}
         ref={register(validationRules)}
@@ -118,7 +130,7 @@ const HookFormInputField = React.memo(props => {
         {errorMessage && <InputFieldErrorElement thisIsFor={name} message={errorMessage} />}
       </AnimatePresence>
 
-      {isPasswordField && <ShowPasswordSvg />}
+      {isPasswordField && <ShowPasswordSvg errorStyle={errorMessage ? { top: '35%' } : {}} />}
     </InputContainer>
   );
 });
