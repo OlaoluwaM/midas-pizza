@@ -2,6 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import Logout from './Logout';
 import hexToRgb from './utils/hexToRgb';
+import DeleteAccount from './DeleteAccount';
+import useClickOutsideEvent from './custom-hooks/useClickOutsideEvent';
 
 import { NavLink } from 'react-router-dom';
 import { Cart3 as Cart } from '@styled-icons/bootstrap/Cart3';
@@ -35,7 +37,7 @@ const NavContainer = styled.nav`
       flex-direction: column;
       display: inline-block;
 
-      svg {
+      svg:not(.modal-close-btn-svg) {
         stroke-width: 0.3px;
         width: min(3.2vmin, 30px);
         height: auto;
@@ -169,29 +171,23 @@ function ShoppingCart() {
 }
 
 function SettingsLink({ logUserOut }) {
-  const [shouldShowMenu, setTooltipMenuVisibility] = React.useState(false);
+  const settingsRef = React.useRef(null);
+  const [shouldShowTooltipMenu, setTooltipMenuVisibility] = React.useState(false);
 
-  const showTooltipMenu = () => setTooltipMenuVisibility(true);
-  const hideTooltipMenu = () => setTooltipMenuVisibility(false);
+  const showTooltipMenu = () => setTooltipMenuVisibility(prevState => !prevState && true);
+  const hideTooltipMenu = () => setTooltipMenuVisibility(prevState => prevState && false);
+
+  useClickOutsideEvent(settingsRef, hideTooltipMenu);
 
   return (
-    <motion.li className="pos-right">
+    <motion.li style={{ cursor: 'pointer' }} className="pos-right" ref={settingsRef}>
       <a className="nav-link">
-        <Settings
-          title="Settings"
-          style={{ zIndex: 5 }}
-          onMouseOver={showTooltipMenu}
-          onMouseLeave={hideTooltipMenu}
-        />
+        <Settings title="Settings" style={{ zIndex: 5 }} onClick={showTooltipMenu} />
       </a>
 
       <AnimatePresence>
-        {shouldShowMenu && (
-          <TooltipMenu
-            data-testid="settings-tooltip-menu"
-            onMouseEnter={showTooltipMenu}
-            onMouseLeave={hideTooltipMenu}
-            layout>
+        {shouldShowTooltipMenu && (
+          <TooltipMenu data-testid="settings-tooltip-menu" layout>
             <li>
               <Settings />
               <NavLink to="/settings" style={{ fontSize: 'min(2vmin, 1.2em)' }}>
@@ -199,6 +195,7 @@ function SettingsLink({ logUserOut }) {
               </NavLink>
             </li>
             <Logout logUserOut={logUserOut} />
+            <DeleteAccount logUserOut={logUserOut} />
           </TooltipMenu>
         )}
       </AnimatePresence>
