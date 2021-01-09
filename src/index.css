@@ -344,10 +344,15 @@ button.checkout-button {
   top: -14px;
   right: -17px;
 }
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 700px) {
   .delete-account-modal-prompt > .modal-container div.modal-close-btn-svg-container {
     top: -10px;
     right: -7px;
+  }
+}
+@media screen and (max-width: 427px) {
+  .delete-account-modal-prompt > .modal-container div.modal-close-btn-svg-container {
+    top: -6px;
   }
 }
 
