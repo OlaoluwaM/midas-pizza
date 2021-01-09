@@ -47,7 +47,6 @@ const AuthSection = styled(motion.section).attrs({
     }
 
     @media (orientation: landscape) and (max-width: 850px) {
-      display: inherit;
       position: absolute;
       top: 50%;
       left: 50%;
@@ -55,7 +54,7 @@ const AuthSection = styled(motion.section).attrs({
     }
   }
 
-  svg {
+  svg:not(.inline-password-svg) {
     width: 40%;
     height: auto;
     transform: scaleX(-1);
@@ -113,11 +112,13 @@ export default function Authenticate({ authUser }) {
 
       await fetchWrapper(url, generateFetchOptions('POST', data));
       authUser(prev => ({ ...prev, authenticated: true }));
+
       const toastOptions = { type: 'success', autoClose: 3000 };
 
       isLogin ? toast('Welcome back', toastOptions) : toast('Thanks for joining', toastOptions);
     } catch (error) {
       toast('An error occurred during authentication', { type: 'error' });
+
       throw error;
     } finally {
       setIsLoading(false);
