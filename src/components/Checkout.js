@@ -12,7 +12,7 @@ import { useRecoilState } from 'recoil';
 import { UserSessionContext } from './context/context';
 import { cartState as cartStateAtom } from './atoms';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import {
   generateUrl,
   fetchWrapper,
@@ -78,6 +78,9 @@ function paymentStatusReducer(state, action) {
     case 'paymentProcessing':
       return {
         ...state,
+        paymentSuccess: false,
+        paymentFailed: false,
+        paymentError: null,
         paymentIsProcessing: true,
       };
 
@@ -167,11 +170,13 @@ async function handleStripePaymentResults(result, { email }) {
 }
 
 export default function Checkout({ total = 0 }) {
-  const [stripePaymentStatus, dispatch] = React.useReducer(
-    paymentStatusReducer,
-    initialPaymentState(),
-    initialPaymentState
-  );
+  const [stripePaymentStatus, dispatch] = React.useReducer(paymentStatusReducer, {
+    paymentSuccess: false,
+    paymentFailed: false,
+    paymentError: null,
+    paymentIsProcessing: true,
+    clientSecret: null,
+  });
 
   const totalRef = React.useRef(total);
   const [cardError, setCardError] = React.useState(false);
@@ -185,16 +190,22 @@ export default function Checkout({ total = 0 }) {
   const { paymentError, paymentFailed, paymentSuccess } = stripePaymentStatus;
 
   React.useEffect(() => {
-    dispatch({ type: 'paymentProcessing' });
-
     (async () => {
       const { email: userEmail } = userData;
       const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
 
-      await saveOrderToServer(userEmail, cart, accessTokenId, true);
-      const { clientSecret, cartTotal } = await generateClientSecretForCheckout(total, userData);
+      const prevStoredCart = localStorage.getItem('prevStoredCart') || '{}';
+      const currentCartToStore = localStorage.getItem('storedCart') || '{}';
 
-      if (cartTotal) totalRef.current = convertToCurrency(cartTotal);
+      console.log('Checking cart changes...');
+
+      if (prevStoredCart !== currentCartToStore) {
+        await saveOrderToServer(userEmail, cart, accessTokenId, true);
+        console.log('Updated cart in server');
+      } else console.log('No changes made to cart');
+
+      const { clientSecret, cartTotal } = await generateClientSecretForCheckout(total, userData);
+      if (cartTotal) totalRef.current = convertToCurrency(formatCurrencyForStripe(cartTotal));
 
       dispatch({ type: 'storeClientSecret', clientSecret: clientSecret });
     })();
