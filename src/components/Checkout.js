@@ -1,80 +1,33 @@
 import React from 'react';
 import styled from 'styled-components';
 import Loading from './Loading';
-import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
 import CustomError from './utils/custom-error';
+import CheckoutErrorComponent from './CheckoutError';
+import CheckoutNeutralComponent from './CheckoutNeutral';
+import CheckoutSuccessComponent from './CheckoutSuccess';
 
 import { toast } from 'react-toastify';
-import { CloseCircle } from '@styled-icons/evaicons-solid/CloseCircle';
-import { useSetRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { UserSessionContext } from './context/context';
 import { cartState as cartStateAtom } from './atoms';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { modalBackgroundVariants, modalVariants } from './utils/framer-variants';
 import { m as motion, AnimateSharedLayout, AnimatePresence } from 'framer-motion';
 import {
-  generateFetchOptions,
   generateUrl,
   fetchWrapper,
+  convertToCurrency,
+  saveOrderToServer,
+  generateFetchOptions,
   formatCurrencyForStripe,
   removeCartFromLocalStorage,
 } from './utils/helpers';
 
-const ModalBackground = styled(motion.div).attrs({
-  variants: modalBackgroundVariants,
-  initial: 'close',
-  animate: 'popOut',
-  exit: 'exit',
-})`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  z-index: 111;
-`;
-
-const ModalContainer = styled(motion.div).attrs({
-  variants: modalVariants,
-})`
-  width: 50%;
-  background: ${({ theme }) => theme.background};
-  border-radius: 10px;
-  padding: clamp(1em, 3vmin, 2em);
-  position: relative;
-  box-shadow: -12px 12px 0px ${({ theme }) => hexToRgb(theme.black, 0.5)};
-  z-index: 333;
-
-  svg.close-circle {
-    position: absolute;
-    top: -15px;
-    cursor: pointer;
-    right: -15px;
-    fill: var(--error);
-    max-width: 3em;
-    transition: transform 0.3s ease;
-
-    &:active {
-      transform: scale(0.9);
-    }
-  }
-
-  @media (max-width: 780px) {
-    width: 75%;
-  }
-
-  @media (max-width: 520px) {
-    width: 95%;
-  }
-`;
-
 const CheckoutFormModalWrapper = styled(motion.div).attrs({
   variants: {
-    popOut: { opacity: 1 },
-    close: { opacity: 0 },
-    exit: { opacity: 0 },
+    popOut: { opacity: 1, transition: { when: 'beforeChildren' } },
+    close: { opacity: 0, transition: { when: 'afterChildren' } },
+    exit: { opacity: 0, transition: { when: 'afterChildren' } },
   },
   'data-testid': 'checkout-modal',
 })`
@@ -89,7 +42,7 @@ const CheckoutFormModalWrapper = styled(motion.div).attrs({
   }
 
   .loader {
-    height: 100%;
+    position: relative;
   }
 
   & > div > .total {
@@ -103,45 +56,11 @@ const CheckoutFormModalWrapper = styled(motion.div).attrs({
   }
 `;
 
-const CheckoutForm = styled(motion.form)`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  justify-content: space-around;
-
-  button {
-    align-self: flex-start;
-    width: 10em;
-    margin: 0;
-  }
-
-  .StripeElement {
-    display: block;
-    border-bottom: 5px solid ${({ theme }) => theme.black};
-    font-family: var(--primaryFont);
-    padding: 0.5em;
-    flex-basis: 25%;
-    font-weight: var(--bold);
-    font-size: 1.3em;
-    transition: all 150ms ease;
-  }
-`;
-
-export function Modal({ children, closeModal }) {
-  return (
-    <ModalBackground>
-      <ModalContainer>
-        <CloseCircle className="close-circle" onClick={closeModal} />
-        <AnimateSharedLayout>{children}</AnimateSharedLayout>
-      </ModalContainer>
-    </ModalBackground>
-  );
-}
-
 function initialPaymentState() {
   return {
     paymentSuccess: false,
     paymentFailed: false,
+    paymentError: null,
     paymentIsProcessing: false,
     clientSecret: null,
   };
@@ -165,160 +84,195 @@ function paymentStatusReducer(state, action) {
     case 'storeClientSecret':
       return {
         ...state,
+        paymentIsProcessing: false,
         clientSecret: action.clientSecret,
       };
 
-    case 'paymentError':
+    case 'paymentFailed':
       return {
         ...state,
         paymentFailed: true,
         paymentIsProcessing: false,
+        paymentError: action.paymentErrorMessage,
       };
 
     case 'reset':
-      return initialPaymentState();
+      return {
+        ...initialPaymentState(),
+        clientSecret: state.clientSecret ?? null,
+      };
 
     default:
       throw new ReferenceError('Action is not Defined');
   }
 }
 
-export default function Checkout({ total = 0, orders, closeCheckoutModal }) {
+async function generateClientSecretForCheckout(total, { email }) {
+  const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
+  const clientTotal = formatCurrencyForStripe(total);
+
+  let currentClientSecret, newCartTotal;
+
+  try {
+    const { clientSecret, currentAmount: currentAmountFromServer } = await fetchWrapper(
+      generateUrl(`checkout?email=${email}`),
+      generateFetchOptions('GET', null, accessTokenId)
+    );
+
+    const serverTotal = formatCurrencyForStripe(currentAmountFromServer);
+
+    if (clientTotal !== serverTotal) {
+      const { clientSecret: updatedClientSecret, updatedCartTotal } = await fetchWrapper(
+        generateUrl(`checkout?email=${email}`),
+        generateFetchOptions(
+          'PUT',
+          { updatedPaymentIntentData: { amount: clientTotal } },
+          accessTokenId
+        )
+      );
+
+      currentClientSecret = updatedClientSecret;
+      newCartTotal = updatedCartTotal;
+    } else currentClientSecret = clientSecret;
+  } catch (e) {
+    try {
+      const { clientSecret } = await fetchWrapper(
+        generateUrl(`checkout?email=${email}`),
+        generateFetchOptions('POST', null, accessTokenId)
+      );
+
+      currentClientSecret = clientSecret;
+    } catch (error) {
+      toast(error.message, { type: 'error ' });
+      console.error(error);
+    }
+
+    console.error(e);
+  }
+
+  return { clientSecret: currentClientSecret, cartTotal: newCartTotal };
+}
+
+async function handleStripePaymentResults(result, { email }) {
+  if (result.error) throw new CustomError(result.error.message, result.error.type);
+
+  if (result.paymentIntent.status === 'succeeded') {
+    const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
+
+    await fetchWrapper(
+      generateUrl(`checkout/sendInvoice?email=${email}`),
+      generateFetchOptions('POST', null, accessTokenId)
+    );
+  }
+}
+
+export default function Checkout({ total = 0 }) {
   const [stripePaymentStatus, dispatch] = React.useReducer(
     paymentStatusReducer,
     initialPaymentState(),
     initialPaymentState
   );
 
+  const totalRef = React.useRef(total);
+  const [cardError, setCardError] = React.useState(false);
+  const [cart, updateCart] = useRecoilState(cartStateAtom);
+
   const stripe = useStripe();
   const elements = useElements();
 
-  const {
-    userData: { email, name, streetAddress },
-  } = React.useContext(UserSessionContext);
-
-  const updateCart = useSetRecoilState(cartStateAtom);
+  const { userData } = React.useContext(UserSessionContext);
   const { clientSecret, paymentIsProcessing } = stripePaymentStatus;
+  const { paymentError, paymentFailed, paymentSuccess } = stripePaymentStatus;
 
   React.useEffect(() => {
+    dispatch({ type: 'paymentProcessing' });
+
     (async () => {
+      const { email: userEmail } = userData;
       const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
-      const clientTotal = formatCurrencyForStripe(total);
-      let currentClientSecret;
 
-      try {
-        const { clientSecret, currentAmount: serverTotal } = await fetchWrapper(
-          generateUrl(`checkout?email=${email}`),
-          generateFetchOptions('GET', null, accessTokenId)
-        );
+      await saveOrderToServer(userEmail, cart, accessTokenId, true);
+      const { clientSecret, cartTotal } = await generateClientSecretForCheckout(total, userData);
 
-        if (clientTotal !== serverTotal) {
-          const { clientSecret: updatedClientSecret } = await fetchWrapper(
-            generateUrl(`checkout?email=${email}`),
-            generateFetchOptions(
-              'PUT',
-              { updatedPayloadIntentData: { amount: clientTotal } },
-              accessTokenId
-            )
-          );
+      if (cartTotal) totalRef.current = convertToCurrency(cartTotal);
 
-          currentClientSecret = updatedClientSecret;
-        } else currentClientSecret = clientSecret;
-      } catch {
-        const { clientSecret } = await fetchWrapper(
-          generateUrl(`checkout?email=${email}`),
-          generateFetchOptions('POST', null, accessTokenId)
-        );
-
-        currentClientSecret = clientSecret;
-      }
-
-      dispatch({ type: 'storeClientSecret', clientSecret: currentClientSecret });
+      dispatch({ type: 'storeClientSecret', clientSecret: clientSecret });
     })();
 
     return () => dispatch({ type: 'reset' });
   }, []);
 
+  const handleCardElementChange = async e => {
+    setCardError(e.empty);
+
+    e?.error && dispatch({ type: 'paymentFailed', paymentErrorMessage: e.error.message });
+  };
+
   const makePayment = async e => {
     e.preventDefault();
+
     if (!stripe || !elements) return;
 
     try {
       dispatch({ type: 'paymentProcessing' });
 
+      const { email, streetAddress } = userData;
+
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
           billing_details: {
-            name,
             email,
             address: streetAddress,
           },
         },
       });
 
-      if (result.error) throw new CustomError(result.error.message, result.error.type);
-
-      if (result.paymentIntent.status === 'succeeded') {
-        // Redirect user to success page
-        const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
-
-        await fetchWrapper(
-          generateUrl(`checkout/sendInvoice?email=${email}`),
-          generateFetchOptions('POST', null, accessTokenId)
-        );
-
-        toast(
-          `Thank you for your shopping with us ${name}. Hope to see you soon 👌👋. P.S, your order will arrive in 30 - 40 minutes ⌛`,
-          {
-            type: 'success',
-            autoClose: 30000,
-          }
-        );
-      }
+      await handleStripePaymentResults(result, userData);
 
       removeCartFromLocalStorage();
+
       updateCart({});
+
       dispatch({ type: 'paymentSuccess' });
-
-      closeCheckoutModal();
     } catch (error) {
-      dispatch({ type: 'paymentError' });
-
-      toast(error.message, { type: 'error' });
+      dispatch({ type: 'paymentFailed', paymentErrorMessage: error.message });
       console.error(error);
     }
   };
 
+  React.useEffect(() => {
+    if (!paymentFailed) return;
+    toast(paymentError, { type: 'error' });
+  }, [paymentFailed]);
+
+  const neutralState = !(paymentFailed || paymentIsProcessing || paymentSuccess);
+
   return (
     <CheckoutFormModalWrapper layout>
-      <AnimatePresence>
-        {paymentIsProcessing ? (
-          <Loading layoutId="checkout" key="loader" />
-        ) : (
-          <motion.div
-            initial={false}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            layout
-            key="checkout-form">
-            <CheckoutForm onSubmit={makePayment}>
-              <CardElement />
+      <AnimatePresence exitBeforeEnter>
+        {paymentIsProcessing && <Loading key="loader" />}
 
-              <motion.button
-                className="submit-button button-black"
-                type="submit"
-                layout
-                disabled={!stripe}>
-                Pay
-              </motion.button>
-            </CheckoutForm>
-
-            <motion.h2 className="total" layout>
-              Total: <span data-testid="checkout-total">${total}</span>
-            </motion.h2>
-          </motion.div>
+        {neutralState && (
+          <CheckoutNeutralComponent
+            makePayment={makePayment}
+            handleCardElementChange={handleCardElementChange}
+            stripe={stripe}
+            cardError={cardError}
+            cartTotal={totalRef.current}
+            key="neutral-state"
+          />
         )}
+
+        {paymentFailed && (
+          <CheckoutErrorComponent
+            paymentErrorMessage={paymentError}
+            retry={dispatch.bind(null, { type: 'reset' })}
+            key="fail-state"
+          />
+        )}
+
+        {paymentSuccess && <CheckoutSuccessComponent key="success-state" />}
       </AnimatePresence>
     </CheckoutFormModalWrapper>
   );
@@ -326,13 +280,6 @@ export default function Checkout({ total = 0, orders, closeCheckoutModal }) {
 
 Checkout.propTypes = {
   total: PropTypes.number.isRequired,
-  orders: PropTypes.object.isRequired,
-  closeCheckoutModal: PropTypes.func.isRequired,
-};
-
-Modal.propTypes = {
-  closeModal: PropTypes.func.isRequired,
 };
 
 Checkout.whyDidYouRender = true;
-Modal.whyDidYouRender = true;
