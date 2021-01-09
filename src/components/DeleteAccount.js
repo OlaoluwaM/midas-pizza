@@ -98,19 +98,25 @@ function DeleteAccountFormComponent({ requiredInput = 'DELETE', deleteAccountHan
   const [inputValue, setInputValue] = React.useState('');
   const shouldDisableButton = inputValue === requiredInput;
 
+  const handleAccountTermination = async e => {
+    e.preventDefault();
+    toast.dismiss();
+    await deleteAccountHandler();
+  };
+
   return (
     <DeleteAccountFormContainer>
       <WarningHeaderText>Warning, this action is irreversible!!</WarningHeaderText>
       <p>
         If you are sure about it please type <b>DELETE</b> in the field below
       </p>
-      <DeleteAccountForm>
+      <DeleteAccountForm onSubmit={handleAccountTermination}>
         <input
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
           placeholder="DELETE"
         />
-        <DeleteAccountButton disabled={!shouldDisableButton} onClick={deleteAccountHandler}>
+        <DeleteAccountButton disabled={!shouldDisableButton} type="submit">
           Delete Account
         </DeleteAccountButton>
       </DeleteAccountForm>
@@ -127,6 +133,8 @@ export default function DeleteAccount({ logUserOut }) {
   const deleteAccount = async () => {
     const { email, Id: tokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
 
+    toast('GoodBye 👏🏾, so sorry to see you go', { type: 'success', autoClose: 7000 });
+
     await fetchWrapper(
       generateUrl(`/users?email=${email}`),
       generateFetchOptions('DELETE', null, tokenId)
@@ -136,7 +144,6 @@ export default function DeleteAccount({ logUserOut }) {
     sessionStorage.removeItem('menuItemPhotoIds');
 
     removeCartFromLocalStorage();
-    await toast('GoodBye 👏🏾, so sorry to see you go', { type: 'success', autoClose: 7000 });
 
     updateCart({});
     history.push('/');
