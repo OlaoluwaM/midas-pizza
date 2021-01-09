@@ -1,10 +1,10 @@
-// TODO finish test
 import React from 'react';
 import Modal from '../components/Modal';
 import Checkout from '../components/Checkout';
 
-import { CardElement, useStripe, Elements } from '@stripe/react-stripe-js';
-import { cleanup, act, fireEvent, render, screen } from '@testing-library/react';
+import { useStripe } from '@stripe/react-stripe-js';
+import { cleanup, act, fireEvent } from '@testing-library/react';
+import { formatCurrencyForStripe, convertToCurrency } from '../components/utils/helpers';
 
 jest.mock('@stripe/react-stripe-js', () => ({
   __esModule: true,
@@ -26,27 +26,31 @@ const closeModalMock = jest.fn();
 
 beforeEach(() => {
   jest.useFakeTimers();
-  closeModalMock.mockClear();
 });
 
 const store = {
   currentAccessToken: testAccessToken,
   storedCart: initialCart,
+  prevStoredCart: initialCart,
 };
 
 window.localStorage.getItem = jest.fn(key => JSON.stringify(store[key]));
 
-let cartTotal = Object.entries(initialCart).reduce(
-  (total, [_, { quantity, initialPrice: basePrice }]) => (total += quantity * basePrice),
-  0
+let cartTotalForStripe = formatCurrencyForStripe(
+  Object.entries(initialCart).reduce(
+    (total, [_, { quantity, initialPrice: basePrice }]) => (total += quantity * basePrice),
+    0
+  )
 );
+
+let cartTotalAsCurrency = convertToCurrency(cartTotalForStripe);
 
 test("If user is shown cart total when user's cart does not have paymentIntent yet", async () => {
   fetch.mockRejectOnce('An error occurred', { status: 500 }).once(
     JSON.stringify(
       formatFetchResponse({
         clientSecret: 'client_secret',
-        currentAmount: cartTotal,
+        currentAmount: cartTotalForStripe,
       }),
       { status: 200 }
     )
@@ -57,7 +61,7 @@ test("If user is shown cart total when user's cart does not have paymentIntent y
   await act(async () => {
     utils = renderWithProviders(
       <Modal className="checkout" closeModal={closeModalMock}>
-        <Checkout total={cartTotal} orders={initialCart} closeCheckoutModal={closeModalMock} />
+        <Checkout total={cartTotalAsCurrency} />
       </Modal>,
       {
         contextValue: menuContext,
@@ -68,7 +72,7 @@ test("If user is shown cart total when user's cart does not have paymentIntent y
   const { findByTestId } = utils;
 
   expect(await findByTestId('checkout-form')).toBeInTheDocument();
-  expect(await findByTestId('checkout-total')).toHaveTextContent(cartTotal.toFixed(2));
+  expect(await findByTestId('checkout-total')).toHaveTextContent(`$${cartTotalAsCurrency}`);
 });
 
 test('If checkout cart is updated with server total if there is a client-server cart total mismatch', async () => {
@@ -77,7 +81,7 @@ test('If checkout cart is updated with server total if there is a client-server 
       JSON.stringify(
         formatFetchResponse({
           clientSecret: 'client_secret',
-          currentAmount: cartTotal,
+          currentAmount: cartTotalForStripe,
         }),
         { status: 200 }
       )
@@ -86,7 +90,7 @@ test('If checkout cart is updated with server total if there is a client-server 
       JSON.stringify(
         formatFetchResponse({
           clientSecret: 'client_secret',
-          updatedCartTotal: cartTotal,
+          updatedCartTotal: cartTotalForStripe,
         }),
         { status: 200 }
       )
@@ -97,7 +101,7 @@ test('If checkout cart is updated with server total if there is a client-server 
   await act(async () => {
     utils = renderWithProviders(
       <Modal className="checkout" closeModal={closeModalMock}>
-        <Checkout total={1.0} orders={initialCart} closeCheckoutModal={closeModalMock} />
+        <Checkout total={1.0} />
       </Modal>,
       {
         contextValue: menuContext,
@@ -106,24 +110,76 @@ test('If checkout cart is updated with server total if there is a client-server 
   });
 
   const { findByTestId } = utils;
-  expect(await findByTestId('checkout-total')).toHaveTextContent(cartTotal.toFixed(2));
+  expect(await findByTestId('checkout-total')).toHaveTextContent(
+    `$${convertToCurrency(cartTotalForStripe)}`
+  );
 });
 
-describe('Payment status', () => {
+test('If user cart is updated when checkout modal is opened', async () => {
+  store.prevStoredCart = {};
+
+  fetch
+    .once(JSON.stringify(formatFetchResponse('Updated cart')), { status: 200 })
+    .once(
+      JSON.stringify(
+        formatFetchResponse({
+          clientSecret: 'client_secret',
+          currentAmount: cartTotalForStripe,
+        }),
+        { status: 200 }
+      )
+    )
+    .once(
+      JSON.stringify(
+        formatFetchResponse({
+          clientSecret: 'client_secret',
+          updatedCartTotal: cartTotalForStripe,
+        }),
+        { status: 200 }
+      )
+    );
+
+  let utils;
+
+  await act(async () => {
+    utils = renderWithProviders(
+      <Modal className="checkout" closeModal={closeModalMock}>
+        <Checkout total={0} />
+      </Modal>,
+      {
+        contextValue: menuContext,
+      }
+    );
+  });
+
+  const { findByTestId } = utils;
+
+  expect(await findByTestId('loader')).toBeInTheDocument();
+  expect(await findByTestId('checkout-form')).toBeInTheDocument();
+
+  expect(await findByTestId('checkout-total')).toHaveTextContent(
+    `$${convertToCurrency(cartTotalForStripe)}`
+  );
+});
+
+describe('Checkout status', () => {
+  beforeAll(() => (store.prevStoredCart = initialCart));
+
   beforeEach(() => {
     fetch.once(
       JSON.stringify(
         formatFetchResponse({
           clientSecret: 'client_secret',
-          currentAmount: cartTotal,
+          currentAmount: cartTotalForStripe,
         }),
         { status: 200 }
       )
     );
+
     useStripe.mockReset();
   });
 
-  test('is successful', async () => {
+  test('when payment is successful', async () => {
     fetch.once(JSON.stringify(formatFetchResponse('Invoice sent')), { status: 201 });
     let utils;
 
@@ -136,7 +192,7 @@ describe('Payment status', () => {
     await act(async () => {
       utils = renderWithProviders(
         <Modal className="checkout" closeModal={closeModalMock}>
-          <Checkout total={cartTotal} orders={initialCart} closeCheckoutModal={closeModalMock} />
+          <Checkout total={cartTotalAsCurrency} />
         </Modal>,
         {
           contextValue: menuContext,
@@ -149,10 +205,11 @@ describe('Payment status', () => {
 
     expect(payButton).not.toBeDisabled();
 
-    await act(async () => fireEvent.click(payButton));
-    expect(await findByTestId('loader')).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(payButton);
+    });
 
-    // TODO assert checkout success component is shown
+    expect(await findByTestId('checkout-success')).toBeInTheDocument();
   });
 
   test('when stripe is not loaded', async () => {
@@ -161,7 +218,7 @@ describe('Payment status', () => {
     await act(async () => {
       utils = renderWithProviders(
         <Modal className="checkout" closeModal={closeModalMock}>
-          <Checkout total={cartTotal} orders={initialCart} closeCheckoutModal={closeModalMock} />
+          <Checkout total={cartTotalAsCurrency} />
         </Modal>,
         {
           contextValue: menuContext,
@@ -192,7 +249,7 @@ describe('Payment status', () => {
     await act(async () => {
       utils = renderWithProviders(
         <Modal className="checkout" closeModal={closeModalMock}>
-          <Checkout total={cartTotal} orders={initialCart} closeCheckoutModal={closeModalMock} />
+          <Checkout total={cartTotalAsCurrency} />
         </Modal>,
         {
           contextValue: menuContext,
@@ -207,10 +264,10 @@ describe('Payment status', () => {
       fireEvent.click(payButton);
     });
 
-    expect(await findByTestId('loader')).toBeInTheDocument();
-
     await act(async () => jest.advanceTimersByTime(1000));
 
     expect(await findByRole('alert')).toHaveTextContent(new RegExp(mockErrorMessage, 'i'));
+
+    expect(await findByTestId('checkout-error')).toBeInTheDocument();
   });
 });
