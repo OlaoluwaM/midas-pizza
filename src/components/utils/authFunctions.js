@@ -33,8 +33,8 @@ export const validationOptions = {
   name: {
     required: 'Please provide a username.',
     minLength: {
-      value: 5,
-      message: 'Your username must be at least 5 characters long.',
+      value: 2,
+      message: 'Your username must be at least 2 characters long.',
     },
   },
 
