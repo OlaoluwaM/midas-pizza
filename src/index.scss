@@ -27,6 +27,8 @@ $colorPalette: (
   blackLighter: #2a2a2a,
   gray: #bbbbbb,
   grayDark: #b9bccb,
+  error: #ff0033,
+  success: #07bc0c,
 );
 
 :root {
@@ -40,10 +42,11 @@ $colorPalette: (
   --bold: 700;
   --xBold: 800;
   --xXBold: 900;
-  --error: #d9534f;
+  --error: #ff0033;
   --success: #07bc0c;
   --warning: #f1c40f;
   --info: #3498db;
+  --bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);
 }
 
 * {
@@ -230,11 +233,11 @@ button.checkout-button {
   margin: 0 auto 1em auto;
 }
 
-@each $color in (black, baseColor, accentColor) {
+@each $color in (black, baseColor, accentColor, error, success) {
   .button-#{$color} {
     background: change-color(get-color($color), $alpha: 0.2);
     color: get-color($color);
-    transition: background 0.3s ease, color 0.3s ease, scale 0.4s ease;
+    transition: background 0.3s ease, color 0.3s ease, scale 0.7s linear;
 
     &:disabled {
       filter: grayscale(1);
@@ -276,11 +279,43 @@ button.checkout-button {
 
 .inline-password-svg {
   position: absolute;
-  right: 5%;
+  right: 10%;
   cursor: pointer;
   z-index: 3;
   background: inherit;
   max-width: 4%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.checkout {
+  & > .modal-container {
+    background: get-color(backgroundLighter);
+    width: 50%;
+  }
+}
+
+.delete-account-modal-prompt {
+  & > .modal-container {
+    width: auto;
+    background: get-color(backgroundLighter);
+
+    div.modal-close-btn-svg-container {
+      top: -14px;
+      right: -17px;
+
+      @media screen and (max-width: 600px) {
+        top: -10px;
+        right: -7px;
+      }
+    }
+  }
+}
+
+.checkout-status-svg {
+  width: min(25%, 13em);
+  overflow: unset;
+  margin: 0 auto;
 }
 
 @keyframes currentPage {
