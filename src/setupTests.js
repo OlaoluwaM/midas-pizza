@@ -48,16 +48,68 @@ global.menu = Object.fromEntries(
   JSON.parse(menuArrayJSON).map(arr => [arr[0], { type: arr[2], initialPrice: arr[1] }])
 );
 
+const menuWithPhotoId = {
+  'Pepperoni Pizza Small': 'MqT0asuoIcU',
+  'Pepperoni Pizza Medium': 'MQUqbmszGGM',
+  'Pepperoni Pizza Large': 'oBbTc1VoT-0',
+  'Extravaganza Pizza Small': 'NzHRSLhc6Cs',
+  'Extravaganza Pizza Medium': 'Oxb84ENcFfU',
+  'Extravaganza Pizza Large': 'pGA4zHvpo5E',
+  'Barbecue Chicken Pizza Small': 'kfDsMDyX1K0',
+  'Barbecue Chicken Pizza Medium': 'exSEmuA7R7k',
+  'Barbecue Chicken Pizza Large': 'CbNAuxSZTFo',
+  'Vegan Pizza Small': 'UxRhrU8fPHQ',
+  'Vegan Pizza Medium': 'OklpRh8-Sns',
+  'Vegan Pizza Large': 'BMVAYjPf6mU',
+  'Meatzza Small': 'pPA-_q5v1a8',
+  'Meatzza Medium': 'uU0Anw-8Vsg',
+  'Meatzza Large': 'yDKHJxfiWDk',
+  "Meat Lover's Pizza Small": 'SU1LFoeEUkk',
+  "Meat Lover's Pizza Medium": 'JspLKUauwSI',
+  "Meat Lover's Pizza Large": 'Y6OgisiGBjM',
+  'Small Fries': 'vi0kZuoe0-8',
+  'Medium Fries': 'lpsbMRRqMQw',
+  'Large Fries': 'U4vWk_DXOT4',
+  'Vanilla Ice-cream': '5A0O12BIsjY',
+  'Strawberry Ice-cream': 'TLD6iCOlyb0',
+  'Chocolate Ice-cream': 'wxmrTxUAMJE',
+  Coke: 'z8PEoNIlGlg',
+  Water: 'oWV-Pgu142A',
+  Sprite: '4KLT91f3mAM',
+};
+
+global.menuPhotoIdObject = menuWithPhotoId;
+
+global['menuWithPhotoId'] = Object.fromEntries(
+  JSON.parse(menuArrayJSON).map(menuItem => {
+    const { length, [length - 1]: lastElement, 0: itemName } = menuItem;
+    if (typeof lastElement === 'object') menuItem.splice(length - 1, 1, menuWithPhotoId[itemName]);
+
+    return [itemName, { type: menuItem[2], initialPrice: menuItem[1], photoId: menuItem[3] }];
+  })
+);
+
 global.formatFetchResponse = res => ({ response: res });
 
-Object.defineProperty(window, 'localStorage', {
-  value: {
-    getItem: jest.fn(() => null),
-    setItem: jest.fn(() => null),
-    removeItem: jest.fn(() => null),
+Object.defineProperties(window, {
+  localStorage: {
+    value: {
+      getItem: jest.fn(() => null),
+      setItem: jest.fn(() => null),
+      removeItem: jest.fn(() => null),
+    },
+    writable: true,
   },
-  writable: true,
+  sessionStorage: {
+    value: {
+      getItem: jest.fn(() => null),
+      setItem: jest.fn(() => null),
+      removeItem: jest.fn(() => null),
+    },
+    writable: true,
+  },
 });
+
 global.CustomError = CustomError;
 
 global.menuContext = {
