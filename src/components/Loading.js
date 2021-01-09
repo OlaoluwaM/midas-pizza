@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import { m as motion } from 'framer-motion';
 import { default as styled, css } from 'styled-components';
@@ -50,7 +51,7 @@ const Overlay = styled(motion.div).attrs({
         `}
 `;
 
-const Spinner = styled.div`
+const Spinner = styled(motion.div)`
   width: 30px;
   height: 30px;
   transform-origin: center;
@@ -63,9 +64,16 @@ const Spinner = styled.div`
 
 export default function Loading({ fullscreen = false, layoutId, children }) {
   const layoutObj = layoutId ? { layoutId } : { layout: true };
+
   return (
     <Overlay isFullscreen={fullscreen} {...layoutObj}>
-      {children ?? <Spinner />}
+      {children ?? <Spinner layout />}
     </Overlay>
   );
 }
+
+Loading.propTypes = {
+  fullscreen: PropTypes.bool,
+  layoutId: PropTypes.string,
+  children: PropTypes.element,
+};
