@@ -2,10 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 import hexToRgb from './utils/hexToRgb';
 import PropTypes from 'prop-types';
-import pizzaImage from '../assets/pizza-image-ivan-torres-unsplash.jpg';
-import drinkImage from '../assets/drink-image-maxime-renard-unsplash.jpg';
-import dessertImage from '../assets/dessert-image-emile-mbunzama-unsplash.jpg';
-import snacksImage from '../assets/snacks-image-fran-hogan-unsplash.jpg';
 
 import { toast } from 'react-toastify';
 import { m as motion } from 'framer-motion';
@@ -133,8 +129,9 @@ function Counter({ itemName, initialQuantity }) {
 
     updateCart(prevCart => {
       const cartTotal = getCartCount(prevCart);
+
       if (cartTotal - count + amountToAdd > quantityLimit) {
-        toast('Sorry cannot order more than 10 items at a go 😄', { type: 'error' });
+        toast(`Sorry cannot order more than ${quantityLimit} items at a go 😄`, { type: 'error' });
         return prevCart;
       }
 
@@ -160,15 +157,8 @@ function Counter({ itemName, initialQuantity }) {
   );
 }
 
-function OrderItem({ orderName, initialPrice, quantity, foodType }) {
+function OrderItem({ orderName, initialPrice, quantity, photoId }) {
   const updateCart = useSetRecoilState(cartStateAtom);
-
-  const imagePool = {
-    Pizza: pizzaImage,
-    Drink: drinkImage,
-    Dessert: dessertImage,
-    Snack: snacksImage,
-  };
 
   const totalPrice = (quantity * initialPrice).toFixed(2);
   const formattedInitialPrice = initialPrice.toFixed(2);
@@ -190,7 +180,7 @@ function OrderItem({ orderName, initialPrice, quantity, foodType }) {
     <OrderItemContainer layout="position">
       <ContentGroup>
         <ImageContainer>
-          <img src={imagePool[foodType]} alt={`${orderName}`} />
+          <img src={`https://source.unsplash.com/${photoId}`} alt={`${orderName}`} />
         </ImageContainer>
         <h4 data-testid="order-item-name">
           {orderName}
@@ -214,7 +204,7 @@ OrderItem.propTypes = {
   orderName: PropTypes.string.isRequired,
   initialPrice: PropTypes.number.isRequired,
   quantity: PropTypes.number.isRequired,
-  foodType: PropTypes.string.isRequired,
+  photoId: PropTypes.string.isRequired,
 };
 Counter.propTypes = {
   itemName: PropTypes.string.isRequired,
