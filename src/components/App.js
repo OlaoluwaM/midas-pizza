@@ -70,7 +70,7 @@ function App() {
     authenticated: false,
   });
 
-  const connectionStatuses = Object.freeze(['not connected', 'connecting', 'connected']);
+  // const connectionStatuses = Object.freeze(['not connected', 'connecting', 'connected']);
   const [serverConnectionStatus, setConnectionStatus] = React.useState(1);
   const updateCart = useSetRecoilState(cartStateAtom);
 
@@ -113,7 +113,6 @@ function App() {
         }
 
         const { cart: storedCart = {} } = ownerOfCurrentToken;
-
         const persistedOrder = JSON.parse(localStorage.getItem('storedCart')) || {};
         const cartToUpdateWith = normalize(persistedOrder) ?? formatCartFromServer(storedCart);
 
