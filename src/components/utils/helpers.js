@@ -23,7 +23,6 @@ export function generateFetchOptions(method, body = {}, token = null) {
 
 export function generateUrl(resource) {
   const { REACT_APP_API_ENDPOINT: URL } = process.env;
-  console.log(URL);
   const normalizedUrl = resource.startsWith('/') ? URL.replace('0/', '0') : URL;
   return `${normalizedUrl}${resource}`;
 }
@@ -41,7 +40,7 @@ export async function fetchWrapper(url, options) {
 
   try {
     request = await fetch(url, options);
-    console.log(request);
+
     serverData = await request.json();
     let serverResponse;
 
@@ -74,9 +73,15 @@ export async function fetchWrapper(url, options) {
     console.error(errorData);
 
     const errorMessageToThrow =
-      rawDataType(errorData) === 'object' ? JSON.stringify(errorData) : errorData;
+      rawDataType(errorData) === 'object'
+        ? errorData?.message ?? JSON.stringify(errorData)
+        : errorData;
 
-    throw new CustomError(errorMessageToThrow, void 0, request?.status ?? 418);
+    throw new CustomError(
+      errorMessageToThrow,
+      void 0,
+      request?.status ?? errorData?.status ?? errorData?.statusCode ?? 418
+    );
   }
 }
 
@@ -95,7 +100,7 @@ export function formatCartFromServer(cart) {
 
   for (const orderName in cart) {
     if (orderName === 'orderCount' || orderName === 'totalPrice') continue;
-    const { type, quantity, total } = cart[orderName];
+    const { type, quantity, total, photoId } = cart[orderName];
 
     const initialPrice = (total / quantity).toFixed(2);
 
@@ -103,6 +108,7 @@ export function formatCartFromServer(cart) {
       type,
       quantity,
       initialPrice: parseFloat(initialPrice),
+      photoId,
     };
   }
 
@@ -163,4 +169,8 @@ export function formatCurrencyForStripe(float) {
   if (Number.isInteger(float)) return float;
   const floatAsCurrency = parseFloat(float.toFixed(2));
   return floatAsCurrency * 100;
+}
+
+export function convertToCurrency(wholeNum) {
+  return parseFloat((wholeNum / 100).toFixed(2));
 }
