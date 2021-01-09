@@ -1,7 +1,7 @@
 import React from 'react';
 import Menu from '../components/Menu';
 
-import { cleanup, fireEvent, act, within } from '@testing-library/react';
+import { cleanup, fireEvent, act, within, screen } from '@testing-library/react';
 
 afterAll(cleanup);
 
@@ -31,27 +31,6 @@ describe('Initial load of menu items', () => {
 
     expect(menuItems.length).toBeGreaterThan(1);
   });
-
-  // test('Should load items from localStorage if previously stored', async () => {
-  //   const store = {
-  //     currentAccessToken: testAccessToken,
-  //     menu: Object.entries(menu),
-  //   };
-  //   window.localStorage.getItem = jest.fn(key => JSON.stringify(store[key]));
-
-  //   let utils;
-
-  //   await act(async () => {
-  //     utils = renderWithProviders(<Menu />, {contextValue: menuContext});
-  //   });
-
-  //   expect(localStorage.getItem).toHaveBeenCalledWith('menu');
-
-  //   const { findAllByTestId } = utils;
-  //   const menuItems = await findAllByTestId('menu-item');
-
-  //   expect(menuItems.length).toBeGreaterThan(1);
-  // });
 });
 
 test('Filter Functionality', async () => {
@@ -84,5 +63,31 @@ test('Filter Functionality', async () => {
     for await (let menuItem of menuItems) {
       expect(menuItem).toHaveAttribute('data-food-type', attributeText);
     }
+  }
+});
+
+test('Each menu item should have a unique image', async () => {
+  fetch.once(JSON.stringify(formatFetchResponse(menuWithPhotoId)), { status: 200 });
+
+  let utils;
+
+  await act(async () => {
+    utils = renderWithProviders(<Menu />, { contextValue: menuContext });
+  });
+
+  expect(window.sessionStorage.setItem).toBeCalledWith(
+    'menuItemPhotoIds',
+    JSON.stringify(menuPhotoIdObject)
+  );
+
+  const { findAllByTestId } = utils;
+
+  const menuItems = await findAllByTestId('menu-item');
+
+  for await (let menuItem of menuItems) {
+    const image = await within(menuItem).findByRole('img');
+    const { innerHTML: itemName } = await within(menuItem).findByTestId('menu-item-name');
+
+    expect(image).toHaveAttribute('src', expect.stringContaining(menuPhotoIdObject[itemName]));
   }
 });
