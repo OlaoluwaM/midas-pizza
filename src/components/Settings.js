@@ -21,7 +21,7 @@ const SettingsSection = styled(motion.section).attrs({
   display: flex;
   align-items: center;
 
-  svg {
+  svg:not(.inline-password-svg) {
     transform: scale(0.85);
 
     @media (max-width: 1000px) {
