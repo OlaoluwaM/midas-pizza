@@ -47,7 +47,7 @@ test.each([
   expect(cartCount).toHaveTextContent(`${orderCount}`);
 
   const settingsIcon = await screen.findByTitle('Settings');
-  fireEvent.mouseOver(settingsIcon);
+  fireEvent.click(settingsIcon);
 
   const logoutButton = await findByTestId('logout-button');
   const tooltipMenu = await findByTestId('settings-tooltip-menu');
@@ -57,8 +57,6 @@ test.each([
   window.localStorage.getItem = jest
     .fn(() => null)
     .mockImplementationOnce(() => JSON.stringify(testAccessToken));
-
-  fireEvent.mouseOver(tooltipMenu);
 
   await act(async () => {
     fireEvent.click(logoutButton);
