@@ -14,7 +14,13 @@ import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { ToastContainer } from 'react-toastify';
 import { themeObj, UserSessionContext } from './components/context/context';
-import { MotionConfig, AnimateLayoutFeature, AnimationFeature, ExitFeature } from 'framer-motion';
+import {
+  MotionConfig,
+  AnimateLayoutFeature,
+  AnimationFeature,
+  ExitFeature,
+  GesturesFeature,
+} from 'framer-motion';
 
 const fs = require('fs');
 const path = require('path');
@@ -129,7 +135,11 @@ global.renderWithProviders = function (
     <MemoryRouter {...routeProps}>
       <RecoilRoot>
         <MotionConfig
-          features={withAnimations ? [AnimateLayoutFeature, AnimationFeature, ExitFeature] : []}>
+          features={
+            withAnimations
+              ? [AnimateLayoutFeature, AnimationFeature, ExitFeature, GesturesFeature]
+              : []
+          }>
           <ThemeProvider theme={themeObj}>
             <UserSessionContext.Provider value={contextValue}>
               <ToastContainer />
