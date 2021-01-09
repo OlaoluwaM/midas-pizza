@@ -123,6 +123,7 @@ export default function Menu() {
         const photoIdObject = Object.fromEntries(
           menuObjAsArray.map(([menuItem, { photoId }]) => [menuItem, photoId])
         );
+
         sessionStorage.setItem('menuItemPhotoIds', JSON.stringify(photoIdObject));
       } else {
         menuObjAsArray = menuObjAsArray.map(menuItem => {
