@@ -40,7 +40,6 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 ### Note
 In order to run this application, you will need to have a ``.env`` file which contains
 <ul>
-  <li>REACT_APP_API_ENDPOINT</li>
+  <li>REACT_APP_API_ENDPOINT: This should point to the server submodule</li>
   <li>REACT_APP_QUANTITY_LIMIT</li>
-  <li>REACT_APP_STRIPE_API_KEY -- <b>This should be a publishable test key</b></li>
 </ul>
