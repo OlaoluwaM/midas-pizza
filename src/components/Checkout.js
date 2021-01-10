@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 import Loading from './Loading';
 import PropTypes from 'prop-types';
-import CustomError from './utils/custom-error';
 import CheckoutErrorComponent from './CheckoutError';
 import CheckoutNeutralComponent from './CheckoutNeutral';
 import CheckoutSuccessComponent from './CheckoutSuccess';
@@ -11,7 +10,6 @@ import { toast } from 'react-toastify';
 import { useRecoilState } from 'recoil';
 import { UserSessionContext } from './context/context';
 import { cartState as cartStateAtom } from './atoms';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import {
   generateUrl,
@@ -67,6 +65,8 @@ function initialPaymentState() {
 }
 
 function paymentStatusReducer(state, action) {
+  const initialState = initialPaymentState();
+
   switch (action.type) {
     case 'paymentSuccess':
       return {
@@ -84,11 +84,10 @@ function paymentStatusReducer(state, action) {
         paymentIsProcessing: true,
       };
 
-    case 'storeClientSecret':
+    case 'finishedProcessing':
       return {
         ...state,
         paymentIsProcessing: false,
-        clientSecret: action.clientSecret,
       };
 
     case 'paymentFailed':
@@ -100,152 +99,86 @@ function paymentStatusReducer(state, action) {
       };
 
     case 'reset':
-      return {
-        ...initialPaymentState(),
-        clientSecret: state.clientSecret ?? null,
-      };
+      return initialState;
 
     default:
       throw new ReferenceError('Action is not Defined');
   }
 }
-
-async function generateClientSecretForCheckout(total, { email }) {
-  const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
-  const clientTotal = formatCurrencyForStripe(total);
-
-  let currentClientSecret, newCartTotal;
-
-  try {
-    const { clientSecret, currentAmount: currentAmountFromServer } = await fetchWrapper(
-      generateUrl(`checkout?email=${email}`),
-      generateFetchOptions('GET', null, accessTokenId)
-    );
-
-    const serverTotal = formatCurrencyForStripe(currentAmountFromServer);
-
-    if (clientTotal !== serverTotal) {
-      const { clientSecret: updatedClientSecret, updatedCartTotal } = await fetchWrapper(
-        generateUrl(`checkout?email=${email}`),
-        generateFetchOptions(
-          'PUT',
-          { updatedPaymentIntentData: { amount: clientTotal } },
-          accessTokenId
-        )
-      );
-
-      currentClientSecret = updatedClientSecret;
-      newCartTotal = updatedCartTotal;
-    } else currentClientSecret = clientSecret;
-  } catch (e) {
-    try {
-      const { clientSecret } = await fetchWrapper(
-        generateUrl(`checkout?email=${email}`),
-        generateFetchOptions('POST', null, accessTokenId)
-      );
-
-      currentClientSecret = clientSecret;
-    } catch (error) {
-      toast(error.message, { type: 'error ' });
-      console.error(error);
-    }
-
-    console.error(e);
-  }
-
-  return { clientSecret: currentClientSecret, cartTotal: newCartTotal };
-}
-
-async function handleStripePaymentResults(result, { email }) {
-  if (result.error) throw new CustomError(result.error.message, result.error.type);
-
-  if (result.paymentIntent.status === 'succeeded') {
-    const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
-
-    await fetchWrapper(
-      generateUrl(`checkout/sendInvoice?email=${email}`),
-      generateFetchOptions('POST', null, accessTokenId)
-    );
-  }
-}
-
 export default function Checkout({ total = 0 }) {
   const [stripePaymentStatus, dispatch] = React.useReducer(paymentStatusReducer, {
     paymentSuccess: false,
     paymentFailed: false,
     paymentError: null,
     paymentIsProcessing: true,
-    clientSecret: null,
   });
 
   const totalRef = React.useRef(total);
-  const [cardError, setCardError] = React.useState(false);
+  const timeoutRef = React.useRef([]);
+
   const [cart, updateCart] = useRecoilState(cartStateAtom);
 
-  const stripe = useStripe();
-  const elements = useElements();
-
   const { userData } = React.useContext(UserSessionContext);
-  const { clientSecret, paymentIsProcessing } = stripePaymentStatus;
-  const { paymentError, paymentFailed, paymentSuccess } = stripePaymentStatus;
+  const { paymentFailed, paymentSuccess } = stripePaymentStatus;
+  const { paymentError, paymentIsProcessing } = stripePaymentStatus;
+
+  const { email: userEmail } = userData;
+  const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
 
   React.useEffect(() => {
     (async () => {
-      const { email: userEmail } = userData;
-      const { Id: accessTokenId } = JSON.parse(localStorage.getItem('currentAccessToken'));
-
       const prevStoredCart = localStorage.getItem('prevStoredCart') || '{}';
       const currentCartToStore = localStorage.getItem('storedCart') || '{}';
 
       console.log('Checking cart changes...');
 
-      if (prevStoredCart !== currentCartToStore) {
-        await saveOrderToServer(userEmail, cart, accessTokenId, true);
-        console.log('Updated cart in server');
-      } else console.log('No changes made to cart');
+      try {
+        if (prevStoredCart !== currentCartToStore) {
+          await saveOrderToServer(userEmail, cart, accessTokenId, true);
 
-      const { clientSecret, cartTotal } = await generateClientSecretForCheckout(total, userData);
-      if (cartTotal) totalRef.current = convertToCurrency(formatCurrencyForStripe(cartTotal));
+          console.log('Updated cart in server');
+        } else console.log('No changes made to cart');
 
-      dispatch({ type: 'storeClientSecret', clientSecret: clientSecret });
+        const { totalPrice: cartTotal } = await fetchWrapper(
+          generateUrl(`order?email=${userEmail}`),
+          generateFetchOptions('GET', null, accessTokenId)
+        );
+
+        if (cartTotal) totalRef.current = convertToCurrency(formatCurrencyForStripe(cartTotal));
+        dispatch({ type: 'finishedProcessing' });
+      } catch (error) {
+        const { message } = error;
+
+        dispatch({ type: 'paymentFailed', paymentError: message });
+      }
     })();
 
-    return () => dispatch({ type: 'reset' });
+    return () => {
+      const { current: timeoutIds } = timeoutRef;
+      timeoutIds.forEach(id => clearTimeout(id));
+
+      dispatch({ type: 'reset' });
+    };
   }, []);
 
-  const handleCardElementChange = async e => {
-    setCardError(e.empty);
-
-    e?.error && dispatch({ type: 'paymentFailed', paymentErrorMessage: e.error.message });
-  };
-
-  const makePayment = async e => {
-    e.preventDefault();
-
-    if (!stripe || !elements) return;
-
+  const makePayment = async () => {
     try {
       dispatch({ type: 'paymentProcessing' });
 
-      const { email, streetAddress } = userData;
+      toast('Note: This is not real so your card will not be charged 👌', { type: 'info' });
 
-      const result = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-          billing_details: {
-            email,
-            address: streetAddress,
-          },
-        },
-      });
+      await fetchWrapper(
+        generateUrl(`checkout/sendInvoice?email=${userEmail}`),
+        generateFetchOptions('POST', null, accessTokenId)
+      );
 
-      await handleStripePaymentResults(result, userData);
+      const timeout = setTimeout(() => {
+        dispatch({ type: 'paymentSuccess' });
+        removeCartFromLocalStorage();
+        updateCart({});
+      }, 5500);
 
-      removeCartFromLocalStorage();
-
-      updateCart({});
-
-      dispatch({ type: 'paymentSuccess' });
+      timeoutRef.current.push(timeout);
     } catch (error) {
       dispatch({ type: 'paymentFailed', paymentErrorMessage: error.message });
       console.error(error);
@@ -267,9 +200,9 @@ export default function Checkout({ total = 0 }) {
         {neutralState && (
           <CheckoutNeutralComponent
             makePayment={makePayment}
-            handleCardElementChange={handleCardElementChange}
-            stripe={stripe}
-            cardError={cardError}
+            setPaymentError={errMessage => {
+              dispatch({ type: 'paymentFailed', paymentErrorMessage: errMessage });
+            }}
             cartTotal={totalRef.current}
             key="neutral-state"
           />

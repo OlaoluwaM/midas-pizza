@@ -32,7 +32,7 @@ const TextAnimationContainer = styled(SimpleAnimationContainer)`
 
   p {
     width: 80%;
-    margin: auto;
+    margin: auto auto 15px auto;
     font-weight: var(--light);
     font-size: min(2.8vw, 1em);
   }

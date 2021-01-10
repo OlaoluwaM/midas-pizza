@@ -28,9 +28,10 @@ const ErrorTextAnimationContainer = styled(SimpleAnimationContainer)`
   align-items: center;
 
   & > p {
-    font-weight: bold;
+    font-weight: var(--regular);
     margin: 5% 0;
-    font-size: min(2.8vw, 1em);
+    width: calc(0.85 * 100%);
+    font-size: min(2.7vmin, 1em);
     text-align: center;
     color: rgba(0, 0, 0, 1);
   }
@@ -56,6 +57,6 @@ export default function CheckoutErrorComponent({ paymentErrorMessage, retry }) {
 }
 
 CheckoutErrorComponent.propTypes = {
-  paymentErrorMessage: PropTypes.string.isRequired,
+  paymentErrorMessage: PropTypes.string,
   retry: PropTypes.func.isRequired,
 };
