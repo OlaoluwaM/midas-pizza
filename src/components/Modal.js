@@ -61,6 +61,7 @@ const ModalCloseBtnSvgContainer = styled(motion.div).attrs({
   position: absolute;
   top: clamp(-16px, -14%, -5px);
   right: clamp(-15px, -10%, -4px);
+  z-index: 100;
 
   svg {
     cursor: pointer;
