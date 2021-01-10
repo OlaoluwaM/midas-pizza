@@ -2,31 +2,12 @@ import React from 'react';
 import Modal from '../components/Modal';
 import Checkout from '../components/Checkout';
 
-import { useStripe } from '@stripe/react-stripe-js';
-import { cleanup, act, fireEvent } from '@testing-library/react';
+import { cleanup, act, fireEvent, screen, within } from '@testing-library/react';
 import { formatCurrencyForStripe, convertToCurrency } from '../components/utils/helpers';
-
-jest.mock('@stripe/react-stripe-js', () => ({
-  __esModule: true,
-
-  Elements: ({ children }) => <div>{children}</div>,
-
-  CardElement: jest.fn(() => <div>CardElement</div>),
-
-  useStripe: jest.fn(() => ({
-    createPaymentMethod: async () => true,
-  })),
-
-  useElements: () => ({ getElement: () => 'element' }),
-}));
 
 afterAll(cleanup);
 
 const closeModalMock = jest.fn();
-
-beforeEach(() => {
-  jest.useFakeTimers();
-});
 
 const store = {
   currentAccessToken: testAccessToken,
@@ -45,23 +26,30 @@ let cartTotalForStripe = formatCurrencyForStripe(
 
 let cartTotalAsCurrency = convertToCurrency(cartTotalForStripe);
 
-test("If user is shown cart total when user's cart does not have paymentIntent yet", async () => {
-  fetch.mockRejectOnce('An error occurred', { status: 500 }).once(
-    JSON.stringify(
-      formatFetchResponse({
-        clientSecret: 'client_secret',
-        currentAmount: cartTotalForStripe,
-      }),
-      { status: 200 }
-    )
-  );
+beforeEach(() => {
+  jest.useFakeTimers();
 
+  fetch.mockResponse(req => {
+    let promise;
+    if (req.url.search(/invoice/) > -1) {
+      promise = Promise.resolve(JSON.stringify(formatFetchResponse('Invoice sent')));
+    } else if (req.method === 'GET') {
+      promise = Promise.resolve(
+        JSON.stringify(formatFetchResponse({ totalPrice: cartTotalAsCurrency }))
+      );
+    } else promise = Promise.resolve(JSON.stringify(formatFetchResponse('Cart Updated')));
+
+    return promise.then(res => ({ body: res }));
+  });
+});
+
+async function renderCheckout(cartTotalToUse = cartTotalAsCurrency) {
   let utils;
 
   await act(async () => {
     utils = renderWithProviders(
       <Modal className="checkout" closeModal={closeModalMock}>
-        <Checkout total={cartTotalAsCurrency} />
+        <Checkout total={cartTotalToUse} />
       </Modal>,
       {
         contextValue: menuContext,
@@ -69,205 +57,57 @@ test("If user is shown cart total when user's cart does not have paymentIntent y
     );
   });
 
-  const { findByTestId } = utils;
+  return utils;
+}
+
+test.each([
+  ['the total', void 0, ''],
+  ['the correct total', 1, ''],
+])('Should allow user view %s for their cart in checkout window', async (_, total, __) => {
+  const { findByTestId } = await renderCheckout(total);
+
+  expect(await findByTestId('loader')).toBeInTheDocument();
 
   expect(await findByTestId('checkout-form')).toBeInTheDocument();
   expect(await findByTestId('checkout-total')).toHaveTextContent(`$${cartTotalAsCurrency}`);
 });
 
-test('If checkout cart is updated with server total if there is a client-server cart total mismatch', async () => {
-  fetch
-    .once(
-      JSON.stringify(
-        formatFetchResponse({
-          clientSecret: 'client_secret',
-          currentAmount: cartTotalForStripe,
-        }),
-        { status: 200 }
-      )
-    )
-    .once(
-      JSON.stringify(
-        formatFetchResponse({
-          clientSecret: 'client_secret',
-          updatedCartTotal: cartTotalForStripe,
-        }),
-        { status: 200 }
-      )
-    );
+test.each([
+  ['invalid', { 'Card number': 2222222222222, 'MM/YY': '01 / 12', CVC: 123 }, 'checkout-error'],
+  ['valid', { 'Card number': 4242424242424242, 'MM/YY': '04 / 24', CVV: 324 }, 'checkout-success'],
+])(
+  "Should check if feedback is given when the user's card info is %s",
+  async (_, cardInfoToPass, expectedElement) => {
+    const { findByTestId, findByPlaceholderText, findByRole } = await renderCheckout();
 
-  let utils;
+    let checkoutForm = await findByTestId('checkout-form');
+    let payButton = await within(checkoutForm).findByRole('button');
 
-  await act(async () => {
-    utils = renderWithProviders(
-      <Modal className="checkout" closeModal={closeModalMock}>
-        <Checkout total={1.0} />
-      </Modal>,
-      {
-        contextValue: menuContext,
-      }
-    );
-  });
+    await act(async () => fireEvent.click(payButton));
 
-  const { findByTestId } = utils;
-  expect(await findByTestId('checkout-total')).toHaveTextContent(
-    `$${convertToCurrency(cartTotalForStripe)}`
-  );
-});
+    const checkoutErrorModal = await findByTestId('checkout-error');
+    expect(checkoutErrorModal).toBeInTheDocument();
+    const retryButton = await within(checkoutErrorModal).findByRole('button');
 
-test('If user cart is updated when checkout modal is opened', async () => {
-  store.prevStoredCart = {};
+    fireEvent.click(retryButton);
+    expect(await findByTestId('checkout-form')).toBeInTheDocument();
 
-  fetch
-    .once(JSON.stringify(formatFetchResponse('Updated cart')), { status: 200 })
-    .once(
-      JSON.stringify(
-        formatFetchResponse({
-          clientSecret: 'client_secret',
-          currentAmount: cartTotalForStripe,
-        }),
-        { status: 200 }
-      )
-    )
-    .once(
-      JSON.stringify(
-        formatFetchResponse({
-          clientSecret: 'client_secret',
-          updatedCartTotal: cartTotalForStripe,
-        }),
-        { status: 200 }
-      )
-    );
+    checkoutForm = await findByTestId('checkout-form');
+    payButton = await within(checkoutForm).findByRole('button');
 
-  let utils;
+    for await (const checkoutFormPlaceholderText of Object.keys(cardInfoToPass)) {
+      const inputElem = await findByPlaceholderText(checkoutFormPlaceholderText);
 
-  await act(async () => {
-    utils = renderWithProviders(
-      <Modal className="checkout" closeModal={closeModalMock}>
-        <Checkout total={0} />
-      </Modal>,
-      {
-        contextValue: menuContext,
-      }
-    );
-  });
-
-  const { findByTestId } = utils;
-
-  expect(await findByTestId('loader')).toBeInTheDocument();
-  expect(await findByTestId('checkout-form')).toBeInTheDocument();
-
-  expect(await findByTestId('checkout-total')).toHaveTextContent(
-    `$${convertToCurrency(cartTotalForStripe)}`
-  );
-});
-
-describe('Checkout status', () => {
-  beforeAll(() => (store.prevStoredCart = initialCart));
-
-  beforeEach(() => {
-    fetch.once(
-      JSON.stringify(
-        formatFetchResponse({
-          clientSecret: 'client_secret',
-          currentAmount: cartTotalForStripe,
-        }),
-        { status: 200 }
-      )
-    );
-
-    useStripe.mockReset();
-  });
-
-  test('when payment is successful', async () => {
-    fetch.once(JSON.stringify(formatFetchResponse('Invoice sent')), { status: 201 });
-    let utils;
-
-    useStripe.mockReturnValue({
-      async confirmCardPayment() {
-        return { paymentIntent: { status: 'succeeded' } };
-      },
-    });
-
-    await act(async () => {
-      utils = renderWithProviders(
-        <Modal className="checkout" closeModal={closeModalMock}>
-          <Checkout total={cartTotalAsCurrency} />
-        </Modal>,
-        {
-          contextValue: menuContext,
-        }
-      );
-    });
-
-    const { findByTestId, findByRole } = utils;
-    const payButton = await findByRole('button');
-
-    expect(payButton).not.toBeDisabled();
+      fireEvent.input(inputElem, {
+        target: { value: cardInfoToPass[checkoutFormPlaceholderText] },
+      });
+    }
 
     await act(async () => {
       fireEvent.click(payButton);
     });
 
-    expect(await findByTestId('checkout-success')).toBeInTheDocument();
-  });
-
-  test('when stripe is not loaded', async () => {
-    let utils;
-
-    await act(async () => {
-      utils = renderWithProviders(
-        <Modal className="checkout" closeModal={closeModalMock}>
-          <Checkout total={cartTotalAsCurrency} />
-        </Modal>,
-        {
-          contextValue: menuContext,
-        }
-      );
-    });
-
-    const { findByRole } = utils;
-    const payButton = await findByRole('button');
-
-    expect(payButton).toBeDisabled();
-  });
-
-  test('when payment is unsuccessful', async () => {
-    const { message: mockErrorMessage, type: mockErrorType } = {
-      message: 'Mock Error',
-      type: 'nothing serious',
-    };
-
-    useStripe.mockReturnValue({
-      async confirmCardPayment() {
-        return { error: { message: mockErrorMessage, type: mockErrorType } };
-      },
-    });
-
-    let utils;
-
-    await act(async () => {
-      utils = renderWithProviders(
-        <Modal className="checkout" closeModal={closeModalMock}>
-          <Checkout total={cartTotalAsCurrency} />
-        </Modal>,
-        {
-          contextValue: menuContext,
-        }
-      );
-    });
-
-    const { findByTestId, findByRole } = utils;
-    const payButton = await findByRole('button');
-
-    await act(async () => {
-      fireEvent.click(payButton);
-    });
-
-    await act(async () => jest.advanceTimersByTime(1000));
-
-    expect(await findByRole('alert')).toHaveTextContent(new RegExp(mockErrorMessage, 'i'));
-
-    expect(await findByTestId('checkout-error')).toBeInTheDocument();
-  });
-});
+    expect(await findByRole('alert')).toBeInTheDocument();
+    expect(await findByTestId(expectedElement)).toBeInTheDocument();
+  }
+);
