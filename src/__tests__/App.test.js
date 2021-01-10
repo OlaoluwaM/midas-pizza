@@ -45,10 +45,10 @@ test('Should automatically authenticate user', async () => {
 
   const toastArray = await findAllByRole('alert');
 
-  expect(toastArray).toHaveLength(2);
+  expect(toastArray).toHaveLength(1);
 
   toastArray.forEach(toast => {
-    expect(toast).toHaveTextContent(/Welcome back|we saved your order|Please do/i);
+    expect(toast).toHaveTextContent(/Welcome back|we saved your order/i);
   });
 
   expect(window.localStorage.getItem).toHaveBeenCalledWith('currentAccessToken');
@@ -73,14 +73,14 @@ test('Should make sure that user is not auto authenticated if refresh token has 
     );
   });
 
-  const { findByTestId, findAllByRole } = utils;
+  const { findByTestId, findByRole } = utils;
 
   const link = await findByTestId('link');
 
-  const alert = await findAllByRole('alert');
+  const alert = await findByRole('alert');
 
   expect(window.localStorage.removeItem).toHaveBeenCalledWith('currentAccessToken');
-  expect(alert[1]).toHaveTextContent(/Your session has expired/i);
+  expect(alert).toHaveTextContent(/Your session has expired/i);
 
   expect(link).toHaveTextContent(/sign up/i);
 });
