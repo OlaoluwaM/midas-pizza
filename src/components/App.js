@@ -88,11 +88,6 @@ function App() {
         await fetchWrapper(generateUrl('/ping'), generateFetchOptions('GET'));
         setConnectionStatus(2);
         console.log('Server is up');
-
-        toast('Please do input any sensitive data as this application is simply a side project', {
-          type: 'info',
-          autoClose: false,
-        });
       } catch (error) {
         console.error(error);
         setConnectionStatus(0);
