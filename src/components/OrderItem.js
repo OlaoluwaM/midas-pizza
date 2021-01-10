@@ -130,7 +130,10 @@ function Counter({ itemName, initialQuantity }) {
       const cartTotal = getCartCount(prevCart);
 
       if (cartTotal - count + amountToAdd > quantityLimit) {
-        toast(`Sorry cannot order more than ${quantityLimit} items at a go 😄`, { type: 'error' });
+        toast(`Sorry cannot order more than ${quantityLimit} items at a go 😄`, {
+          type: 'error',
+          toastId: 'quantity-limit-error',
+        });
         return prevCart;
       }
 
