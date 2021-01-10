@@ -3,28 +3,22 @@ import Modal from './Modal';
 import styled from 'styled-components';
 import Checkout from './Checkout';
 import OrderItem from './OrderItem';
-import useDebounce from './custom-hooks/useDebounce';
 
-import { Elements } from '@stripe/react-stripe-js';
 import { getTotal } from './utils/helpers';
 import { BaseButton } from './general-components/general';
-import { loadStripe } from '@stripe/stripe-js';
 import { useRecoilValue } from 'recoil';
 import { UserSessionContext } from './context/context';
 import { cartState as cartStateAtom } from './atoms';
 import { CartCheckFill as PaymentIcon } from '@styled-icons/bootstrap/CartCheckFill';
 import { ReactComponent as EmptyCartSVG } from '../assets/undraw_empty_xct9.svg';
+import { defaultPageTransitionVariants2, emptyCartVectorVariants } from './utils/framer-variants';
+import { m as motion, AnimatePresence, AnimateSharedLayout, useCycle } from 'framer-motion';
 import {
   generateFetchOptions,
   generateUrl,
   fetchWrapper,
   saveOrderToServer,
 } from './utils/helpers';
-import { m as motion, AnimatePresence, AnimateSharedLayout, useCycle } from 'framer-motion';
-import { defaultPageTransitionVariants2, emptyCartVectorVariants } from './utils/framer-variants';
-
-const { REACT_APP_STRIPE_API_KEY: STRIPE_API_KEY } = process.env;
-const stripePromise = loadStripe(STRIPE_API_KEY);
 
 const CartPreviewContainer = styled(motion.section).attrs({
   className: 'section-container',
@@ -64,7 +58,7 @@ const CartPreviewContainer = styled(motion.section).attrs({
   }
 `;
 
-const CartContainer = styled.div`
+const CartContainer = styled(motion.div)`
   list-style: none;
   flex-grow: 1;
   height: 100%;
@@ -103,17 +97,16 @@ const CheckoutButton = styled(BaseButton).attrs({
   }
 `;
 
+// initial cart prop is for test purposes
 export default function CartPreview({ initialCart }) {
-  const cartObject = initialCart ?? useRecoilValue(cartStateAtom);
   const [showModal, cycleModal] = useCycle(false, true);
+  const cartObject = initialCart ?? useRecoilValue(cartStateAtom);
 
-  const { userData } = React.useContext(UserSessionContext);
   const cart = Object.entries(cartObject);
-
-  const cartTotal = parseFloat(getTotal(cartObject).toFixed(2));
-  const debouncedCart = useDebounce(JSON.stringify(cart), 1500);
+  const { userData } = React.useContext(UserSessionContext);
 
   const cartIsEmpty = cart.length === 0;
+  const cartTotal = parseFloat(getTotal(cartObject).toFixed(2));
   const currentAccessToken = JSON.parse(localStorage.getItem('currentAccessToken'));
 
   const showCheckoutModal = () => cycleModal();
@@ -132,7 +125,7 @@ export default function CartPreview({ initialCart }) {
 
       console.log('Cart emptied');
     })();
-  }, [JSON.stringify(debouncedCart)]);
+  }, [cartIsEmpty]);
 
   React.useEffect(() => {
     return () => {
@@ -145,29 +138,23 @@ export default function CartPreview({ initialCart }) {
     <>
       <AnimatePresence>
         {showModal ? (
-          <Elements stripe={stripePromise} key="stripe-elements">
-            <Modal className="checkout" key="modal" closeModal={showCheckoutModal}>
-              <Checkout
-                total={cartTotal}
-                orders={cartObject}
-                closeCheckoutModal={showCheckoutModal}
-              />
-            </Modal>
-          </Elements>
+          <Modal className="checkout" key="modal" closeModal={showCheckoutModal}>
+            <Checkout total={cartTotal} />
+          </Modal>
         ) : null}
       </AnimatePresence>
 
       <CartPreviewContainer>
-        <CartContainer>
-          <motion.h3 data-testid="cart-header" layout>
-            {`Your Cart ${cartIsEmpty ? 'is empty' : ''}`}
-          </motion.h3>
+        <AnimateSharedLayout>
+          <CartContainer layout>
+            <motion.h3 data-testid="cart-header" layout="position">
+              {`Your Cart ${cartIsEmpty ? 'is empty' : ''}`}
+            </motion.h3>
 
-          <AnimateSharedLayout>
             {!cartIsEmpty && (
-              <AnimatePresence>
-                <>
-                  <Cart layoutId="cart">
+              <>
+                <Cart layout>
+                  <AnimatePresence>
                     {cart.map(([orderName, { quantity, initialPrice, photoId }]) => (
                       <OrderItem
                         key={orderName}
@@ -177,20 +164,22 @@ export default function CartPreview({ initialCart }) {
                         photoId={photoId}
                       />
                     ))}
-                  </Cart>
+                  </AnimatePresence>
+                </Cart>
 
-                  <motion.p className="total" layout>
-                    Total: <span data-testid="cart-total">{`$${cartTotal}`}</span>
-                  </motion.p>
-                </>
+                <motion.p className="total" layout>
+                  Total: <span data-testid="cart-total">{`$${cartTotal.toFixed(2)}`}</span>
+                </motion.p>
+
                 <CheckoutButton onClick={showCheckoutModal} key="checkout-button">
                   <PaymentIcon />
                   Place Order
                 </CheckoutButton>
-              </AnimatePresence>
+              </>
             )}
-          </AnimateSharedLayout>
-        </CartContainer>
+          </CartContainer>
+        </AnimateSharedLayout>
+
         {cartIsEmpty && (
           <motion.div
             className="svg-container"
