@@ -18,7 +18,7 @@
     "react-hook-form": "^6.9.4",
     "react-payment-inputs": "^1.1.7",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "^3.4.3",
+    "react-scripts": "^5.0.1",
     "react-toastify": "^6.0.9",
     "recoil": "0.0.13",
     "source-map-explorer": "^2.5.0",
